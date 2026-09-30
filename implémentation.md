@@ -50,7 +50,13 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - Depuis le conteneur n8n : Qdrant (`http://qdrant:6333`) répond 200 ; `api.mistral.ai` répond 401 sans clé, ce qui prouve que le réseau sortant fonctionne ; PubMed esearch et Europe PMC répondent 200.
   - Le dossier `n8n/workflows/` est accessible en écriture.
   - Persistance : une collection de test a survécu à `down` puis `up`, et la clé n8n a été relue sans erreur.
+- **Clé d'API Qdrant (30/09/2026)** : `QDRANT_API_KEY` a été générée avec `openssl rand -hex 32` et écrite directement dans `.env`, sans être affichée. Le conteneur la reçoit par `QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}` dans `docker-compose.yml`, et `.env.example` a été complété. Vérifications :
+  - `/collections` renvoie 401 sans clé ou avec une mauvaise clé, depuis le Mac comme depuis le conteneur n8n ;
+  - avec la clé (en-tête `api-key`), la réponse est 200 ;
+  - `/readyz` reste accessible sans clé (200) ;
+  - n8n est de nouveau `ok` après la recréation.
 - **Difficultés et solutions** :
+  - Recréer qdrant seul (`up -d --force-recreate --no-deps qdrant`) échoue, car podman-compose transforme le `depends_on` en dépendance dure entre conteneurs : n8n bloque la suppression de qdrant. Solution : `podman compose down` puis `up -d`, ce qui conserve les volumes. Par précaution, la sortie de ces commandes a été filtrée pour masquer les secrets.
   - Le registre `docker.n8n.io` a renvoyé `toomanyrequests` (quota des téléchargements anonymes). Solution : prendre la même image sur Docker Hub (`docker.io/n8nio/n8n`).
   - La clé de chiffrement s'est affichée en clair pendant le contrôle de `podman compose config`. Solution : clé régénérée avant le premier démarrage de n8n, sans conséquence. **Leçon** : ne jamais afficher la sortie de `compose config` quand un `.env` contient des secrets.
   - La VM Podman s'est arrêtée après une interruption. Solution : toujours vérifier `podman machine list` avant `compose up`.
@@ -147,3 +153,4 @@ Protocole :
 | 2026-09-30 | Choix du LLM : API Mistral | Pas de clé API au départ, un modèle local jugé trop faible pour la rédaction | Clés Mistral (argument RGPD) | — |
 | 2026-09-30 | Option B retenue (corpus choisi par le groupe) ; corpus v0 et spec `pipeline.md` rédigés | Un seul article ne couvrait pas tous les versants imposés | Corpus de 15–20 documents + RAG | — |
 | 2026-09-30 | Étape 1 : stack n8n 2.41.4 + Qdrant 1.19.1 sous Podman, vérifiée (santé, réseau, persistance) | Quota de téléchargement sur `docker.n8n.io` ; clé de chiffrement affichée pendant un contrôle | Image prise sur Docker Hub ; clé régénérée avant le premier démarrage | à faire : `01-podman-ps.png` |
+| 2026-09-30 | Clé d'API sur Qdrant (`QDRANT_API_KEY` dans `.env`, `QDRANT__SERVICE__API_KEY` dans le compose) : 401 sans clé, 200 avec | Impossible de recréer qdrant seul, à cause de la dépendance dure créée par podman-compose | `down` puis `up -d` (volumes conservés) | — |
