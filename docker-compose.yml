@@ -1,0 +1,32 @@
+# Stack locale du pipeline : n8n (orchestration) + Qdrant (vector store).
+# Le LLM (Mistral) est appelé par API ; la clé est saisie dans les credentials n8n, jamais ici.
+# Lancement : podman compose up -d   (ou : docker compose up -d)
+
+services:
+  n8n:
+    image: docker.io/n8nio/n8n:2.41.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY manquante dans .env}
+      - GENERIC_TIMEZONE=Europe/Paris
+      - TZ=Europe/Paris
+      - N8N_DIAGNOSTICS_ENABLED=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/workflows   # exports JSON versionnés avec git
+    depends_on:
+      - qdrant
+
+  qdrant:
+    image: docker.io/qdrant/qdrant:v1.19.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"   # API REST + tableau de bord (/dashboard)
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  n8n_data:
+  qdrant_data:
