@@ -88,13 +88,22 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | 2026-09-30 | Stack réduite à n8n + Qdrant (pas de Postgres ni d'Ollama), versions figées | LLM via API, donc Ollama inutile ; SQLite suffit pour n8n ; versions figées pour la reproductibilité |
 | 2026-09-30 | Ports ouverts sur 127.0.0.1 seulement ; télémétrie n8n désactivée ; fuseau horaire Europe/Paris | Pas d'exposition sur le réseau local ; argument RGPD ; horodatage cohérent des exécutions |
 | 2026-09-30 | **Abandon de Mistral au profit de l'API Gemini (Google)** : génération via *Google Gemini Chat Model*, embeddings `gemini-embedding-001` | Le plan Free de Mistral Studio ne permet pas d'activer de clé API sans passer à un plan payant. Clé Google AI Studio gratuite disponible. Le juge G3 reste Claude Haiku : toujours une famille de modèles différente du rédacteur |
+| 2026-10-17 | PDF du corpus non versionnés (`corpus/*.pdf` dans `.gitignore`) ; `meta.json` reste versionné | Droits de diffusion et taille (PDF d'Apple : 15 Mo) |
+| 2026-10-17 | Rôles de `meta.json` validés (D06 pour, D07 et D09 contexte) ; **D12 (AHA, *cuffless*) ajouté : rôle contre, versant technique** | Décision du groupe |
+| 2026-10-17 | WF00 : **nettoyage avant découpage** (bibliographie, appels de référence, césures) | Au test du 30/09, 2 chunks sur 5 étaient de la bibliographie |
+| 2026-10-17 | **Requêtes de recherche en anglais** (corpus en anglais), rédaction en français | Écart de langue entre requête et corpus. L'appel direct de l'API d'embeddings avec `task_type` n'est prévu que si nettoyage + anglais ne suffisent pas |
+| 2026-10-17 | `docker-compose.yml` : `${QDRANT_API_KEY:?…}` | Refuser de démarrer plutôt que lancer Qdrant sans clé |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
 - [x] Offre Mistral : le plan Free ne permet pas d'activer de clé API → passage à l'API Gemini
-- [ ] Quotas du plan gratuit Gemini (requêtes/minute et /jour, par modèle, embeddings compris) : à relever dans Google AI Studio et à reporter dans `pipeline.md`
+- [ ] Quotas du plan gratuit Gemini : embeddings = **100 par minute** (mesuré le 30/09, chaque texte d'un lot compte). **Quota journalier et quotas des modèles de chat encore inconnus** : la documentation ne donne plus les valeurs et renvoie à Google AI Studio. À relever et reporter dans `pipeline.md` §0
 - [ ] Modèles Gemini retenus pour le rédacteur, l'examinateur et la baseline (baseline = même modèle que le rédacteur)
-- [ ] Dimension des embeddings : 3 072 (défaut) ou 768 (plus léger, suffisant pour ce corpus) ? Vérifier que le nœud n8n expose ce réglage
+- [x] Dimension des embeddings : **3 072**, imposée (le nœud n8n n'expose pas ce réglage) ; collection `moa_corpus` en 3 072, distance cosinus
+- [ ] `chunk_id` (`D06-c012`) absent des métadonnées : à ajouter dans WF00 avant WF10 (découpage à faire dans un nœud Code), ce qui imposera une réingestion
+- [ ] Diversité du retrieval pour WF10 : au test du 17/10, le top 5 venait d'un seul document (D12). Plusieurs requêtes par section, plafond par document ou MMR ?
+- [ ] Commande d'export de la section 4 (`--backup`) : elle nomme les fichiers par ID (doublons de `00-ingestion.json`), exporte tous les workflows (dont `zz-diag-gemini`, encore présent) et inclut le nom et l'e-mail du propriétaire (bloc `shared`). La remplacer par un export ciblé (`--id=… --pretty --output=…/00-ingestion.json`, puis suppression de `shared`) ?
+- [ ] Référence de D12 : la consigne de citation du manuscrit donne *Hypertension* 2026;83:876–886, l'en-tête PMC donne 83(3):e00254 (retenu dans `meta.json`). À trancher sur la page de l'éditeur
 - [ ] Double screening : deux modèles Gemini différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
 - [ ] Comment accéder aux textes intégraux payants (accès via la BU / ajout manuel des PDF) ?
 - [ ] Date limite réelle (2025 ou 2026) ?
@@ -114,9 +123,9 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | Étape | Statut |
 |---|---|
 | 0. Cadrage | ✅ position POUR, LLM Gemini + juge Claude, option B |
-| 1. Environnement local | 🟡 stack opérationnelle et vérifiée. Reste : créer le compte n8n et les credentials Google Gemini + Qdrant, puis test de fumée Gemini |
-| 2. Constitution du corpus | 🟡 v0 dans `corpus.md`, à valider avec l'équipe ; PDF à récupérer |
-| 3. Ingestion (WF00) | ⚪ |
+| 1. Environnement local | 🟡 stack opérationnelle ; compte n8n et credentials Gemini + Qdrant (avec clé) en service dans les workflows. Reste : test de fumée du modèle de chat Gemini (non vérifié) |
+| 2. Constitution du corpus | 🟡 corpus de test de 4 documents (D06, D07, D09, D12) dans `meta.json`, rôles validés, PDF hors git. Reste : valider le corpus v0 complet avec l'équipe et récupérer les autres PDF |
+| 3. Ingestion (WF00) | 🟡 opérationnelle : lots de 6 pages + nettoyage (bibliographie, appels, césures) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). Reste : `chunk_id`, donc une réingestion avant WF10 |
 | 4. Rédaction (WF10) | ⚪ |
 | 5. Garde-fous (WF20) | ⚪ |
 | 6. Agent examinateur (WF30) | ⚪ |

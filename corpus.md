@@ -17,7 +17,7 @@ Position du groupe : **POUR**. Le corpus contient **volontairement** des documen
 | # | Document | Rôle | Accès | Statut |
 |---|---|---|---|---|
 | 6 | Apple. *Hypertension Notification Feature on Apple Watch — Validation paper*, septembre 2025 | Cœur du dossier : 1 863 participants analysés, Se 41,2 %, Sp 92,3 %, 30 jours, ≥ 22 ans, hors grossesse | Libre | ✅ |
-| 7 | FDA. 510(k) **K250507**, *Hypertension Notification Feature (HTNF)*, Apple Inc. Décision du 11/09/2025. Nouvelle classification « Hypertension Machine Learning-Based Notification Software », code produit SFR, avec plan de changement prédéterminé (PCCP) | Réglementaire US : pourquoi et comment la FDA a autorisé | Libre (PDF) | ✅ |
+| 7 | FDA. 510(k) **K250507**, *Hypertension Notification Feature (HTNF)*, Apple Inc. Décision du 11/09/2025. Réglementation **existante** 21 CFR 870.2380 (« Cardiovascular Machine Learning-Based Notification Software », classe II ; prédicat : Viz HCM, De Novo DEN230003). Pas de nouvelle classification : seul un **nouveau code produit** a été créé (QXO dans la lettre du 11/09/2025, puis SFR dans la correction administrative du 12/09/2025). Plan de changement prédéterminé (PCCP) examiné avec le dossier | Réglementaire US : pourquoi et comment la FDA a autorisé | Libre (PDF) | ✅ |
 | 8 | *Apple Watch for Hypertension Screening.* Hypertension 2026 (PMID 41564145) | Évaluation indépendante, qui semble pointer des limites : à lire en priorité | Libre (PMC) | 🟡 (auteurs et contenu) |
 
 ## 3. Technique et scientifique (PPG, cuffless, validation)

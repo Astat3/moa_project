@@ -27,7 +27,7 @@ services:
     ports:
       - "127.0.0.1:6333:6333"   # API REST + tableau de bord (/dashboard)
     environment:
-      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY:?QDRANT_API_KEY manquante dans .env}
     volumes:
       - qdrant_data:/qdrant/storage
 

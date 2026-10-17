@@ -28,5 +28,15 @@
     "type_source": "revue_scientifique",
     "versant": ["technique"],
     "role": "contexte"
+  },
+  {
+    "doc_id": "D12",
+    "fichier": "aha_cuffless_2025.pdf",
+    "reference": "Cohen JB, Byfield RL, Hardy ST, Juraschek SP, Houston Miller N, Mukkamala R, Picone DS, Thiele RH, Yang E, Brady TM; on behalf of the American Heart Association Council on Hypertension; Council on Cardiovascular and Stroke Nursing; Council on Cardiovascular Surgery and Anesthesia; and Council on Clinical Cardiology. Cuffless devices for the measurement of blood pressure: a scientific statement from the American Heart Association. Hypertension. 2026;83(3):e00254. doi:10.1161/HYP.0000000000000254 [author manuscript, PMC13335599]",
+    "url": "https://www.ahajournals.org/doi/10.1161/HYP.0000000000000254",
+    "annee": 2026,
+    "type_source": "declaration_societe_savante",
+    "versant": ["technique"],
+    "role": "contre"
   }
 ]

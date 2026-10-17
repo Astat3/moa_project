@@ -6,7 +6,14 @@ Contrat d'implémentation pour Claude Code. Toute divergence doit être signalé
 - **Le LLM n'écrit jamais une référence bibliographique.** Il cite des `chunk_id`, et la bibliographie est générée par du code à partir de `corpus/meta.json`. Une référence inventée devient donc structurellement impossible : c'est le garde-fou principal, à mettre en avant à l'oral.
 - **Prompts versionnés** dans `prompts/` (`redacteur_v1.md`, `examinateur_v1.md`…), jamais écrits en dur dans les nœuds. Chaque changement de prompt est consigné dans `implémentation.md`.
 - **Traçabilité** : chaque exécution ajoute une ligne à `outputs/runs.jsonl` (run_id, horodatage, workflow, modèle, version de prompt, tokens, durée, résultat).
-- **Quotas Gemini (plan gratuit)** : limites par minute **et par jour**, propres à chaque modèle (chat et embeddings). Les relever dans Google AI Studio avant de construire, et les noter ici. Tous les appels LLM passent par *Loop Over Items* (lots de 1) suivi d'un *Wait* de 60 / RPM secondes + une marge. Le quota **journalier** limite le nombre d'exécutions complètes par jour : en développement, rester sur de petits échantillons.
+- **Quotas Gemini (plan gratuit)** : limites par minute **et par jour**, propres à chaque modèle (chat et embeddings). Les valeurs ne sont publiées que dans Google AI Studio : la documentation (https://ai.google.dev/gemini-api/docs/rate-limits, consultée le 17/10/2026) y renvoie, et précise que le quota journalier est remis à zéro à minuit, heure du Pacifique (vers 9 h à Paris).
+
+  | Modèle | Par minute | Par jour | Source |
+  |---|---|---|---|
+  | `gemini-embedding-001` | **100 requêtes** ; chaque texte d'un lot `batchEmbedContents` compte pour une requête | à relever | erreur 429 du 30/09/2026 (`EmbedContentRequestsPerMinutePerUserPerProjectPerModel-FreeTier`) |
+  | Modèle(s) de chat | à relever | à relever | AI Studio |
+
+  Conséquences : WF00 ingère par lots de 6 pages suivis d'une pause de 60 s (voir WF00) ; tous les appels LLM passent par *Loop Over Items* (lots de 1) suivi d'un *Wait* de 60 / RPM secondes + une marge. Le quota **journalier** limite le nombre d'exécutions complètes par jour, et chaque réingestion consomme un embedding par chunk : en développement, rester sur de petits échantillons.
 - **Budget Claude** (≈ 4 $) : Claude Haiku n'est utilisé que pour le juge G3. En développement, travailler sur de petits échantillons.
 
 ## 1. Arborescence et montages
@@ -30,13 +37,21 @@ MOA/
 ## 2. Workflows n8n
 
 ### WF00 — Ingestion (`00-ingestion`)
-Manual Trigger → lecture de `meta.json` → pour chaque document : *Read Files from Disk* → *Extract from File* (PDF) → Code (nettoyage : en-têtes, numéros de page, césures) → *Recursive Character Text Splitter* (≈ 1 000 caractères, chevauchement de 150, **à justifier dans le rapport**) → *Embeddings Google Gemini* (`gemini-embedding-001`, dimension à fixer ; la collection Qdrant doit avoir exactement la même) → *Qdrant Vector Store* (insertion, collection `moa_corpus`).
-- Métadonnées de chaque chunk : `chunk_id` (`D06-c012`), `doc_id`, `versant`, `role`, `page` si elle est disponible.
+Manual Trigger → lecture de `meta.json` → *Split Out* (un item par document) → *Read Files from Disk* → *Extract from File* (PDF, texte **page par page**) → Code **Nettoyage du texte** → Code (un item par page, avec les métadonnées de `meta.json`) → *Loop Over Items* (**lots de 6 pages**) → *Qdrant Vector Store* (insertion, collection `moa_corpus`) → *Wait* **60 s** (quota d'embeddings) → lot suivant.
+- Sous-nœuds du *Qdrant Vector Store* : *Default Data Loader* (JSON) ; *Recursive Character Text Splitter* (1 000 caractères, chevauchement de 150, **à justifier dans le rapport** ; découpage page par page, donc un chunk ne chevauche jamais deux pages) ; *Embeddings Google Gemini* (`gemini-embedding-001`, **3 072 dimensions**, non réglable dans le nœud ; la collection Qdrant est créée en 3 072, distance cosinus).
+- Lots de 6 pages : ≈ 60 chunks au plus par minute, sous le quota de 100 embeddings par minute. Si un lot dépasse le quota, LangChain renvoie des vecteurs vides sans erreur et c'est Qdrant qui refuse l'insertion (422).
+- **Nettoyage avant découpage** (par document) :
+  - **bibliographie** : coupe à partir du dernier titre « References » (ou « Bibliography ») situé dans la seconde moitié du document, jusqu'au premier tableau ou à la première figure qui suit (manuscrits PMC) ou jusqu'à la fin ; puis suppression des pages finales sans titre où les marqueurs bibliographiques (« et al. », « doi », année entre parenthèses) dépassent 3 pour 1 000 caractères (notes de fin) ;
+  - **appels de référence** : lignes ne contenant qu'un numéro d'appel (pdf.js isole les exposants sur leur propre ligne) et appels entre crochets `[12]`, `[3–5]` ; un chiffre seul qui suit un symbole court est un indice ou un exposant (`kg/m2`, `K1`) et il est recollé, pas supprimé ;
+  - **césures** : `mot-\nsuite` est recollé seulement si le mot entier existe ailleurs dans le document ; sinon c'est un mot composé (`machine-learning`, `non-hypertensive`) et le trait d'union est gardé ;
+  - le nœud renvoie, par document, les caractères avant et après, la bibliographie retirée, le nombre d'appels supprimés et de césures recollées.
+- Métadonnées de chaque chunk : `doc_id`, `fichier`, `page`, `annee`, `type_source`, `versant`, `role`. **`chunk_id` (`D06-c012`) reste à ajouter avant WF10** : le découpage se fait dans un sous-nœud LangChain, qui ne permet pas de numéroter les chunks.
+- L'ingestion n'est pas idempotente : supprimer la collection `moa_corpus` avant de réingérer, sinon les chunks sont en double.
 - Contrôle : nombre de chunks par document, et signalement de tout document dont le texte extrait fait moins de 500 caractères (PDF scanné, donc OCR nécessaire).
 
 ### WF10 — Rédaction d'une section (`10-redaction`, sous-workflow)
 Entrée : `{section, consigne_section, position: "POUR"}`
-1. Récupération dans Qdrant : top-k (k ≈ 8) sur la requête de la section, plus un **filtre `role = contre`** pour forcer la présence de contre-arguments.
+1. Récupération dans Qdrant : top-k (k ≈ 8) sur la requête de la section, plus un **filtre `role = contre`** pour forcer la présence de contre-arguments. La **requête de recherche est en anglais**, comme le corpus (décision du 17/10/2026, voir le test de retrieval dans `implémentation.md`) ; la rédaction reste en français.
 2. LLM rédacteur : Gemini (*Google Gemini Chat Model*), modèle le plus capable disponible dans le plan gratuit, à vérifier dans AI Studio. Il reçoit les chunks avec leur `chunk_id` et doit produire une sortie structurée :
 ```json
 {"section": "technique",

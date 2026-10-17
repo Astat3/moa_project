@@ -61,7 +61,7 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - La clé de chiffrement s'est affichée en clair pendant le contrôle de `podman compose config`. Solution : clé régénérée avant le premier démarrage de n8n, sans conséquence. **Leçon** : ne jamais afficher la sortie de `compose config` quand un `.env` contient des secrets.
   - La VM Podman s'est arrêtée après une interruption. Solution : toujours vérifier `podman machine list` avant `compose up`.
   - Au démarrage, n8n signale que le mode interne des *task runners* est déprécié. C'est sans effet pour l'instant : à surveiller lors des mises à jour.
-- **À faire (par l'utilisateur)** : créer le compte propriétaire sur http://localhost:5678, puis les credentials « Google Gemini(PaLM) API » (clé Google AI Studio, host `https://generativelanguage.googleapis.com`) et « Qdrant API » (URL `http://qdrant:6333`, sans clé).
+- **À faire (par l'utilisateur)** : créer le compte propriétaire sur http://localhost:5678, puis les credentials « Google Gemini(PaLM) API » (clé Google AI Studio, host `https://generativelanguage.googleapis.com`) et « Qdrant API » (URL `http://qdrant:6333`, avec la clé `QDRANT_API_KEY` de `.env`, obligatoire depuis le 30/09/2026).
 - **Test de fumée Gemini** : *Manual Trigger* → *Basic LLM Chain* avec *Google Gemini Chat Model*, prompt « Réponds uniquement OK ». Si « OK » revient, n8n, la clé et l'API fonctionnent. Capture : `captures/01-test-gemini.png`.
 - **Captures à garder** : `captures/01-podman-ps.png` (conteneurs actifs) et `captures/01-n8n-credentials.png` (credentials validés).
 
@@ -77,6 +77,8 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 **Notes :**
 - **Corpus de test (30/09/2026)** : D06 (Apple, *validation paper*), D07 (FDA K250507) et D09 (Elgendi 2019) sont téléchargés dans `corpus/`. `corpus/meta.json` a été créé pour ces 3 documents, avec les champs `annee` et `type_source` en plus du schéma de `pipeline.md`. Les références ont été vérifiées sur les PDF. Les rôles et versants sont à valider par le groupe.
 - D12 (AHA 2025, *cuffless*, PMC13335599) est bloqué au téléchargement automatique : Europe PMC et ahajournals renvoient 403, et PMC affiche une vérification anti-robot. Il faut le télécharger à la main.
+- **17/10/2026** : rôles et versants de `meta.json` validés par le groupe. Les PDF ne sont plus versionnés (`corpus/*.pdf` dans `.gitignore` : droits et taille), `meta.json` l'est toujours.
+- **D12 ajouté (17/10/2026)** : nouvel essai automatique, toujours 403 (l'article n'est pas dans le sous-ensemble Open Access de PMC). PDF déposé à la main (manuscrit auteur PMC, 19 pages), renommé `aha_cuffless_2025.pdf`. Rôle contre, versant technique. Référence relevée sur le PDF. **Écart à trancher** : la consigne de citation de l'AHA donne *Hypertension* 2026;83:876–886, l'en-tête PMC donne 83(3):e00254 (retenu).
 
 ## Étape 3 — Ingestion RAG (WF00)
 - PDF → extraction → nettoyage → chunks (≈ 1 000 caractères, chevauchement de 150, à justifier) → `gemini-embedding-001` (dimension à fixer, identique dans la collection Qdrant) → Qdrant `moa_corpus`
@@ -96,6 +98,33 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - `n8n execute` en CLI démarre son propre *task broker* sur le port 5679, déjà pris par n8n. Solution : `podman exec -e N8N_RUNNERS_BROKER_PORT=5690 moa_n8n_1 n8n execute --id=…`.
   - En mode binaire « Load All Input Data », le *Default Data Loader* recharge **tous** les fichiers entrants pour chaque item, ce qui aurait créé des doublons. Ce mode a été écarté.
 - **Test de retrieval** (`n8n/workflows/test-retrieval.json`, top 5, question en français) : les 5 chunks viennent tous de D09. 2 sur 5 sont des morceaux de bibliographie, et les scores sont très resserrés (0,730–0,737). Pistes : retirer les sections de références au nettoyage, et ajouter D12 (AHA), le document le plus pertinent pour cette question.
+- **Nettoyage avant découpage (17/10/2026)** : nouveau nœud Code « Nettoyage du texte », entre *Extract from File* et « Un item par page ». Les règles sont décrites dans `pipeline.md` (WF00). Le code a été testé hors de n8n avant toute ingestion, pour ne pas consommer de quota, sur le texte extrait par la même fonction pdf.js que n8n (`parseText` de `binary.js`).
+
+  | Doc | Caractères avant → après | Bibliographie retirée | Appels supprimés | Césures recollées |
+  |---|---|---|---|---|
+  | D06 | 18 158 → 17 387 | 757 (notes de fin, p. 12) | 4 | 0 |
+  | D07 | 35 398 → 35 384 | 0 | 0 | 0 |
+  | D09 | 66 870 → 46 840 | 19 308 (p. 9 à 11) | 172 | 18 |
+  | D12 | 61 347 → 46 073 | 15 006 (p. 13 à 16) | 58 | 0 |
+- **Difficultés et solutions (17/10/2026)** :
+  - pdf.js place chaque exposant sur sa propre ligne : les appels de référence (`\n52 \n`) ressemblent aux indices et aux exposants d'unités (`kg/m\n2`, `K\n1`). Solution : un chiffre seul qui suit un symbole court est recollé, les autres sont supprimés.
+  - Recoller toutes les césures abîmait les mots composés : les 10 « césures » de D07 étaient en fait des mots composés ou des URL (`machine-learning`, `over-the`). Solution : on ne recolle que si le mot entier existe ailleurs dans le document. Il reste 6 mots coupés dans D09 (`visualiza-tion`…), sans gravité.
+  - D06 n'a pas de titre « References » (notes de fin). Solution : règle de densité des marqueurs bibliographiques sur les pages finales.
+  - Dans le manuscrit PMC de D12, la figure et les tableaux 1-2 sont placés **après** les références. Solution : la coupe s'arrête au premier « Table » ou « Figure ». Sans cela, le tableau 2 (considérations de mise en œuvre : éthique, réglementaire, coût) était perdu.
+  - La sortie de `n8n execute` recopie tous les vecteurs (21 Mo) et a été tronquée. Solution : contrôler le résultat dans Qdrant, pas dans cette sortie.
+- **Réingestion (17/10/2026)** : collection supprimée puis recréée. 53 pages non vides, **187 chunks** (D06 = 22, D07 = 47, D09 = 59 au lieu de 83, D12 = 59), 3 072 dimensions, aucun vecteur vide, environ 10 min. Plus aucun chunk de bibliographie : les 2 chunks de D09 p. 4 qui contiennent plusieurs « et al. » forment le tableau 1 des études, conservé volontairement.
+- **Test de retrieval n° 2 (17/10/2026)** : même question qu'au 30/09, en français et en anglais (« How reliable are cuffless blood pressure measurement devices? »), top 5. La pertinence a été jugée par Claude et reste **à valider par le groupe**.
+
+  | | 30/09 : FR, 3 docs, sans nettoyage | 17/10 : FR | 17/10 : EN |
+  |---|---|---|---|
+  | Pertinents / partiels / bruit | 1 / 2 / 2 | 5 / 0 / 0 | 4 / 1 / 0 |
+  | Bibliographie dans le top 5 | 2 | 0 | 0 |
+  | Documents représentés | D09 seul | D12 seul | D12 seul |
+  | Scores | 0,730–0,737 | 0,762–0,784 | 0,775–0,802 |
+
+  - Critère fixé **avant** le test : aucun chunk de bibliographie, au moins 3 pertinents sur 5, D12 présent. Il est rempli, donc l'appel direct de l'API d'embeddings avec `task_type` (étape c) n'est pas nécessaire pour l'instant.
+  - **Attribution prudente** : la question porte exactement sur le sujet de D12, donc le gain vient surtout de l'ajout de D12. L'effet du nettoyage se vérifie dans la collection (plus de bibliographie) plutôt que dans ce test. La requête anglaise relève les scores d'environ 0,02 et garde les mêmes chunks en tête : l'effet est faible mais cohérent avec un corpus en anglais.
+  - **Nouvelle limite** : le top 5 vient d'un seul document. D06 (performances annoncées par Apple) n'apparaît pas. Pour WF10, il faudra plusieurs requêtes par section ou une contrainte de diversité (plafond par document, MMR) : à décider.
 
 ## Étape 4 — Rédaction (WF10)
 - Un appel par section, top-k ≈ 8 plus un filtre `role = contre` pour forcer les contre-arguments
@@ -171,3 +200,4 @@ Protocole :
 | 2026-09-30 | Passage de Mistral à l'API Gemini (Google) | Plan Free de Mistral Studio : impossible d'activer une clé API sans plan payant | Clé Google AI Studio, credential n8n « Google Gemini(PaLM) API », embeddings `gemini-embedding-001` ; argument RGPD reformulé (conditions EEE : pas d'entraînement sur les prompts) | à faire : `01-test-gemini.png` |
 | 2026-09-30 | Clé d'API sur Qdrant (`QDRANT_API_KEY` dans `.env`, `QDRANT__SERVICE__API_KEY` dans le compose) : 401 sans clé, 200 avec | Impossible de recréer qdrant seul, à cause de la dépendance dure créée par podman-compose | `down` puis `up -d` (volumes conservés) | — |
 | 2026-09-30 | Corpus de test (D06, D07, D09) + `meta.json` ; workflows `00-ingestion` (153 chunks dans `moa_corpus`) et `test-retrieval` | Quota Gemini gratuit de 100 embeddings par minute ; LangChain renvoie des vecteurs vides sans erreur ; conflit de port avec `n8n execute` ; D12 bloqué par l'anti-robot de PMC | Lots de 6 pages + pause de 60 s ; Qdrant rejette les vecteurs vides ; `N8N_RUNNERS_BROKER_PORT=5690` ; D12 à télécharger à la main | à faire : capture du workflow d'ingestion |
+| 2026-10-17 | PDF du corpus sortis de git + commit ; corrections (`corpus.md` n° 7, credential Qdrant) ; `${QDRANT_API_KEY:?…}` ; D12 ajouté ; WF00 : nettoyage avant découpage ; `test-retrieval` en FR et en EN ; réingestion (187 chunks) ; retrieval : 5/5 pertinents en FR, 4 + 1 partiel en EN, plus de bibliographie (contre 2/5 au 30/09) | D12 toujours en 403 ; exposants pdf.js confondus avec les indices ; mots composés pris pour des césures ; tableaux de D12 après les références ; l'export n8n contient le nom et l'e-mail du propriétaire | PDF déposé à la main ; recollage selon le contexte (symbole court, vocabulaire du document) ; coupe arrêtée au premier tableau ou à la première figure ; export ciblé des 2 workflows, sans le bloc `shared` | à faire : capture de WF00 avec le nœud de nettoyage |

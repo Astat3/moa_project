@@ -1,13 +1,21 @@
 {
+  "updatedAt": "2026-09-30T21:02:09.400Z",
+  "createdAt": "2026-09-30T21:02:09.400Z",
   "id": "MoaWf00Ingestion",
   "name": "00-ingestion",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
       "id": "a0000000-0000-4000-8000-000000000001",
       "name": "Lancer",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "parameters": {}
     },
     {
@@ -15,7 +23,10 @@
       "name": "Lire meta.json",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [220, 0],
+      "position": [
+        220,
+        0
+      ],
       "parameters": {
         "operation": "read",
         "fileSelector": "/home/node/corpus/meta.json",
@@ -27,7 +38,10 @@
       "name": "Parser meta.json",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
-      "position": [440, 0],
+      "position": [
+        440,
+        0
+      ],
       "parameters": {
         "operation": "fromJson",
         "options": {}
@@ -38,7 +52,10 @@
       "name": "Un item par document",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
-      "position": [660, 0],
+      "position": [
+        660,
+        0
+      ],
       "parameters": {
         "fieldToSplitOut": "data",
         "options": {}
@@ -49,7 +66,10 @@
       "name": "Lire le PDF",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
-      "position": [880, 0],
+      "position": [
+        880,
+        0
+      ],
       "parameters": {
         "operation": "read",
         "fileSelector": "=/home/node/corpus/{{ $json.fichier }}",
@@ -61,7 +81,10 @@
       "name": "Texte par page",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
-      "position": [1100, 0],
+      "position": [
+        1100,
+        0
+      ],
       "parameters": {
         "operation": "pdf",
         "options": {
@@ -70,11 +93,27 @@
       }
     },
     {
+      "id": "a0000000-0000-4000-8000-000000000015",
+      "name": "Nettoyage du texte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Nettoyage avant découpage, document par document : bibliographie, appels de référence, césures.\n// Le texte arrive page par page (Extract from File, joinPages: false). Les pages vidées sont ignorées par le nœud suivant.\nconst TITRE_BIBLIO = /^[ \\t]*(references|bibliography|références|bibliographie)[ \\t]*$/gim;\nconst FIN_BIBLIO = /^[ \\t]*(Table|Figure)\\b/m;  // manuscrits PMC : tableaux et figures placés après les références\nconst MARQUEURS_BIBLIO = /et al\\.|doi|\\((?:19|20)\\d{2}\\)/g;  // plus de 3 pour 1 000 caractères : page de références\nconst LIGNE_APPEL = /^[ \\t]*\\d{1,3}(?:[ \\t]*[,–-][ \\t]*\\d{1,3})*[ \\t]*$/;  // pdf.js met chaque exposant sur sa propre ligne\nconst APPEL_CROCHETS = /[ \\t]?\\[\\d{1,3}(?:[ \\t]*[,–-][ \\t]*\\d{1,3})*\\]/g;\nconst CESURE = /([A-Za-z]+)-[ \\t]*\\n[ \\t]*([a-z]+)/g;\n\nfunction couperBibliographie(pages) {\n  // 1. Titre « References » : dernière occurrence, seulement dans la seconde moitié du document (pas une table des matières).\n  const total = pages.join('').length;\n  let cumul = 0, coupe = null;\n  pages.forEach((p, i) => {\n    for (const m of p.matchAll(TITRE_BIBLIO)) if (cumul + m.index > total / 2) coupe = { page: i, pos: m.index };\n    cumul += p.length;\n  });\n  // La bibliographie s'arrête au premier tableau ou à la première figure qui la suit, sinon à la fin du document.\n  for (let i = coupe ? coupe.page : pages.length; i < pages.length; i++) {\n    const debut = i === coupe.page ? coupe.pos : 0;\n    const fin = pages[i].slice(debut).search(FIN_BIBLIO);\n    pages[i] = pages[i].slice(0, debut) + (fin >= 0 ? pages[i].slice(debut + fin) : '');\n    if (fin >= 0) break;\n  }\n  // 2. Notes de fin sans titre (ex. D06) : pages finales où les marqueurs bibliographiques sont denses.\n  for (let i = pages.length - 1; i >= 0; i--) {\n    if (!pages[i].trim()) continue;\n    if (((pages[i].match(MARQUEURS_BIBLIO) || []).length * 1000) / pages[i].length < 3) break;\n    pages[i] = '';\n  }\n  return pages;\n}\n\nfunction retirerAppels(page, stats) {\n  const lignes = [];\n  for (const ligne of page.split('\\n')) {\n    if (lignes.length && LIGNE_APPEL.test(ligne)) {\n      const prec = lignes[lignes.length - 1];\n      // Indice ou exposant d'un symbole (kg/m2, K1, n1) : recollé au symbole au lieu d'être supprimé.\n      if (/(^|\\s)[A-Za-z\\/]{1,4}$/.test(prec) && /^\\s*\\d\\s*$/.test(ligne)) lignes[lignes.length - 1] = prec + ligne.trim();\n      else stats.appels++;\n      continue;\n    }\n    lignes.push(ligne);\n  }\n  const texte = lignes.join('\\n');\n  stats.appels += (texte.match(APPEL_CROCHETS) || []).length;\n  return texte.replace(APPEL_CROCHETS, '');\n}\n\nreturn $input.all().map((item, i) => {\n  const brut = item.json.text;\n  const stats = { caracteres_avant: brut.join('').length, bibliographie: 0, appels: 0, cesures: 0 };\n  let pages = couperBibliographie([...brut]);\n  stats.bibliographie = stats.caracteres_avant - pages.join('').length;\n  // Césure en fin de ligne : on recolle seulement si le mot entier existe ailleurs dans le document ;\n  // sinon c'est un mot composé (machine-learning, non-hypertensive) et le trait d'union est gardé.\n  const vocabulaire = new Set(pages.join('\\n').toLowerCase().match(/[a-z]+/g));\n  pages = pages.map((p) => retirerAppels(p, stats).replace(CESURE, (m, a, b) => {\n    if (!vocabulaire.has((a + b).toLowerCase())) return `${a}-${b}`;\n    stats.cesures++;\n    return a + b;\n  }));\n  stats.caracteres_apres = pages.join('').length;\n  return { json: { ...item.json, text: pages, nettoyage: stats }, pairedItem: i };\n});"
+      }
+    },
+    {
       "id": "a0000000-0000-4000-8000-000000000012",
       "name": "Un item par page",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1320, 0],
+      "position": [
+        1540,
+        0
+      ],
       "parameters": {
         "jsCode": "// Une page = un item, avec les métadonnées du document (meta.json) et le numéro de page.\nconst pages = [];\nfor (const [i, item] of $input.all().entries()) {\n  const meta = $('Un item par document').itemMatching(i).json;\n  item.json.text.forEach((texte, p) => {\n    if (texte.trim()) pages.push({ json: { ...meta, page: p + 1, texte } });\n  });\n}\nreturn pages;"
       }
@@ -84,7 +123,10 @@
       "name": "Lots de 6 pages",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": [1540, 0],
+      "position": [
+        1760,
+        0
+      ],
       "parameters": {
         "batchSize": 6,
         "options": {}
@@ -95,7 +137,10 @@
       "name": "Qdrant Vector Store",
       "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
       "typeVersion": 1.3,
-      "position": [1780, 100],
+      "position": [
+        2000,
+        100
+      ],
       "parameters": {
         "mode": "insert",
         "qdrantCollection": {
@@ -118,7 +163,10 @@
       "name": "Pause quota Gemini",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [2080, 100],
+      "position": [
+        2300,
+        100
+      ],
       "parameters": {
         "resume": "timeInterval",
         "amount": 60,
@@ -130,7 +178,10 @@
       "name": "Embeddings Google Gemini",
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
-      "position": [1680, 340],
+      "position": [
+        1900,
+        340
+      ],
       "parameters": {
         "modelName": "models/gemini-embedding-001"
       },
@@ -146,7 +197,10 @@
       "name": "Default Data Loader",
       "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
       "typeVersion": 1.1,
-      "position": [1880, 340],
+      "position": [
+        2100,
+        340
+      ],
       "parameters": {
         "dataType": "json",
         "jsonMode": "expressionData",
@@ -155,13 +209,34 @@
         "options": {
           "metadata": {
             "metadataValues": [
-              { "name": "doc_id", "value": "={{ $json.doc_id }}" },
-              { "name": "fichier", "value": "={{ $json.fichier }}" },
-              { "name": "page", "value": "={{ $json.page }}" },
-              { "name": "annee", "value": "={{ $json.annee }}" },
-              { "name": "type_source", "value": "={{ $json.type_source }}" },
-              { "name": "versant", "value": "={{ $json.versant }}" },
-              { "name": "role", "value": "={{ $json.role }}" }
+              {
+                "name": "doc_id",
+                "value": "={{ $json.doc_id }}"
+              },
+              {
+                "name": "fichier",
+                "value": "={{ $json.fichier }}"
+              },
+              {
+                "name": "page",
+                "value": "={{ $json.page }}"
+              },
+              {
+                "name": "annee",
+                "value": "={{ $json.annee }}"
+              },
+              {
+                "name": "type_source",
+                "value": "={{ $json.type_source }}"
+              },
+              {
+                "name": "versant",
+                "value": "={{ $json.versant }}"
+              },
+              {
+                "name": "role",
+                "value": "={{ $json.role }}"
+              }
             ]
           }
         }
@@ -172,7 +247,10 @@
       "name": "Recursive Character Text Splitter",
       "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
       "typeVersion": 1,
-      "position": [1980, 540],
+      "position": [
+        2200,
+        540
+      ],
       "parameters": {
         "chunkSize": 1000,
         "chunkOverlap": 150,
@@ -184,7 +262,10 @@
       "name": "Note : paramètres à évaluer",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [2200, 300],
+      "position": [
+        2420,
+        300
+      ],
       "parameters": {
         "content": "## Paramètres à évaluer\n**Découpage** : 1 000 caractères, chevauchement 150 (pipeline.md), page par page : un chunk ne chevauche jamais deux pages. À comparer plus tard (ex. 3 200 / 400 ≈ 800 / 100 tokens).\n**Embeddings** : gemini-embedding-001, dimension par défaut 3 072 (le nœud n'expose pas ce réglage).\n**Quota Gemini gratuit** : 100 textes embeddés par minute (chaque texte d'un lot compte). D'où les lots de 6 pages (≈ 60 chunks au plus) et la pause de 60 s. Si un lot dépasse, LangChain renvoie des vecteurs vides sans erreur : c'est Qdrant qui refuse l'insertion (422).",
         "width": 420,
@@ -194,51 +275,176 @@
   ],
   "connections": {
     "Lancer": {
-      "main": [[{ "node": "Lire meta.json", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Lire meta.json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Lire meta.json": {
-      "main": [[{ "node": "Parser meta.json", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parser meta.json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parser meta.json": {
-      "main": [[{ "node": "Un item par document", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Un item par document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Un item par document": {
-      "main": [[{ "node": "Lire le PDF", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Lire le PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Lire le PDF": {
-      "main": [[{ "node": "Texte par page", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Texte par page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Texte par page": {
-      "main": [[{ "node": "Un item par page", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Nettoyage du texte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Un item par page": {
-      "main": [[{ "node": "Lots de 6 pages", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Lots de 6 pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Lots de 6 pages": {
       "main": [
         [],
-        [{ "node": "Qdrant Vector Store", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Qdrant Vector Store": {
-      "main": [[{ "node": "Pause quota Gemini", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Pause quota Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Pause quota Gemini": {
-      "main": [[{ "node": "Lots de 6 pages", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Lots de 6 pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Embeddings Google Gemini": {
-      "ai_embedding": [[{ "node": "Qdrant Vector Store", "type": "ai_embedding", "index": 0 }]]
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Default Data Loader": {
-      "ai_document": [[{ "node": "Qdrant Vector Store", "type": "ai_document", "index": 0 }]]
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Recursive Character Text Splitter": {
-      "ai_textSplitter": [[{ "node": "Default Data Loader", "type": "ai_textSplitter", "index": 0 }]]
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nettoyage du texte": {
+      "main": [
+        [
+          {
+            "node": "Un item par page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1"
   },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
   "pinData": {},
-  "active": false
+  "versionId": "4cf0be6e-6566-478e-a695-21db6d6361f4",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
 }
