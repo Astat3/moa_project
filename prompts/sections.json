@@ -1,0 +1,109 @@
+{
+  "version": "v1",
+  "description": "Sections de l'argumentaire (structure imposée par la consigne) et requêtes de recherche de WF10. Requêtes fixes, en anglais comme le corpus, sans appel au LLM ; la rédaction reste en français. À reproduire en annexe du rapport.",
+  "parametres_retrieval": {
+    "top_k_par_requete": 15,
+    "fusion": "dédoublonnage par chunk_id, score maximal conservé",
+    "plafond_par_document": 2,
+    "chunks_retenus_max": 10,
+    "requete_contre": {
+      "filtre": { "role": "contre" },
+      "top_k": 15,
+      "chunks_garantis": 2
+    }
+  },
+  "sections": [
+    {
+      "id": "contexte",
+      "titre": "Contexte et problématique clinique",
+      "consigne": "HTA, santé publique, modalités de mesure et limites, problématique du dépistage par un objet grand public",
+      "requetes": [
+        "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+        "Blood pressure measurement methods (office, home and ambulatory monitoring) and their limitations",
+        "Screening for hypertension with consumer wearable devices such as smartwatches"
+      ],
+      "requete_contre": "Limitations and risks of screening for hypertension with consumer devices"
+    },
+    {
+      "id": "enjeux_fda",
+      "titre": "Enjeux de l'approbation FDA",
+      "consigne": "Pourquoi, et dans quel contexte",
+      "requetes": [
+        "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+        "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)",
+        "Rationale for passive hypertension notifications to detect undiagnosed hypertension in daily life"
+      ],
+      "requete_contre": "Concerns about FDA clearance of cuffless blood pressure devices"
+    },
+    {
+      "id": "technique",
+      "titre": "Arguments techniques et scientifiques",
+      "consigne": "PPG, fiabilité du cuffless, reconstruction de la PA à partir du signal PPG, consensus et sociétés savantes, standards de validation",
+      "requetes": [
+        "Photoplethysmography (PPG) signal and estimation of blood pressure from pulse waveform features and machine learning",
+        "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population",
+        "Validation standards and scientific society statements on cuffless blood pressure devices (ISO 81060, IEEE 1708)"
+      ],
+      "requete_contre": "Accuracy limitations of cuffless blood pressure estimation and calibration problems"
+    },
+    {
+      "id": "ethique",
+      "titre": "Arguments éthiques",
+      "consigne": "Éthique",
+      "requetes": [
+        "False positive and false negative notifications, anxiety and overdiagnosis from wearable screening",
+        "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+      ],
+      "requete_contre": "Ethical concerns of consumer health notifications: bias, false reassurance and inappropriate care"
+    },
+    {
+      "id": "social_economique",
+      "titre": "Arguments sociaux et économiques",
+      "consigne": "Social / économique",
+      "requetes": [
+        "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care",
+        "Cost-effectiveness of hypertension screening and healthcare use after wearable notifications"
+      ],
+      "requete_contre": "Wearable devices widening health inequities and increasing unnecessary healthcare use"
+    },
+    {
+      "id": "reglementaire",
+      "titre": "Arguments réglementaires",
+      "consigne": "FDA, HIPAA, marquage CE / MDR, RGPD",
+      "requetes": [
+        "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan",
+        "Privacy and protection of consumer health data: HIPAA and GDPR",
+        "European Medical Device Regulation (MDR) and CE marking of software as a medical device"
+      ],
+      "requete_contre": "Regulatory gaps and privacy risks of continuous personal health data collection"
+    },
+    {
+      "id": "parcours_soins",
+      "titre": "Intégration dans le parcours de soins",
+      "consigne": "Intégration dans le parcours de soins",
+      "requetes": [
+        "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+        "Integration of wearable blood pressure data into clinical care and clinician follow-up"
+      ],
+      "requete_contre": "Clinical workload and low diagnostic yield of evaluations triggered by smartwatch alerts"
+    },
+    {
+      "id": "autres",
+      "titre": "Autres arguments",
+      "consigne": "Autres",
+      "requetes": [
+        "Future directions and research gaps for cuffless blood pressure monitoring",
+        "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+      ],
+      "requete_contre": "Unresolved questions before cuffless devices can be used clinically"
+    },
+    {
+      "id": "conclusion",
+      "titre": "Conclusion",
+      "consigne": "Conclusion avec un parti pris clair (POUR)",
+      "requetes": [],
+      "requete_contre": null,
+      "note": "Rédigée à partir des sections déjà générées, sans nouvelle recherche dans le corpus"
+    }
+  ]
+}

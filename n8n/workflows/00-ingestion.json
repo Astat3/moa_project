@@ -271,6 +271,130 @@
         "width": 420,
         "height": 300
       }
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000016",
+      "name": "Points sans chunk_id",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        -260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/moa_corpus/points/scroll",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"filter\": {\"must\": [{\"is_empty\": {\"key\": \"metadata.chunk_id\"}}]}, \"limit\": 10000, \"with_payload\": true, \"with_vector\": false}",
+        "options": {}
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "T9Mj4pvFkQV5tKbc",
+          "name": "Qdrant account"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000017",
+      "name": "Un item par point",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        -260
+      ],
+      "parameters": {
+        "fieldToSplitOut": "result.points",
+        "options": {}
+      }
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000018",
+      "name": "SHA-1 du texte",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        -260
+      ],
+      "parameters": {
+        "action": "hash",
+        "binaryData": false,
+        "type": "SHA1",
+        "value": "={{ $json.payload.content }}",
+        "dataPropertyName": "sha1",
+        "encoding": "hex"
+      }
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000019",
+      "name": "Opérations chunk_id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -260
+      ],
+      "parameters": {
+        "jsCode": "// chunk_id = <doc_id>-<8 premiers caractères du SHA-1 du texte du chunk> : stable d'une réingestion à l'autre.\n// Ajouté après l'insertion (set_payload), car le découpage se fait dans un sous-nœud LangChain qui ne numérote pas les chunks.\nconst operations = $input.all().map(({ json }) => ({\n  set_payload: { key: 'metadata', points: [json.id], payload: { chunk_id: `${json.payload.metadata.doc_id}-${json.sha1.slice(0, 8)}` } },\n}));\nconst ids = operations.map((o) => o.set_payload.payload.chunk_id);\n// Doublons = chunks au texte identique dans un même document : ils reçoivent le même chunk_id.\nreturn [{ json: { points: ids.length, doublons: ids.length - new Set(ids).size, operations } }];"
+      }
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000020",
+      "name": "set_payload (un seul appel)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        -260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/moa_corpus/points/batch?wait=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ operations: $json.operations }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "T9Mj4pvFkQV5tKbc",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "id": "a0000000-0000-4000-8000-000000000021",
+      "name": "Index chunk_id",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3080,
+        -260
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "http://qdrant:6333/collections/moa_corpus/index?wait=true",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"field_name\": \"metadata.chunk_id\", \"field_schema\": \"keyword\"}",
+        "options": {}
+      },
+      "credentials": {
+        "qdrantApi": {
+          "id": "T9Mj4pvFkQV5tKbc",
+          "name": "Qdrant account"
+        }
+      }
     }
   ],
   "connections": {
@@ -353,7 +477,13 @@
     },
     "Lots de 6 pages": {
       "main": [
-        [],
+        [
+          {
+            "node": "Points sans chunk_id",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Qdrant Vector Store",
@@ -428,6 +558,61 @@
           }
         ]
       ]
+    },
+    "Points sans chunk_id": {
+      "main": [
+        [
+          {
+            "node": "Un item par point",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un item par point": {
+      "main": [
+        [
+          {
+            "node": "SHA-1 du texte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SHA-1 du texte": {
+      "main": [
+        [
+          {
+            "node": "Opérations chunk_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opérations chunk_id": {
+      "main": [
+        [
+          {
+            "node": "set_payload (un seul appel)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_payload (un seul appel)": {
+      "main": [
+        [
+          {
+            "node": "Index chunk_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -437,7 +622,7 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "4cf0be6e-6566-478e-a695-21db6d6361f4",
+  "versionId": "da1a9c8c-0eef-4f7c-8d20-174d88827c2f",
   "activeVersionId": null,
   "versionCounter": 4,
   "triggerCount": 0,

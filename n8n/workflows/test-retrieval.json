@@ -88,7 +88,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Le nœud Qdrant renvoie les résultats des deux questions à la suite : rang recalculé par question.\nconst rangs = {};\nreturn $input.all().map((item, i) => {\n  const { langue } = $('Questions').itemMatching(i).json;\n  rangs[langue] = (rangs[langue] || 0) + 1;\n  const { metadata, pageContent } = item.json.document;\n  return { json: { langue, rang: rangs[langue], score: item.json.score, doc_id: metadata.doc_id, page: metadata.page, metadata, texte: pageContent } };\n});"
+        "jsCode": "// Le nœud Qdrant renvoie les résultats des deux questions à la suite : rang recalculé par question.\nconst rangs = {};\nreturn $input.all().map((item, i) => {\n  const { langue } = $('Questions').itemMatching(i).json;\n  rangs[langue] = (rangs[langue] || 0) + 1;\n  const { metadata, pageContent } = item.json.document;\n  return { json: { langue, rang: rangs[langue], score: item.json.score, chunk_id: metadata.chunk_id, doc_id: metadata.doc_id, page: metadata.page, metadata, texte: pageContent } };\n});"
       }
     }
   ],
@@ -145,9 +145,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "5d9bba4a-7a18-4982-a998-0787652bc39d",
+  "versionId": "ef9f7d22-e230-47b1-9b0b-a76e886e6800",
   "activeVersionId": null,
-  "versionCounter": 3,
+  "versionCounter": 4,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

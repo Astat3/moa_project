@@ -4,7 +4,7 @@ Contrat d'implémentation pour Claude Code. Toute divergence doit être signalé
 ## 0. Principes
 - **Tranche verticale d'abord** : 3 documents → 1 section (technique) → garde-fous → assemblage. On n'élargit qu'une fois cette chaîne fonctionnelle de bout en bout.
 - **Le LLM n'écrit jamais une référence bibliographique.** Il cite des `chunk_id`, et la bibliographie est générée par du code à partir de `corpus/meta.json`. Une référence inventée devient donc structurellement impossible : c'est le garde-fou principal, à mettre en avant à l'oral.
-- **Prompts versionnés** dans `prompts/` (`redacteur_v1.md`, `examinateur_v1.md`…), jamais écrits en dur dans les nœuds. Chaque changement de prompt est consigné dans `implémentation.md`.
+- **Prompts versionnés** dans `prompts/` (`redacteur_v1.md`, `examinateur_v1.md`…, et `sections.json` pour les sections et leurs requêtes de recherche), jamais écrits en dur dans les nœuds. Chaque changement de prompt est consigné dans `implémentation.md`.
 - **Traçabilité** : chaque exécution ajoute une ligne à `outputs/runs.jsonl` (run_id, horodatage, workflow, modèle, version de prompt, tokens, durée, résultat).
 - **Quotas Gemini (plan gratuit)** : limites par minute **et par jour**, propres à chaque modèle (chat et embeddings). Les valeurs ne sont publiées que dans Google AI Studio : la documentation (https://ai.google.dev/gemini-api/docs/rate-limits, consultée le 17/10/2026) y renvoie, et précise que le quota journalier est remis à zéro à minuit, heure du Pacifique (vers 9 h à Paris).
 
@@ -20,7 +20,7 @@ Contrat d'implémentation pour Claude Code. Toute divergence doit être signalé
 ```
 MOA/
   corpus/          # PDF en texte intégral (n°1 à n°20 de corpus.md) + meta.json
-  prompts/         # prompts versionnés
+  prompts/         # prompts versionnés + sections.json (sections, requêtes anglaises, paramètres de récupération)
   outputs/         # argumentaires, rapports de vérification, runs.jsonl, métriques
   n8n/workflows/   # exports JSON versionnés
 ```
@@ -37,7 +37,7 @@ MOA/
 ## 2. Workflows n8n
 
 ### WF00 — Ingestion (`00-ingestion`)
-Manual Trigger → lecture de `meta.json` → *Split Out* (un item par document) → *Read Files from Disk* → *Extract from File* (PDF, texte **page par page**) → Code **Nettoyage du texte** → Code (un item par page, avec les métadonnées de `meta.json`) → *Loop Over Items* (**lots de 6 pages**) → *Qdrant Vector Store* (insertion, collection `moa_corpus`) → *Wait* **60 s** (quota d'embeddings) → lot suivant.
+Manual Trigger → lecture de `meta.json` → *Split Out* (un item par document) → *Read Files from Disk* → *Extract from File* (PDF, texte **page par page**) → Code **Nettoyage du texte** → Code (un item par page, avec les métadonnées de `meta.json`) → *Loop Over Items* (**lots de 6 pages**) → *Qdrant Vector Store* (insertion, collection `moa_corpus`) → *Wait* **60 s** (quota d'embeddings) → lot suivant. En fin de boucle : étape **`chunk_id`** (voir ci-dessous).
 - Sous-nœuds du *Qdrant Vector Store* : *Default Data Loader* (JSON) ; *Recursive Character Text Splitter* (1 000 caractères, chevauchement de 150, **à justifier dans le rapport** ; découpage page par page, donc un chunk ne chevauche jamais deux pages) ; *Embeddings Google Gemini* (`gemini-embedding-001`, **3 072 dimensions**, non réglable dans le nœud ; la collection Qdrant est créée en 3 072, distance cosinus).
 - Lots de 6 pages : ≈ 60 chunks au plus par minute, sous le quota de 100 embeddings par minute. Si un lot dépasse le quota, LangChain renvoie des vecteurs vides sans erreur et c'est Qdrant qui refuse l'insertion (422).
 - **Nettoyage avant découpage** (par document) :
@@ -45,13 +45,23 @@ Manual Trigger → lecture de `meta.json` → *Split Out* (un item par document)
   - **appels de référence** : lignes ne contenant qu'un numéro d'appel (pdf.js isole les exposants sur leur propre ligne) et appels entre crochets `[12]`, `[3–5]` ; un chiffre seul qui suit un symbole court est un indice ou un exposant (`kg/m2`, `K1`) et il est recollé, pas supprimé ;
   - **césures** : `mot-\nsuite` est recollé seulement si le mot entier existe ailleurs dans le document ; sinon c'est un mot composé (`machine-learning`, `non-hypertensive`) et le trait d'union est gardé ;
   - le nœud renvoie, par document, les caractères avant et après, la bibliographie retirée, le nombre d'appels supprimés et de césures recollées.
-- Métadonnées de chaque chunk : `doc_id`, `fichier`, `page`, `annee`, `type_source`, `versant`, `role`. **`chunk_id` (`D06-c012`) reste à ajouter avant WF10** : le découpage se fait dans un sous-nœud LangChain, qui ne permet pas de numéroter les chunks.
+- Métadonnées de chaque chunk : `chunk_id`, `doc_id`, `fichier`, `page`, `annee`, `type_source`, `versant`, `role`.
+- **`chunk_id` = `<doc_id>-<8 premiers caractères du SHA-1 du texte du chunk>`** (ex. `D12-4794f2ff`) : stable d'une réingestion à l'autre tant que le texte du chunk ne change pas. Le découpage se fait dans un sous-nœud LangChain qui ne numérote pas les chunks : le `chunk_id` est donc ajouté **après** l'insertion, sans appel à Gemini :
+  HTTP Request « Points sans chunk_id » (`scroll` filtré sur `is_empty: metadata.chunk_id`, exécuté une seule fois) → *Split Out* → *Crypto* (SHA-1 du texte) → Code (une opération `set_payload` par point, avec `key: metadata`) → HTTP Request `points/batch` (un seul appel) → HTTP Request : index de payload `keyword` sur `metadata.chunk_id`.
+  Étape idempotente : elle ne traite que les points sans `chunk_id`. Le Code compte les doublons (chunks au texte identique dans un même document, donc même `chunk_id`).
+  ⚠️ Pas de sous-workflow : lancé par la CLI (`n8n execute`), n8n 2.x n'appelle que la version **publiée** d'un sous-workflow, alors que l'interface utilise le brouillon.
 - L'ingestion n'est pas idempotente : supprimer la collection `moa_corpus` avant de réingérer, sinon les chunks sont en double.
 - Contrôle : nombre de chunks par document, et signalement de tout document dont le texte extrait fait moins de 500 caractères (PDF scanné, donc OCR nécessaire).
 
 ### WF10 — Rédaction d'une section (`10-redaction`, sous-workflow)
-Entrée : `{section, consigne_section, position: "POUR"}`
-1. Récupération dans Qdrant : top-k (k ≈ 8) sur la requête de la section, plus un **filtre `role = contre`** pour forcer la présence de contre-arguments. La **requête de recherche est en anglais**, comme le corpus (décision du 17/10/2026, voir le test de retrieval dans `implémentation.md`) ; la rédaction reste en français.
+Entrée : une section de `prompts/sections.json` (`id`, `titre`, `consigne`, `requetes`, `requete_contre`) + `position: "POUR"`.
+1. Récupération dans Qdrant (paramètres dans `prompts/sections.json`, décision du 17/10/2026) :
+   - **2 ou 3 requêtes par section** (angles différents), **en anglais** comme le corpus, **fixes** (pas d'appel au LLM pour les formuler) ; la rédaction reste en français ;
+   - **top-k 15** par requête ;
+   - **requête forcée `role = contre`** (une par section, filtre Qdrant `metadata.role = contre`, top-k 15) : ses **2 meilleurs chunks sont garantis** dans la sélection, pour que l'argumentaire traite les contre-arguments ;
+   - fusion et **dédoublonnage par `chunk_id`** (score maximal conservé), puis sélection par score décroissant avec un **plafond de 2 chunks par document**, jusqu'à **10 chunks** au plus ;
+   - pas de MMR : un plafond codé dans un nœud Code est déterministe et plus simple à expliquer.
+   Pourquoi : au test du 17/10/2026, le top 5 venait d'un seul document (D12), et D06 (performances d'Apple) n'apparaissait pas.
 2. LLM rédacteur : Gemini (*Google Gemini Chat Model*), modèle le plus capable disponible dans le plan gratuit, à vérifier dans AI Studio. Il reçoit les chunks avec leur `chunk_id` et doit produire une sortie structurée :
 ```json
 {"section": "technique",

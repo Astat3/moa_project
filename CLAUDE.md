@@ -64,7 +64,7 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 - **n8n self-hosted 2.41.4** (base SQLite) + **Qdrant 1.19.1**, définis dans `docker-compose.yml` et lancés avec **Podman** (fichier compatible Docker)
   - Démarrage : `podman machine start` puis `podman compose up -d` · n8n : http://localhost:5678 · Qdrant : http://localhost:6333/dashboard
   - Depuis n8n, Qdrant est joignable à `http://qdrant:6333`. La clé `N8N_ENCRYPTION_KEY` est dans `.env` (gitignoré, modèle dans `.env.example`) et **ne doit jamais changer**.
-  - Export des workflows (à versionner) : `podman exec moa_n8n_1 n8n export:workflow --backup --output=/home/node/workflows/`, ce qui les écrit dans `n8n/workflows/`
+  - Export des workflows (à versionner) : `sh n8n/exporter.sh`. Il exporte les workflows dont le nom commence par `NN-` ou `test-` vers `n8n/workflows/<nom>.json`, **sans le bloc `shared`** (nom et e-mail du propriétaire n8n), et s'interrompt s'il reste une adresse e-mail. Ne pas utiliser `export:workflow --backup` directement : fichiers nommés par ID (doublons), tous les workflows, nom et e-mail inclus
 - **Vector store** : Qdrant
 - **LLM** : **API Gemini de Google** (clé créée dans Google AI Studio, plan gratuit). Remplace Mistral depuis le 2026-09-30 (voir section 5).
   - Credential n8n : **« Google Gemini(PaLM) API »**, host `https://generativelanguage.googleapis.com`. La clé est saisie **uniquement** dans ce credential, par l'utilisateur : jamais dans `.env`, un workflow exporté, un terminal ou une conversation. Claude Code ne la lit jamais.
@@ -93,6 +93,11 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | 2026-10-17 | WF00 : **nettoyage avant découpage** (bibliographie, appels de référence, césures) | Au test du 30/09, 2 chunks sur 5 étaient de la bibliographie |
 | 2026-10-17 | **Requêtes de recherche en anglais** (corpus en anglais), rédaction en français | Écart de langue entre requête et corpus. L'appel direct de l'API d'embeddings avec `task_type` n'est prévu que si nettoyage + anglais ne suffisent pas |
 | 2026-10-17 | `docker-compose.yml` : `${QDRANT_API_KEY:?…}` | Refuser de démarrer plutôt que lancer Qdrant sans clé |
+| 2026-10-17 | Étape (c) (`task_type` via HTTP Request) **non mise en œuvre** | Critère fixé avant le test rempli : aucune bibliographie, au moins 3 pertinents sur 5, D12 présent |
+| 2026-10-17 | **Récupération de WF10** : 2 ou 3 requêtes anglaises fixes par section (top-k 15), requête forcée `role = contre`, fusion et dédoublonnage par `chunk_id`, plafond de 2 chunks par document, 8 à 10 chunks retenus ; pas de MMR. Requêtes dans `prompts/sections.json` (annexe du rapport) | Au test du 17/10, le top 5 venait d'un seul document. Un plafond codé est déterministe et simple à expliquer à l'oral |
+| 2026-10-17 | **`chunk_id` = `<doc_id>-<8 premiers caractères du SHA-1 du texte>`**, ajouté après insertion par `set_payload` (sans appel Gemini) + index `keyword` ; même étape en fin de WF00 | Stable d'une réingestion à l'autre ; évite une réingestion |
+| 2026-10-17 | Export des workflows par `n8n/exporter.sh` (sans nom ni e-mail) | `--backup` produisait des doublons et exposait le nom et l'e-mail du propriétaire |
+| 2026-10-17 | Référence D12 : *Hypertension* 2026;83(3):e00254 + DOI, mise en ligne le 11/12/2025 | Confirmé par Crossref (vol. 83, n° 3, mars 2026, sans pagination) |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
@@ -100,10 +105,12 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 - [ ] Quotas du plan gratuit Gemini : embeddings = **100 par minute** (mesuré le 30/09, chaque texte d'un lot compte). **Quota journalier et quotas des modèles de chat encore inconnus** : la documentation ne donne plus les valeurs et renvoie à Google AI Studio. À relever et reporter dans `pipeline.md` §0
 - [ ] Modèles Gemini retenus pour le rédacteur, l'examinateur et la baseline (baseline = même modèle que le rédacteur)
 - [x] Dimension des embeddings : **3 072**, imposée (le nœud n8n n'expose pas ce réglage) ; collection `moa_corpus` en 3 072, distance cosinus
-- [ ] `chunk_id` (`D06-c012`) absent des métadonnées : à ajouter dans WF00 avant WF10 (découpage à faire dans un nœud Code), ce qui imposera une réingestion
-- [ ] Diversité du retrieval pour WF10 : au test du 17/10, le top 5 venait d'un seul document (D12). Plusieurs requêtes par section, plafond par document ou MMR ?
-- [ ] Commande d'export de la section 4 (`--backup`) : elle nomme les fichiers par ID (doublons de `00-ingestion.json`), exporte tous les workflows (dont `zz-diag-gemini`, encore présent) et inclut le nom et l'e-mail du propriétaire (bloc `shared`). La remplacer par un export ciblé (`--id=… --pretty --output=…/00-ingestion.json`, puis suppression de `shared`) ?
-- [ ] Référence de D12 : la consigne de citation du manuscrit donne *Hypertension* 2026;83:876–886, l'en-tête PMC donne 83(3):e00254 (retenu dans `meta.json`). À trancher sur la page de l'éditeur
+- [x] `chunk_id` : SHA-1 du texte, ajouté aux 187 points par `set_payload` + index (17/10)
+- [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
+- [x] Commande d'export : remplacée par `sh n8n/exporter.sh` (17/10)
+- [x] Référence de D12 : 83(3):e00254, confirmé par Crossref (17/10)
+- [ ] Requête forcée `role = contre` : 2 chunks garantis sur 10 au plus (proposition de Claude, dans `prompts/sections.json`), à valider
+- [ ] Les commits contiennent l'e-mail de l'auteur (configuration git `user.email`). Passer à l'adresse *noreply* de GitHub pour les prochains commits ?
 - [ ] Double screening : deux modèles Gemini différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
 - [ ] Comment accéder aux textes intégraux payants (accès via la BU / ajout manuel des PDF) ?
 - [ ] Date limite réelle (2025 ou 2026) ?
@@ -125,8 +132,8 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | 0. Cadrage | ✅ position POUR, LLM Gemini + juge Claude, option B |
 | 1. Environnement local | 🟡 stack opérationnelle ; compte n8n et credentials Gemini + Qdrant (avec clé) en service dans les workflows. Reste : test de fumée du modèle de chat Gemini (non vérifié) |
 | 2. Constitution du corpus | 🟡 corpus de test de 4 documents (D06, D07, D09, D12) dans `meta.json`, rôles validés, PDF hors git. Reste : valider le corpus v0 complet avec l'équipe et récupérer les autres PDF |
-| 3. Ingestion (WF00) | 🟡 opérationnelle : lots de 6 pages + nettoyage (bibliographie, appels, césures) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). Reste : `chunk_id`, donc une réingestion avant WF10 |
-| 4. Rédaction (WF10) | ⚪ |
+| 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
+| 4. Rédaction (WF10) | 🟡 requêtes et paramètres de récupération fixés (`prompts/sections.json`) ; workflow à construire |
 | 5. Garde-fous (WF20) | ⚪ |
 | 6. Agent examinateur (WF30) | ⚪ |
 | 7. Assemblage (WF40) | ⚪ |
