@@ -1,5 +1,5 @@
 # Stack locale du pipeline : n8n (orchestration) + Qdrant (vector store).
-# Le LLM (Mistral) est appelé par API ; la clé est saisie dans les credentials n8n, jamais ici.
+# Le LLM (Gemini, Google) est appelé par API ; la clé est saisie dans les credentials n8n, jamais ici.
 # Lancement : podman compose up -d   (ou : docker compose up -d)
 
 services:
@@ -13,9 +13,11 @@ services:
       - GENERIC_TIMEZONE=Europe/Paris
       - TZ=Europe/Paris
       - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_RESTRICT_FILE_ACCESS_TO=/home/node/corpus   # n8n 2.x : nœuds de fichiers limités à ~/.n8n-files par défaut
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/workflows:/home/node/workflows   # exports JSON versionnés avec git
+      - ./corpus:/home/node/corpus:ro          # PDF + meta.json, en lecture seule
     depends_on:
       - qdrant
 

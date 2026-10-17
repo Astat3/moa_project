@@ -47,17 +47,17 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 ```
 [Corpus choisi par le groupe : 15–20 PDF + meta.json]   (corpus.md)
       │
- WF00 Ingestion : PDF → chunks → embeddings Mistral → Qdrant (chunk_id, doc_id, versant, rôle)
+ WF00 Ingestion : PDF → chunks → embeddings Gemini (`gemini-embedding-001`) → Qdrant (chunk_id, doc_id, versant, rôle)
       │
- WF10 Rédaction par section (Mistral) : citations obligatoires par chunk_id, contre-arguments forcés
+ WF10 Rédaction par section (Gemini) : citations obligatoires par chunk_id, contre-arguments forcés
       │
  WF20 Garde-fous : G1 structure · G2 citations · G3 fidélité (juge Claude Haiku) · G4 chiffres  ──► régénération (2 fois max)
       │
- WF30 Agent examinateur (Mistral) : liste de problèmes → 1 passe de correction
+ WF30 Agent examinateur (Gemini) : liste de problèmes → 1 passe de correction
       │
  WF40 Assemblage : Markdown + bibliographie générée par le code depuis meta.json → Pandoc → PDF
       │
- WF50 Baseline (Mistral seul, sans RAG)  ──►  WF60 Évaluation : métriques pipeline vs baseline + évaluation humaine (kappa)
+ WF50 Baseline (Gemini seul, sans RAG)  ──►  WF60 Évaluation : métriques pipeline vs baseline + évaluation humaine (kappa)
 ```
 
 ### Stack technique pressentie
@@ -66,7 +66,12 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
   - Depuis n8n, Qdrant est joignable à `http://qdrant:6333`. La clé `N8N_ENCRYPTION_KEY` est dans `.env` (gitignoré, modèle dans `.env.example`) et **ne doit jamais changer**.
   - Export des workflows (à versionner) : `podman exec moa_n8n_1 n8n export:workflow --backup --output=/home/node/workflows/`, ce qui les écrit dans `n8n/workflows/`
 - **Vector store** : Qdrant
-- **LLM** : **API Mistral** (génération + embeddings `mistral-embed`). Argument RGPD pour l'oral : fournisseur européen, hébergement UE à sourcer. Clé API stockée dans les *credentials* n8n ou dans un `.env` exclu de git, jamais en clair dans un workflow exporté. Ollama devient optionnel.
+- **LLM** : **API Gemini de Google** (clé créée dans Google AI Studio, plan gratuit). Remplace Mistral depuis le 2026-09-30 (voir section 5).
+  - Credential n8n : **« Google Gemini(PaLM) API »**, host `https://generativelanguage.googleapis.com`. La clé est saisie **uniquement** dans ce credential, par l'utilisateur : jamais dans `.env`, un workflow exporté, un terminal ou une conversation. Claude Code ne la lit jamais.
+  - Génération : nœud *Google Gemini Chat Model*. Les ID de modèles disponibles et les **quotas du plan gratuit** (requêtes par minute et par jour, par modèle) se lisent dans Google AI Studio : ne pas les supposer, les reporter dans `pipeline.md`.
+  - Embeddings : nœud *Embeddings Google Gemini*, modèle **`gemini-embedding-001`** (texte seul ; 3 072 dimensions par défaut, 768 ou 1 536 possibles). **La dimension de la collection Qdrant doit être exactement celle produite par le nœud.** Changer de modèle d'embeddings (ex. `gemini-embedding-2`) impose de tout réindexer : espaces vectoriels incompatibles.
+  - **Argument RGPD à reformuler pour l'oral** : Google est un fournisseur américain, l'argument « fournisseur européen » tombe. En revanche, pour les utilisateurs de l'EEE, les conditions des services payants s'appliquent aussi au quota gratuit : les prompts et réponses ne servent pas à améliorer les modèles (Gemini API Additional Terms of Service, à citer). Le corpus ne contient que des publications, aucune donnée patient.
+  - Ollama reste optionnel.
 - **Claude (API Anthropic)** : une clé avec **environ 4 $ de crédit restant**, utilisable pour des tests. Même règle : clé saisie uniquement dans les *credentials* n8n.
 - **Sources** : corpus choisi par le groupe (`corpus.md`, PDF dans `corpus/`, métadonnées dans `corpus/meta.json`). PubMed et Europe PMC ne servent qu'à la recherche manuelle et à la vérification des références de la baseline
 - **Export** : Pandoc (Markdown vers PDF)
@@ -76,17 +81,21 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 |---|---|---|
 | 2026-09-30 | Sujet 2 uniquement, orchestration n8n en local | Choix du groupe |
 | 2026-09-30 | **Option B** : corpus de 15–20 documents choisi par le groupe, puis RAG → agent rédacteur → garde-fous → agent examinateur → rapport. Pas de recherche PubMed automatisée | Conforme à l'exemple RAG de la consigne (« à partir d'un corpus d'articles »), difficulté réduite, plus de temps pour le contrôle qualité. Critères de sélection et équations de recherche manuelles à justifier en annexe. Corpus dans `corpus.md` |
-| 2026-09-30 | LLM via API Mistral (plutôt qu'un modèle local) | Meilleure qualité de rédaction qu'un modèle local + argument RGPD |
-| 2026-09-30 | Répartition des LLM : **Mistral (gratuit) pour le volume** (screening, rédaction, relecture) et **Claude Haiku uniquement comme juge** claim ↔ source (étape 6) | Budget Claude d'environ 4 $, soit ≈ 0,30 $ par passe de 150 affirmations. Un juge d'une autre famille de modèles limite le biais d'auto-préférence (LLM-as-a-judge, Zheng et al. 2023, à sourcer). En développement : tests sur 10–20 abstracts, et limite de dépense fixée dans la console Anthropic |
+| 2026-09-30 | LLM via API Mistral (plutôt qu'un modèle local) — **remplacé le jour même par l'API Gemini, voir plus bas** | Meilleure qualité de rédaction qu'un modèle local + argument RGPD |
+| 2026-09-30 | Répartition des LLM : **Gemini (gratuit, initialement Mistral) pour le volume** (screening, rédaction, relecture) et **Claude Haiku uniquement comme juge** claim ↔ source (étape 6) | Budget Claude d'environ 4 $, soit ≈ 0,30 $ par passe de 150 affirmations. Un juge d'une autre famille de modèles limite le biais d'auto-préférence (LLM-as-a-judge, Zheng et al. 2023, à sourcer). En développement : tests sur 10–20 abstracts, et limite de dépense fixée dans la console Anthropic |
 | 2026-09-30 | Fichier mémoire renommé `CLAUDE.md` | Chargement automatique par Claude Code |
 | 2026-09-30 | Conteneurs lancés avec Podman plutôt que Docker Desktop | Podman déjà installé, Docker absent. Le `docker-compose.yml` reste utilisable tel quel avec Docker |
 | 2026-09-30 | Stack réduite à n8n + Qdrant (pas de Postgres ni d'Ollama), versions figées | LLM via API, donc Ollama inutile ; SQLite suffit pour n8n ; versions figées pour la reproductibilité |
 | 2026-09-30 | Ports ouverts sur 127.0.0.1 seulement ; télémétrie n8n désactivée ; fuseau horaire Europe/Paris | Pas d'exposition sur le réseau local ; argument RGPD ; horodatage cohérent des exécutions |
+| 2026-09-30 | **Abandon de Mistral au profit de l'API Gemini (Google)** : génération via *Google Gemini Chat Model*, embeddings `gemini-embedding-001` | Le plan Free de Mistral Studio ne permet pas d'activer de clé API sans passer à un plan payant. Clé Google AI Studio gratuite disponible. Le juge G3 reste Claude Haiku : toujours une famille de modèles différente du rédacteur |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
-- [ ] Offre Mistral : gratuite (quota limité) ou payante ? Budget ? (limites de débit à vérifier)
-- [ ] Double screening : deux modèles Mistral différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
+- [x] Offre Mistral : le plan Free ne permet pas d'activer de clé API → passage à l'API Gemini
+- [ ] Quotas du plan gratuit Gemini (requêtes/minute et /jour, par modèle, embeddings compris) : à relever dans Google AI Studio et à reporter dans `pipeline.md`
+- [ ] Modèles Gemini retenus pour le rédacteur, l'examinateur et la baseline (baseline = même modèle que le rédacteur)
+- [ ] Dimension des embeddings : 3 072 (défaut) ou 768 (plus léger, suffisant pour ce corpus) ? Vérifier que le nœud n8n expose ce réglage
+- [ ] Double screening : deux modèles Gemini différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
 - [ ] Comment accéder aux textes intégraux payants (accès via la BU / ajout manuel des PDF) ?
 - [ ] Date limite réelle (2025 ou 2026) ?
 - [ ] VM Podman limitée à 2 Go (partagée avec un autre projet) ; n8n occupe environ 690 Mo au repos. La passer à 4 Go si les grosses exécutions saturent (`podman machine stop && podman machine set --memory 4096 && podman machine start`)
@@ -104,8 +113,8 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 ## 8. État d'avancement
 | Étape | Statut |
 |---|---|
-| 0. Cadrage | ✅ position POUR, LLM Mistral + juge Claude, option B |
-| 1. Environnement local | 🟡 stack opérationnelle et vérifiée. Reste : créer le compte n8n et les credentials Mistral + Qdrant |
+| 0. Cadrage | ✅ position POUR, LLM Gemini + juge Claude, option B |
+| 1. Environnement local | 🟡 stack opérationnelle et vérifiée. Reste : créer le compte n8n et les credentials Google Gemini + Qdrant, puis test de fumée Gemini |
 | 2. Constitution du corpus | 🟡 v0 dans `corpus.md`, à valider avec l'équipe ; PDF à récupérer |
 | 3. Ingestion (WF00) | ⚪ |
 | 4. Rédaction (WF10) | ⚪ |

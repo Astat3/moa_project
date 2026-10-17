@@ -6,7 +6,7 @@ Contrat d'implémentation pour Claude Code. Toute divergence doit être signalé
 - **Le LLM n'écrit jamais une référence bibliographique.** Il cite des `chunk_id`, et la bibliographie est générée par du code à partir de `corpus/meta.json`. Une référence inventée devient donc structurellement impossible : c'est le garde-fou principal, à mettre en avant à l'oral.
 - **Prompts versionnés** dans `prompts/` (`redacteur_v1.md`, `examinateur_v1.md`…), jamais écrits en dur dans les nœuds. Chaque changement de prompt est consigné dans `implémentation.md`.
 - **Traçabilité** : chaque exécution ajoute une ligne à `outputs/runs.jsonl` (run_id, horodatage, workflow, modèle, version de prompt, tokens, durée, résultat).
-- **Limite Mistral (plan gratuit)** : environ 1 requête par seconde, à vérifier dans la console. Tous les appels passent par *Loop Over Items* (lots de 1) suivi de *Wait* 1,2 s.
+- **Quotas Gemini (plan gratuit)** : limites par minute **et par jour**, propres à chaque modèle (chat et embeddings). Les relever dans Google AI Studio avant de construire, et les noter ici. Tous les appels LLM passent par *Loop Over Items* (lots de 1) suivi d'un *Wait* de 60 / RPM secondes + une marge. Le quota **journalier** limite le nombre d'exécutions complètes par jour : en développement, rester sur de petits échantillons.
 - **Budget Claude** (≈ 4 $) : Claude Haiku n'est utilisé que pour le juge G3. En développement, travailler sur de petits échantillons.
 
 ## 1. Arborescence et montages
@@ -30,14 +30,14 @@ MOA/
 ## 2. Workflows n8n
 
 ### WF00 — Ingestion (`00-ingestion`)
-Manual Trigger → lecture de `meta.json` → pour chaque document : *Read Files from Disk* → *Extract from File* (PDF) → Code (nettoyage : en-têtes, numéros de page, césures) → *Recursive Character Text Splitter* (≈ 1 000 caractères, chevauchement de 150, **à justifier dans le rapport**) → *Embeddings Mistral* (`mistral-embed`) → *Qdrant Vector Store* (insertion, collection `moa_corpus`).
+Manual Trigger → lecture de `meta.json` → pour chaque document : *Read Files from Disk* → *Extract from File* (PDF) → Code (nettoyage : en-têtes, numéros de page, césures) → *Recursive Character Text Splitter* (≈ 1 000 caractères, chevauchement de 150, **à justifier dans le rapport**) → *Embeddings Google Gemini* (`gemini-embedding-001`, dimension à fixer ; la collection Qdrant doit avoir exactement la même) → *Qdrant Vector Store* (insertion, collection `moa_corpus`).
 - Métadonnées de chaque chunk : `chunk_id` (`D06-c012`), `doc_id`, `versant`, `role`, `page` si elle est disponible.
 - Contrôle : nombre de chunks par document, et signalement de tout document dont le texte extrait fait moins de 500 caractères (PDF scanné, donc OCR nécessaire).
 
 ### WF10 — Rédaction d'une section (`10-redaction`, sous-workflow)
 Entrée : `{section, consigne_section, position: "POUR"}`
 1. Récupération dans Qdrant : top-k (k ≈ 8) sur la requête de la section, plus un **filtre `role = contre`** pour forcer la présence de contre-arguments.
-2. LLM rédacteur : Mistral, modèle large, à vérifier dans le plan gratuit. Il reçoit les chunks avec leur `chunk_id` et doit produire une sortie structurée :
+2. LLM rédacteur : Gemini (*Google Gemini Chat Model*), modèle le plus capable disponible dans le plan gratuit, à vérifier dans AI Studio. Il reçoit les chunks avec leur `chunk_id` et doit produire une sortie structurée :
 ```json
 {"section": "technique",
  "paragraphes": [{"texte": "...", "citations": ["D06-c012", "D09-c003"]}],
@@ -60,7 +60,7 @@ Règles du prompt :
 Boucle : si G1 ou G2 échoue, ou si G3 donne plus de 20 % de `NON_SOUTENU`, retour au rédacteur avec la liste des problèmes, **2 itérations au maximum**. Le rapport de vérification est enregistré dans `outputs/verif_<run_id>.json`.
 
 ### WF30 — Agent examinateur (`30-examinateur`)
-LLM Mistral, avec un modèle ou un prompt différent de celui du rédacteur. Il reçoit l'argumentaire complet, la consigne et la liste des documents `role = contre`.
+LLM Gemini, avec un modèle ou un prompt différent de celui du rédacteur. Il reçoit l'argumentaire complet, la consigne et la liste des documents `role = contre`.
 
 Grille de relecture :
 - conformité à la structure imposée ;
@@ -76,7 +76,7 @@ Sortie : une **liste de problèmes** en JSON (`{section, gravité, problème, su
 Fusion des sections dans l'ordre de la consigne → Markdown. Les `chunk_id` sont remplacés par des numéros de référence [n], et la bibliographie est **générée depuis `meta.json`**. Écriture dans `outputs/argumentaire_<run_id>.md`. La conversion en PDF se fait avec Pandoc, hors n8n.
 
 ### WF50 — Baseline (`50-baseline`)
-Même modèle Mistral et même consigne, **mais sans RAG ni garde-fous**, en un seul prompt. Sortie : `outputs/baseline_<run_id>.md`.
+Même modèle Gemini que le rédacteur et même consigne, **mais sans RAG ni garde-fous**, en un seul prompt. Sortie : `outputs/baseline_<run_id>.md`.
 
 ### WF60 — Évaluation (`60-evaluation`)
 Application de G2, G3 et G4 au pipeline et à la baseline. Pour la baseline, les références sont vérifiées à la main ou via PubMed. Sortie : `outputs/metriques.csv`

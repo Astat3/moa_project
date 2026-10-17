@@ -22,3 +22,6 @@ venv/
 # Éditeurs
 .vscode/
 .idea/
+
+# Corpus : PDF non versionnés (droits de diffusion + taille) ; meta.json reste versionné
+corpus/*.pdf

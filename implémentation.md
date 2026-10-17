@@ -28,7 +28,7 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 ## Étape 0 — Cadrage
 - [x] Position : POUR
 - [x] Option B : corpus choisi par le groupe (pas de recherche PubMed automatisée)
-- [x] LLM : API Mistral (décision du 2026-09-30)
+- [x] LLM : API Gemini de Google (décision du 2026-09-30, remplace Mistral dont le plan Free ne permet pas d'activer de clé API)
 - [x] Critères de sélection du corpus : voir `corpus.md`
 - [ ] Corpus « obligatoire » ajouté à la main : 510(k) summary de la FDA, recommandations ESH/AHA sur le *cuffless*, ISO 81060-2, IEEE 1708, règlement (UE) 2017/745 (MDR), RGPD, HIPAA
 
@@ -44,7 +44,7 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 **Notes :**
 - **Machine** : MacBook Apple M3, 16 Go, macOS 26.6. Conteneurs gérés par Podman 5.8.2 (VM `applehv` de 4 CPU et 2 Go) avec `podman-compose`.
 - **Fichiers** : `docker-compose.yml` (n8n `2.41.4` + Qdrant `v1.19.1`, volumes nommés `n8n_data` et `qdrant_data`, ports limités à 127.0.0.1), `.env` (clé `N8N_ENCRYPTION_KEY`, gitignoré), `.env.example`, `n8n/workflows/` (exports JSON).
-- **Choix** : n8n utilise SQLite (pas de Postgres). Pas d'Ollama, le LLM passant par l'API Mistral. Variables `GENERIC_TIMEZONE` et `TZ` à Europe/Paris, `N8N_DIAGNOSTICS_ENABLED=false`.
+- **Choix** : n8n utilise SQLite (pas de Postgres). Pas d'Ollama, le LLM passant par une API (Mistral au départ, Gemini depuis le 30/09/2026). Variables `GENERIC_TIMEZONE` et `TZ` à Europe/Paris, `N8N_DIAGNOSTICS_ENABLED=false`.
 - **Vérifications (30/09/2026)** :
   - Depuis le Mac : `healthz` de n8n renvoie `ok` ; `readyz` de Qdrant renvoie « all shards are ready ».
   - Depuis le conteneur n8n : Qdrant (`http://qdrant:6333`) répond 200 ; `api.mistral.ai` répond 401 sans clé, ce qui prouve que le réseau sortant fonctionne ; PubMed esearch et Europe PMC répondent 200.
@@ -61,7 +61,8 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - La clé de chiffrement s'est affichée en clair pendant le contrôle de `podman compose config`. Solution : clé régénérée avant le premier démarrage de n8n, sans conséquence. **Leçon** : ne jamais afficher la sortie de `compose config` quand un `.env` contient des secrets.
   - La VM Podman s'est arrêtée après une interruption. Solution : toujours vérifier `podman machine list` avant `compose up`.
   - Au démarrage, n8n signale que le mode interne des *task runners* est déprécié. C'est sans effet pour l'instant : à surveiller lors des mises à jour.
-- **À faire (par l'utilisateur)** : créer le compte propriétaire sur http://localhost:5678, puis les credentials « Mistral Cloud API » (la clé) et « Qdrant API » (URL `http://qdrant:6333`, sans clé).
+- **À faire (par l'utilisateur)** : créer le compte propriétaire sur http://localhost:5678, puis les credentials « Google Gemini(PaLM) API » (clé Google AI Studio, host `https://generativelanguage.googleapis.com`) et « Qdrant API » (URL `http://qdrant:6333`, sans clé).
+- **Test de fumée Gemini** : *Manual Trigger* → *Basic LLM Chain* avec *Google Gemini Chat Model*, prompt « Réponds uniquement OK ». Si « OK » revient, n8n, la clé et l'API fonctionnent. Capture : `captures/01-test-gemini.png`.
 - **Captures à garder** : `captures/01-podman-ps.png` (conteneurs actifs) et `captures/01-n8n-credentials.png` (credentials validés).
 
 > Le détail technique de chaque workflow (nœuds, prompts, schémas JSON) est dans `pipeline.md`. Ici, on consigne ce qui a été fait, les difficultés et les solutions.
@@ -74,13 +75,27 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 - [ ] Combler les trous (médico-économie, statut CE, faux positifs et surdiagnostic)
 
 **Notes :**
+- **Corpus de test (30/09/2026)** : D06 (Apple, *validation paper*), D07 (FDA K250507) et D09 (Elgendi 2019) sont téléchargés dans `corpus/`. `corpus/meta.json` a été créé pour ces 3 documents, avec les champs `annee` et `type_source` en plus du schéma de `pipeline.md`. Les références ont été vérifiées sur les PDF. Les rôles et versants sont à valider par le groupe.
+- D12 (AHA 2025, *cuffless*, PMC13335599) est bloqué au téléchargement automatique : Europe PMC et ahajournals renvoient 403, et PMC affiche une vérification anti-robot. Il faut le télécharger à la main.
 
 ## Étape 3 — Ingestion RAG (WF00)
-- PDF → extraction → nettoyage → chunks (≈ 1 000 caractères, chevauchement de 150, à justifier) → `mistral-embed` → Qdrant `moa_corpus`
+- PDF → extraction → nettoyage → chunks (≈ 1 000 caractères, chevauchement de 150, à justifier) → `gemini-embedding-001` (dimension à fixer, identique dans la collection Qdrant) → Qdrant `moa_corpus`
 - Métadonnées par chunk : `chunk_id`, `doc_id`, `versant`, `role`, `page`
 - Contrôle : nombre de chunks par document ; alerte si le texte extrait fait moins de 500 caractères (PDF scanné)
 
 **Notes :**
+- **Première version (30/09/2026)**, `n8n/workflows/00-ingestion.json` :
+  - lecture de `meta.json` → *Split Out* (un item par document) → *Read Files from Disk* → *Extract from File* (PDF, `joinPages: false`) → Code (un item par page, avec les métadonnées) → *Loop Over Items* (lots de 6 pages) → *Qdrant Vector Store* (insertion, collection `moa_corpus`), avec *Default Data Loader* (JSON), *Recursive Character Text Splitter* (1 000 / 150) et *Embeddings Google Gemini* (`gemini-embedding-001`) → *Wait* 60 s → lot suivant ;
+  - pas encore de nettoyage du texte ni de `chunk_id`.
+- **Montage** : `./corpus` → `/home/node/corpus` en lecture seule, avec `N8N_RESTRICT_FILE_ACCESS_TO=/home/node/corpus`. Sans cette variable, n8n 2.x limite les nœuds de fichiers à `~/.n8n-files` (valeur par défaut lue dans le code de n8n 2.41.4).
+- **Résultat** : 40 pages et 153 chunks (D06 : 23, D07 : 47, D09 : 83), en 434 s. Les chunks font entre 65 et 1 000 caractères (876 en moyenne). Métadonnées par chunk : `doc_id`, `fichier`, `page`, `annee`, `type_source`, `versant` (liste), `role`. La collection a été créée automatiquement : 3 072 dimensions, distance cosinus.
+- **Difficultés et solutions** :
+  - **Quota Gemini gratuit** : le 1er essai (tous les chunks d'un coup) a échoué. Un diagnostic via un nœud HTTP, qui utilise le credential n8n sans exposer la clé, a donné : 429 `RESOURCE_EXHAUSTED`, quota `EmbedContentRequestsPerMinutePerUserPerProjectPerModel-FreeTier` = **100 par minute**. **Chaque texte d'un lot `batchEmbedContents` compte pour une requête.** Solution : lots de 6 pages (≈ 60 chunks au plus), puis une pause de 60 s. Le quota journalier reste à relever dans Google AI Studio.
+  - **Défaillance silencieuse de LangChain** (`@langchain/google-genai` 2.1.24) : les lots d'embeddings partent en parallèle, et un lot en erreur est remplacé par des vecteurs **vides**, sans exception. Seule la validation de Qdrant (422 : *dense vector must not be empty*) a arrêté l'insertion. À citer dans le rapport comme argument pour les contrôles automatiques.
+  - Le nœud *Embeddings Google Gemini* n'expose ni la dimension (3 072 par défaut, alors que la notice du nœud annonce 768) ni le *task type* (requête ou document).
+  - `n8n execute` en CLI démarre son propre *task broker* sur le port 5679, déjà pris par n8n. Solution : `podman exec -e N8N_RUNNERS_BROKER_PORT=5690 moa_n8n_1 n8n execute --id=…`.
+  - En mode binaire « Load All Input Data », le *Default Data Loader* recharge **tous** les fichiers entrants pour chaque item, ce qui aurait créé des doublons. Ce mode a été écarté.
+- **Test de retrieval** (`n8n/workflows/test-retrieval.json`, top 5, question en français) : les 5 chunks viennent tous de D09. 2 sur 5 sont des morceaux de bibliographie, et les scores sont très resserrés (0,730–0,737). Pistes : retirer les sections de références au nettoyage, et ajouter D12 (AHA), le document le plus pertinent pour cette question.
 
 ## Étape 4 — Rédaction (WF10)
 - Un appel par section, top-k ≈ 8 plus un filtre `role = contre` pour forcer les contre-arguments
@@ -116,7 +131,7 @@ Méthodes à citer dans le rapport (références à vérifier et à compléter) 
 - Études sur les références hallucinées par les LLM (à rechercher)
 
 Protocole :
-- **Baseline** : même modèle Mistral, même consigne, sans RAG ni garde-fous
+- **Baseline** : même modèle Gemini que le rédacteur, même consigne, sans RAG ni garde-fous
 - Métriques : % d'affirmations soutenues, % de références existantes et correctes, % de chiffres retrouvés, couverture des sections, contre-arguments traités, problèmes relevés par l'examinateur, tokens, coût et durée
 - Double évaluation humaine en aveugle sur un échantillon d'affirmations, avec kappa
 
@@ -153,4 +168,6 @@ Protocole :
 | 2026-09-30 | Choix du LLM : API Mistral | Pas de clé API au départ, un modèle local jugé trop faible pour la rédaction | Clés Mistral (argument RGPD) | — |
 | 2026-09-30 | Option B retenue (corpus choisi par le groupe) ; corpus v0 et spec `pipeline.md` rédigés | Un seul article ne couvrait pas tous les versants imposés | Corpus de 15–20 documents + RAG | — |
 | 2026-09-30 | Étape 1 : stack n8n 2.41.4 + Qdrant 1.19.1 sous Podman, vérifiée (santé, réseau, persistance) | Quota de téléchargement sur `docker.n8n.io` ; clé de chiffrement affichée pendant un contrôle | Image prise sur Docker Hub ; clé régénérée avant le premier démarrage | à faire : `01-podman-ps.png` |
+| 2026-09-30 | Passage de Mistral à l'API Gemini (Google) | Plan Free de Mistral Studio : impossible d'activer une clé API sans plan payant | Clé Google AI Studio, credential n8n « Google Gemini(PaLM) API », embeddings `gemini-embedding-001` ; argument RGPD reformulé (conditions EEE : pas d'entraînement sur les prompts) | à faire : `01-test-gemini.png` |
 | 2026-09-30 | Clé d'API sur Qdrant (`QDRANT_API_KEY` dans `.env`, `QDRANT__SERVICE__API_KEY` dans le compose) : 401 sans clé, 200 avec | Impossible de recréer qdrant seul, à cause de la dépendance dure créée par podman-compose | `down` puis `up -d` (volumes conservés) | — |
+| 2026-09-30 | Corpus de test (D06, D07, D09) + `meta.json` ; workflows `00-ingestion` (153 chunks dans `moa_corpus`) et `test-retrieval` | Quota Gemini gratuit de 100 embeddings par minute ; LangChain renvoie des vecteurs vides sans erreur ; conflit de port avec `n8n execute` ; D12 bloqué par l'anti-robot de PMC | Lots de 6 pages + pause de 60 s ; Qdrant rejette les vecteurs vides ; `N8N_RUNNERS_BROKER_PORT=5690` ; D12 à télécharger à la main | à faire : capture du workflow d'ingestion |
