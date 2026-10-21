@@ -114,12 +114,16 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-17 | Référence D12 : *Hypertension* 2026;83(3):e00254 + DOI, mise en ligne le 11/12/2025 | Confirmé par Crossref (vol. 83, n° 3, mars 2026, sans pagination) |
 | 2026-10-21 | **Plan v2 « rapide »** (`pipeline.md`) : corpus figé à 4 documents (D06, D07, D09, D12) ; **juge Claude supprimé** (plus de G3) ; 2 workflows (`10-argumentaire`, `50-baseline`) + script d'évaluation ; 1 correction max par section, 1 passe d'examinateur | Délai serré (date limite probable 02/11). Fidélité contrôlée par G4 + évaluation humaine. Sections pauvres assumées et présentées comme un résultat du garde-fou |
 | 2026-10-21 | **Plan v2 minimale** : pas de boucle de régénération ni de correction automatique (les garde-fous et le relecteur signalent seulement), pas d'examinateur sur la baseline ; tout ce qui est écarté est listé dans `pipeline.md` § 5 « Limites et pistes pour une v2 » | Consignes exactes reçues : un pipeline RAG + contrôle qualité + critique suffit. Le plus simple possible, vu le délai |
+| 2026-10-21 | **Modèle de chat : `gemini-3.8-flash`** (nom exact, pas l'alias `gemini-flash-latest`) | Test de fumée : seul modèle récent ouvert au plan gratuit ; `gemini-3.1-pro` a un quota à 0, `gemini-2.5-pro` n'est plus proposé |
+| 2026-10-21 | Rédacteur appelé par **HTTP Request** direct (`generateContent`, mode JSON avec schéma), au lieu du nœud *Google Gemini Chat Model* | Sortie JSON garantie, erreurs (429…) visibles, pas de relances cachées de LangChain |
+| 2026-10-21 | `./prompts` (lecture seule) et `./outputs` montés dans n8n ; `N8N_RESTRICT_FILE_ACCESS_TO` étendu (séparateur `;`) | Prompts versionnés lus par le workflow, sorties écrites dans le dépôt |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
 - [x] Offre Mistral : le plan Free ne permet pas d'activer de clé API → passage à l'API Gemini
 - [ ] Quotas du plan gratuit Gemini : embeddings = **100 par minute** (mesuré le 30/09, chaque texte d'un lot compte). **Quota journalier et quotas des modèles de chat encore inconnus** : la documentation ne donne plus les valeurs et renvoie à Google AI Studio. À relever et reporter dans `pipeline.md` §0
-- [ ] Modèles Gemini retenus pour le rédacteur, l'examinateur et la baseline (baseline = même modèle que le rédacteur)
+- [x] Modèle Gemini du rédacteur, du relecteur et de la baseline : `gemini-3.8-flash` (21/10)
+- [ ] **RPM, RPD et TPM de `gemini-3.8-flash`** : à lire dans AI Studio (https://ai.dev/rate-limit). Non mesurés par rafale, pour ne pas entamer un quota journalier inconnu. Indispensables pour l'étape 2 (≈ 12 appels)
 - [x] Dimension des embeddings : **3 072**, imposée (le nœud n8n n'expose pas ce réglage) ; collection `moa_corpus` en 3 072, distance cosinus
 - [x] `chunk_id` : SHA-1 du texte, ajouté aux 187 points par `set_payload` + index (17/10)
 - [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
@@ -146,10 +150,10 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | Étape | Statut |
 |---|---|
 | 0. Cadrage | ✅ position POUR, LLM Gemini (juge Claude abandonné le 21/10), option B, plan v2 « rapide » |
-| 1. Environnement local | 🟡 stack opérationnelle ; compte n8n et credentials Gemini + Qdrant (avec clé) en service dans les workflows. Reste : test de fumée du modèle de chat Gemini (non vérifié) |
+| 1. Environnement local | ✅ stack opérationnelle ; test de fumée Gemini réussi le 21/10 (`gemini-3.8-flash`, workflow `test-gemini`) ; `prompts/` et `outputs/` montés |
 | 2. Constitution du corpus | ✅ figé à 4 documents (D06, D07, D09, D12), plan v2 |
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
-| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4 + assemblage + relecteur) | 🟡 requêtes fixées (`prompts/sections.json`) ; workflow à construire (`pipeline.md`, v2 minimale) |
+| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout (récupération, rédacteur, G1/G2/G4, Markdown + bibliographie), 34 s, 0 paragraphe signalé. Reste : toutes les sections + conclusion, relecteur |
 | 5. Baseline (`50-baseline`) | ⚪ |
 | 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | ⚪ |
 | 7. Rapport écrit | ⚪ |

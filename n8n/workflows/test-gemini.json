@@ -1,0 +1,182 @@
+{
+  "updatedAt": "2026-10-21T14:50:16.798Z",
+  "createdAt": "2026-10-21T14:50:16.798Z",
+  "id": "MoaTestGemini",
+  "name": "test-gemini",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c0000000-0000-4000-8000-000000000001",
+      "name": "Lancer",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c0000000-0000-4000-8000-000000000002",
+      "name": "Modèles disponibles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "1000"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "id": "c0000000-0000-4000-8000-000000000003",
+      "name": "Paramètres de l'essai",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Test de fumée : un appel par modèle. Pour relever le RPM d'un modèle, lui donner n > RPM appels simultanés\n// (l'erreur 429 donne alors la valeur du quota dépassé).\nconst essais = { 'gemini-3.8-flash': 1, 'gemini-flash-latest': 1, 'gemini-pro-latest': 1, 'gemini-3.1-pro-preview': 1, 'gemini-2.5-pro': 1 };\nreturn Object.entries(essais).flatMap(([modele, n]) => Array.from({ length: n }, (_, i) => ({ json: { modele, i } })));"
+      }
+    },
+    {
+      "id": "c0000000-0000-4000-8000-000000000004",
+      "name": "Appel generateContent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"contents\": [{\"parts\": [{\"text\": \"R\\u00e9ponds uniquement OK\"}]}]}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "id": "c0000000-0000-4000-8000-000000000005",
+      "name": "Résumé",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Un résumé par modèle. Erreur 429 : le détail QuotaFailure donne la métrique et la valeur du quota dépassé.\nconst parModele = {};\n$input.all().forEach(({ json: r }, i) => {\n  const { modele } = $(\"Paramètres de l'essai\").itemMatching(i).json;\n  (parModele[modele] ??= []).push(r);\n});\nreturn Object.entries(parModele).map(([modele, res]) => {\n  const ok = res.filter((r) => r.statusCode === 200);\n  const quotas = res.filter((r) => r.statusCode === 429).flatMap((r) => (r.body?.error?.details || []).flatMap((d) => d.violations || []));\n  return { json: {\n    modele, appels: res.length, reussis: ok.length, statuts: res.map((r) => r.statusCode),\n    reponse: ok[0]?.body?.candidates?.[0]?.content?.parts?.map((p) => p.text).join(''),\n    version: ok[0]?.body?.modelVersion, usage: ok[0]?.body?.usageMetadata,\n    quotas: [...new Map(quotas.map((q) => [q.quotaId, q])).values()],\n    erreurs: [...new Set(res.filter((r) => r.statusCode !== 200).map((r) => r.body?.error?.message))],\n  } };\n});"
+      }
+    }
+  ],
+  "connections": {
+    "Lancer": {
+      "main": [
+        [
+          {
+            "node": "Modèles disponibles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modèles disponibles": {
+      "main": [
+        [
+          {
+            "node": "Paramètres de l'essai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres de l'essai": {
+      "main": [
+        [
+          {
+            "node": "Appel generateContent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appel generateContent": {
+      "main": [
+        [
+          {
+            "node": "Résumé",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "2be59e43-d87e-4954-960e-20844d30ddb5",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
