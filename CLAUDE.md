@@ -20,6 +20,20 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | Soumission | Un seul envoi par groupe |
 | Évaluation | Rapport, oral et présence active en cours. Le non-respect des consignes fait perdre des points |
 
+### Consignes du sujet 2 (texte de l'enseignant, transmis le 21/10/2026)
+Il est demandé :
+- d'implémenter un **pipeline IA allant de la revue de la littérature jusqu'à la génération d'un rapport structuré** ;
+- de mettre en place des **éléments de contrôle qualité** des résultats de l'IA ;
+- de **critiquer les résultats** obtenus par ce pipeline.
+Ces éléments devront être exposés dans le rapport soumis.
+
+Exemples de pipeline possibles (au choix, non cumulatifs) :
+- **multi-agents** : deux LLM font chacun la revue, et un troisième « superviseur » arbitre en cas de discordance ;
+- **RAG** : extraction automatique, à partir d'un corpus d'articles, des passages ou arguments pertinents pour le débat ;
+- **autres optimisations** : structuration des arguments, synthèse comparée, vérification de références…
+
+→ **Choix du groupe : RAG + vérification de références par construction** (voir `pipeline.md`, section 0, pour la correspondance consigne → pipeline).
+
 ### Structure imposée du rapport (Sujet 2)
 1. **Figure de synthèse du pipeline** (façon *graphical abstract*). Elle ouvre le rapport.
 2. **Description du pipeline et de la méthodologie** : techniques d'optimisation, garde-fous, difficultés rencontrées et solutions.
@@ -98,6 +112,8 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 | 2026-10-17 | **`chunk_id` = `<doc_id>-<8 premiers caractères du SHA-1 du texte>`**, ajouté après insertion par `set_payload` (sans appel Gemini) + index `keyword` ; même étape en fin de WF00 | Stable d'une réingestion à l'autre ; évite une réingestion |
 | 2026-10-17 | Export des workflows par `n8n/exporter.sh` (sans nom ni e-mail) | `--backup` produisait des doublons et exposait le nom et l'e-mail du propriétaire |
 | 2026-10-17 | Référence D12 : *Hypertension* 2026;83(3):e00254 + DOI, mise en ligne le 11/12/2025 | Confirmé par Crossref (vol. 83, n° 3, mars 2026, sans pagination) |
+| 2026-10-21 | **Plan v2 « rapide »** (`pipeline.md`) : corpus figé à 4 documents (D06, D07, D09, D12) ; **juge Claude supprimé** (plus de G3) ; 2 workflows (`10-argumentaire`, `50-baseline`) + script d'évaluation ; 1 correction max par section, 1 passe d'examinateur | Délai serré (date limite probable 02/11). Fidélité contrôlée par G4 + évaluation humaine. Sections pauvres assumées et présentées comme un résultat du garde-fou |
+| 2026-10-21 | **Plan v2 minimale** : pas de boucle de régénération ni de correction automatique (les garde-fous et le relecteur signalent seulement), pas d'examinateur sur la baseline ; tout ce qui est écarté est listé dans `pipeline.md` § 5 « Limites et pistes pour une v2 » | Consignes exactes reçues : un pipeline RAG + contrôle qualité + critique suffit. Le plus simple possible, vu le délai |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
@@ -129,17 +145,15 @@ Construire un **pipeline IA (orchestré en local avec n8n)** qui va de la revue 
 ## 8. État d'avancement
 | Étape | Statut |
 |---|---|
-| 0. Cadrage | ✅ position POUR, LLM Gemini + juge Claude, option B |
+| 0. Cadrage | ✅ position POUR, LLM Gemini (juge Claude abandonné le 21/10), option B, plan v2 « rapide » |
 | 1. Environnement local | 🟡 stack opérationnelle ; compte n8n et credentials Gemini + Qdrant (avec clé) en service dans les workflows. Reste : test de fumée du modèle de chat Gemini (non vérifié) |
-| 2. Constitution du corpus | 🟡 corpus de test de 4 documents (D06, D07, D09, D12) dans `meta.json`, rôles validés, PDF hors git. Reste : valider le corpus v0 complet avec l'équipe et récupérer les autres PDF |
+| 2. Constitution du corpus | ✅ figé à 4 documents (D06, D07, D09, D12), plan v2 |
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
-| 4. Rédaction (WF10) | 🟡 requêtes et paramètres de récupération fixés (`prompts/sections.json`) ; workflow à construire |
-| 5. Garde-fous (WF20) | ⚪ |
-| 6. Agent examinateur (WF30) | ⚪ |
-| 7. Assemblage (WF40) | ⚪ |
-| 8. Baseline + évaluation (WF50/60) | ⚪ |
-| 9. Rapport écrit | ⚪ |
-| 10. Oral | ⚪ |
+| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4 + assemblage + relecteur) | 🟡 requêtes fixées (`prompts/sections.json`) ; workflow à construire (`pipeline.md`, v2 minimale) |
+| 5. Baseline (`50-baseline`) | ⚪ |
+| 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | ⚪ |
+| 7. Rapport écrit | ⚪ |
+| 8. Oral | ⚪ |
 
 ## 9. Conventions de travail avec Claude
 - Répondre en français, de façon directe et concrète.

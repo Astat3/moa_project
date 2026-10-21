@@ -7,21 +7,22 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 ---
 
 ## Vue d'ensemble
+> **Plan v2 minimale du 21/10/2026** : voir `pipeline.md` (consignes → pipeline en § 0, limites et pistes v2 en § 5). Les sections « Étape 4 » à « Étape 8 » plus bas décrivent encore la v1 et ne valent que pour l'historique.
 
 | # | Étape | Livrable | Temps estimé (avec Claude) | Difficulté /10 |
 |---|---|---|---|---|
 | 0 | Cadrage : position, choix des LLM, critères d'inclusion | Décisions notées dans `CLAUDE.md` | 2 h | 2 |
 | 1 | Environnement local (Docker, n8n, Qdrant, LLM) | `docker-compose.yml` fonctionnel | 2–4 h | 3 |
-| 2 | Constitution du corpus (sélection, validation par l'équipe, PDF, `meta.json`) | `corpus/` + `corpus.md` | 3–5 h | 3 |
-| 3 | Ingestion RAG (WF00) | Collection Qdrant avec métadonnées | 3–5 h | 5 |
-| 4 | Rédaction par section avec citations (WF10) | Brouillon de l'argumentaire | 4–6 h | 6 |
-| 5 | Garde-fous G1–G4 (WF20) | Rapport de vérification automatique | 5–7 h | 7 |
-| 6 | Agent examinateur (WF30) | Liste de problèmes + version corrigée | 3–4 h | 5 |
-| 7 | Assemblage + bibliographie générée par le code (WF40) | `argumentaire_<run_id>.md` | 2–3 h | 3 |
-| 8 | Baseline + évaluation qualité (WF50/60) | `metriques.csv` + évaluation humaine | 6–8 h | 7 |
-| 9 | Rapport écrit + graphical abstract | `Ecrit_….pdf` | 6–8 h | 4 |
-| 10 | Oral : slides + répétition | `Oral_….pdf` | 4–6 h | 3 |
-| | **Total** | | **≈ 40–58 h** | **Global : 5,5/10** |
+| 2 | Corpus de test figé à 4 documents (D06, D07, D09, D12) | `corpus/` + `meta.json` | fait | 3 |
+| 3 | Ingestion RAG (WF00) | Collection Qdrant (187 chunks, `chunk_id`) | fait | 5 |
+| 4 | `10-argumentaire` : rédaction + garde-fous G1/G2/G4 (signalement, sans correction) + assemblage | `argumentaire_<run_id>.md` + `verif_<run_id>.json` | 3,5 h | 5 |
+| 5 | Garde-fous : intégrés à l'étape 4 (G3, juge Claude, supprimé le 21/10) | — | — | — |
+| 6 | Relecteur : 1 appel, rapport de relecture sans correction (dans `10-argumentaire`) | `relecture_<run_id>.json` | 0,5 h | 3 |
+| 7 | Assemblage : intégré à l'étape 4 | — | — | — |
+| 8 | Baseline (`50-baseline`) + évaluation (script + évaluation humaine) | `metriques.csv` + kappa | 2,5 h | 4 |
+| 9 | Rapport écrit + graphical abstract | `Ecrit_….pdf` | 5–6 h | 4 |
+| 10 | Oral : slides + répétition | `Oral_….pdf` | 3–4 h | 3 |
+| | **Reste à faire (au 21/10)** | | **≈ 15–17 h** | **Global : 4/10** |
 
 ---
 
@@ -218,3 +219,5 @@ Protocole :
 | 2026-09-30 | Corpus de test (D06, D07, D09) + `meta.json` ; workflows `00-ingestion` (153 chunks dans `moa_corpus`) et `test-retrieval` | Quota Gemini gratuit de 100 embeddings par minute ; LangChain renvoie des vecteurs vides sans erreur ; conflit de port avec `n8n execute` ; D12 bloqué par l'anti-robot de PMC | Lots de 6 pages + pause de 60 s ; Qdrant rejette les vecteurs vides ; `N8N_RUNNERS_BROKER_PORT=5690` ; D12 à télécharger à la main | à faire : capture du workflow d'ingestion |
 | 2026-10-17 | PDF du corpus sortis de git + commit ; corrections (`corpus.md` n° 7, credential Qdrant) ; `${QDRANT_API_KEY:?…}` ; D12 ajouté ; WF00 : nettoyage avant découpage ; `test-retrieval` en FR et en EN ; réingestion (187 chunks) ; retrieval : 5/5 pertinents en FR, 4 + 1 partiel en EN, plus de bibliographie (contre 2/5 au 30/09) | D12 toujours en 403 ; exposants pdf.js confondus avec les indices ; mots composés pris pour des césures ; tableaux de D12 après les références ; l'export n8n contient le nom et l'e-mail du propriétaire | PDF déposé à la main ; recollage selon le contexte (symbole court, vocabulaire du document) ; coupe arrêtée au premier tableau ou à la première figure ; export ciblé des 2 workflows, sans le bloc `shared` | à faire : capture de WF00 avec le nœud de nettoyage |
 | 2026-10-17 | `chunk_id` (SHA-1 du texte) ajouté aux 187 points par `set_payload` + index, et intégré en fin de WF00 ; `prompts/sections.json` (requêtes anglaises fixes, 9 sections) ; stratégie de récupération de WF10 (multi-requêtes, plafond de 2 par document, requête « contre ») ; référence D12 confirmée par Crossref ; export par `n8n/exporter.sh` | Sous-workflow inutilisable depuis la CLI sans publication ; l'export `--backup` exposait le nom et l'e-mail | Nœuds intégrés à WF00, testés via une variante temporaire (même ID) ; export ciblé sans bloc `shared`, avec arrêt s'il reste un e-mail | à faire : capture de WF00 (nettoyage + `chunk_id`) |
+| 2026-10-21 | Plan v2 « rapide » : corpus figé à 4 documents, juge Claude supprimé, 2 workflows + script d'évaluation (`pipeline.md` réécrit, v1 dans git `28e7b16`) | Délai serré (date limite probable 02/11) | Périmètre réduit, sections pauvres assumées comme résultat du garde-fou | — |
+| 2026-10-21 | Consignes exactes du sujet 2 intégrées (`CLAUDE.md` § 2) ; plan v2 minimale : RAG + garde-fous en signalement seul + relecteur sans correction + baseline + évaluation humaine ; liste des limites et pistes v2 (`pipeline.md` § 5) | Délai serré | Ne garder que ce que les consignes exigent | — |

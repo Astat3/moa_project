@@ -1,4 +1,6 @@
 # Corpus documentaire — v0 (option B)
+> ⚠️ **21/10/2026, plan v2** : le corpus du pipeline est **figé à D06, D07, D09 et D12**. Le reste de cette liste n'est plus ingéré : il sert de piste pour la critique des résultats et pour la section « Limites » du rapport.
+
 Position du groupe : **POUR**. Le corpus contient **volontairement** des documents « contre » : l'argumentaire doit les réfuter, et l'agent examinateur doit pouvoir s'en servir.
 
 **Légende du statut** : ✅ existence, auteur et année vérifiés en ligne · 🟡 document identifié mais détails (auteurs, volume, pages) à confirmer · 📥 texte intégral à récupérer
