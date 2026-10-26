@@ -173,8 +173,8 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2. Constitution du corpus | ✅ figé à 4 documents (D06, D07, D09, D12), plan v2 |
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
 | 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4/G5 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout, 34 s, 0 paragraphe signalé. **Étape 2a (26/10)** : boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections, G5, délai de 600 s. Essai éthique + réglementaire + conclusion : réglementaire rédigé, éthique et conclusion en 503 (API saturée, signalés par G1). **Étape 3 prête (26/10 au soir, non exécutée)** : relecteur option A, relance unique sur 429/5xx, G5 élargi ; tous les chemins testés avec un rédacteur et un relecteur simulés. Reste : exécution du 27/10 avec accord, puis comparaison avec la relecture humaine ; exécution complète seulement avec accord |
-| 5. Baseline (`50-baseline`) | ⚪ |
-| 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | ⚪ |
+| 5. Baseline (`50-baseline`) | 🟡 prête le 26/10 (prompt `baseline_v1.md`, mode JSON, relance unique), testée avec un appel simulé ; à exécuter le 28/10 dans l'exécution finale |
+| 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | 🟡 script prêt le 26/10 (métriques, 15 affirmations dans `eval_humaine_juge1/2.csv`, `references_baseline.csv`, kappa vérifié à la main), testé sur les sorties du 21/10 et du 26/10. Reste : exécution sur la sortie finale, évaluation humaine (2 membres), vérification des références de la baseline |
 | 7. Rapport écrit | ⚪ |
 | 8. Oral | ⚪ |
 
