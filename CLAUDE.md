@@ -126,6 +126,8 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-26 | **Relance unique explicite** (429 ou 5xx → *Wait* 60 s → copie du nœud HTTP) pour les sections, la conclusion et le relecteur. Délai dépassé : pas de relance, signalement G1 (nœud en « continuer après erreur »). Tentatives dans `verif` et `runs.jsonl`. « Retry On Fail » écarté | Le moteur de n8n plafonne l'attente à 5 s, ne relance pas un 503 reçu en « ne jamais lever d'erreur », et ne trace pas les tentatives. Test du 26/10 : l'objet d'erreur de « continuer après erreur » ne contient pas la clé |
 | 2026-10-26 | **Grille du relecteur** : + « affirmations non soutenues par les chunks cités », + « liens et chronologie entre sources (années des documents) » ; prompt `relecteur_v1.md` | Exploiter les entrées de l'option A |
 | 2026-10-26 | **Boîte aux lettres `echanges/`** (rapport de Claude Code, consignes de la revue) ; en-tête `x-goog-api-key` non retenu ; **protocole corrigé** de comparaison avec le relecteur : liste de défauts de référence écrite par Claude, puis validée défaut par défaut par un membre du groupe avant l'appariement | La liste de Claude seule ne mesurerait que l'accord entre deux LLM |
+| 2026-10-26 | Choix de la baseline (relance, mode JSON, interdiction d'inventer des références, mêmes règles que le rédacteur hors corpus) et de l'évaluation (phrase = affirmation, deux fichiers d'évaluateurs, définition de `PARTIEL`, texte des chunks dans `verif`) **validés** | Consignes de 21 h 15 |
+| 2026-10-26 | **Règle d'arrêt dans le workflow** (option A) : paramètres `arret_premier_appel` (activée) et `seuil_premier_appel_s` (180) ; premier appel seulement ; ligne `statut: arrete` dans `runs.jsonl`, puis *Stop and Error* | `n8n execute` n'affiche rien avant la fin ; un arrêt doit rester visible ; une lenteur passagère plus tard ne doit pas faire perdre l'exécution finale |
 | 2026-10-26 | **Échéance : pipeline prêt le 28/10 après-midi.** Essai le 27/10, exécution finale officielle le 28/10, puis gel des prompts, de G5 et des workflows | Le rapport et l'oral viennent ensuite |
 
 ## 6. Questions ouvertes / à trancher
@@ -142,7 +144,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - [x] Référence de D12 : 83(3):e00254, confirmé par Crossref (17/10)
 - [ ] **Essai du 27/10 après 8 h, avec le feu vert d'Adam** :
   - technique + éthique + réglementaire + conclusion + relecteur, soit 5 appels de chat (10 au plus avec les relances) ; paramètres déjà réglés ;
-  - règle d'arrêt : si le premier appel dépasse 3 min ou échoue malgré la relance, on arrête et on réessaie dans l'heure ;
+  - règle d'arrêt : si le premier appel dépasse 3 min ou échoue malgré la relance, on arrête et on réessaie dans l'heure. Elle est appliquée automatiquement par le workflow et testée par simulation le 26/10 ;
   - ensuite, comparaison avec le relecteur selon le protocole corrigé (`pipeline.md` § 3).
 - [ ] **Exécution finale officielle le 28/10 après 8 h, avec le feu vert d'Adam** : toutes les sections, la conclusion, le relecteur et la baseline (11 appels), puis `eval/evaluer.py`, puis **gel**. Échéance : pipeline prêt le 28/10 après-midi
 - [x] Grille du relecteur : 2 critères ajoutés (26/10)

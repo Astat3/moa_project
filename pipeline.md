@@ -16,7 +16,7 @@ Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AH
 - **Le LLM n'écrit jamais une référence** : il cite des `chunk_id`, et la bibliographie vient de `corpus/meta.json`.
 - **Prompts versionnés** dans `prompts/` : `redacteur_v1.md`, `relecteur_v1.md`, `baseline_v1.md`, ainsi que `sections.json` (déjà fait). Ils seront reproduits en annexe.
 - **Pas de boucle** : ni régénération automatique, ni correction automatique. Les garde-fous et le relecteur **détectent et signalent**, sans corriger. C'est plus simple et plus lisible pour l'oral.
-- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels de chat et d'embeddings, **tentatives par section et pour le relecteur**, durée). La ligne est écrite à la fin, après le relecteur.
+- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels de chat et d'embeddings, **tentatives par section et pour le relecteur**, durée, `statut` : `termine` ou `arrete`). La ligne est écrite à la fin, après le relecteur, ou au moment d'un arrêt.
 - **Quotas Gemini du plan gratuit**, relevés le 26/10/2026 sur https://ai.dev/rate-limit. Remise à zéro quotidienne à minuit, heure du Pacifique : 8 h à Paris jusqu'au 01/11 inclus, 9 h à partir du 02/11 (fin de l'heure d'été américaine).
 
   | Modèle | Requêtes / min (RPM) | Tokens / min (TPM) | Requêtes / jour (RPD) |
@@ -85,6 +85,18 @@ Règles du prompt :
 | **G5 Formulations absolues** | liste de mots, élargie le 26/10 au-delà de la règle 7 de `redacteur_v1.md`. Termes signalés :<br>• « prouve » et « démontre » (et leurs formes) ;<br>• « toujours », « aucun risque » ;<br>• « robuste », « rigoureusement », « solide(s) », « incontestable » ;<br>• « garanti » (et ses formes) ;<br>• « certainement », et « certain » en emploi affirmatif (« est certain »), pas comme quantificateur (« certains patients »).<br>Les formes niées (« pas toujours », « non prouvé », « n'a pas été démontré ») ne sont pas signalées |
 
 Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire ; le détail va dans `verif_<run_id>.json`.
+
+**Règle d'arrêt** (consignes du 26/10/2026, option A) : c'est la seule exception au principe « signaler sans arrêter ». Elle est réglée dans le nœud Paramètres :
+- `arret_premier_appel` vaut `true` pour l'essai du 27/10 et pour l'exécution finale ;
+- `seuil_premier_appel_s` vaut 180 s.
+
+Fonctionnement :
+- La règle ne porte **que sur le premier appel** de l'exécution. Elle est vérifiée par le nœud des garde-fous, à sa première exécution.
+- Il y a arrêt si cet appel échoue malgré la relance (`echec`), ou s'il dure plus que le seuil (`delai`).
+- La durée est mesurée depuis le prompt, en retirant les 60 s d'attente de la relance. Ce calcul n'est valable que tant que l'attente reste à 60 s.
+- En cas d'arrêt : IF « Arrêt ? » → une ligne `runs.jsonl` avec `statut: arrete`, la raison, le détail, les appels consommés et les durées → nœud *Stop and Error*. Aucun autre fichier n'est écrit.
+- Un appel lent mais réussi, après le premier, n'arrête rien.
+- Testé par simulation, sans appel de chat : échec après relance → arrêt ; 3 s pour un seuil de 2 s → arrêt ; deuxième appel lent → exécution complète, `statut: termine`.
 
 **D.** *Wait* de 15 s (quota), puis section suivante.
 
@@ -195,7 +207,7 @@ Sortie : `outputs/metriques.csv`
 | | **Pipeline** | **≈ 6,5 h** |
 
 **Prochaine exécution, le 27/10 après 8 h, avec l'accord du groupe** : technique, éthique, réglementaire et conclusion (4 appels), puis le relecteur (1 appel). Cela fait 5 appels de chat, 10 au plus avec les relances, et 11 requêtes d'embeddings. Les paramètres sont déjà réglés dans `10-argumentaire`.
-- **Règle d'arrêt** : si le premier appel dépasse 3 minutes, ou renvoie un 503 malgré la relance, on arrête et on réessaie dans l'heure.
+- **Règle d'arrêt** : si le premier appel dépasse 3 minutes, ou renvoie un 503 malgré la relance, on arrête et on réessaie dans l'heure. Elle est appliquée automatiquement par le workflow (section 2, WF10 C), avec une ligne `statut: arrete` dans `runs.jsonl`.
 - Ensuite : comparaison avec le relecteur selon le protocole corrigé (section 3) ; la validation par le groupe peut se faire le 27/10 au soir.
 - Derniers correctifs éventuels, **sans toucher à la liste de G5**. Tout correctif de prompt passe par une validation d'Adam.
 
@@ -235,5 +247,6 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Une seule exécution | Variabilité des sorties non mesurée | 3 à 5 exécutions, stabilité des citations et des conclusions |
 | `task_type` des embeddings Gemini non utilisé, pas de MMR | Retrieval perfectible (compensé par plusieurs requêtes et un plafond par document) | Appel direct de l'API avec `RETRIEVAL_QUERY` / `RETRIEVAL_DOCUMENT`, reranking |
 | Évaluation humaine sur 15 affirmations | Faible puissance statistique | Échantillon plus large, évaluateurs externes (cliniciens) |
+| Affirmation (une phrase) jugée par rapport aux chunks de **son paragraphe**, et non de sa phrase : les citations sont données par paragraphe | Une phrase peut être jugée soutenue grâce à un chunk cité pour une autre phrase du paragraphe, ce qui surestime la fidélité | Citations par phrase dans le schéma du rédacteur, ou décomposition en faits atomiques (FActScore) |
 | Modèle Pro non utilisé : `gemini-3.1-pro` est fermé au plan gratuit (quota à 0, test du 21/10/2026) | Rédaction et relecture par un modèle Flash (`gemini-3.8-flash`) | Modèle Pro (offre payante), à comparer sur les mêmes sections |
 | API externe (Gemini) pour le LLM et les embeddings | Envoi du texte du corpus (publications, pas de données patients) à un fournisseur hors UE | Modèle local (Ollama) ou fournisseur européen sous contrat |
