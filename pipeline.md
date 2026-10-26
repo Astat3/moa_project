@@ -7,7 +7,7 @@ Les versions précédentes sont dans git (v1 : commit `28e7b16`).
 | Consigne | Réponse minimale |
 |---|---|
 | **Pipeline IA de la revue de la littérature jusqu'au rapport structuré** | Revue **ciblée manuelle** (4 documents, critères dans `corpus.md`) → ingestion (WF00) → **RAG** : extraction automatique des passages pertinents par section (exemple « Système RAG » de la consigne) → rédaction par section avec citations → assemblage d'un argumentaire structuré + bibliographie |
-| **Contrôle qualité des résultats de l'IA** | (1) **Références vérifiées par construction** : le LLM cite des `chunk_id`, la bibliographie est générée par le code (exemple « vérification de références » de la consigne) ; (2) **garde-fous automatiques** G1 structure, G2 citations, G4 chiffres ; (3) **agent relecteur** (un appel LLM, rapport de relecture) ; (4) **évaluation humaine** sur échantillon avec kappa ; (5) **comparaison avec une baseline** (LLM seul) |
+| **Contrôle qualité des résultats de l'IA** | (1) **Références vérifiées par construction** : le LLM cite des `chunk_id`, la bibliographie est générée par le code (exemple « vérification de références » de la consigne) ; (2) **garde-fous automatiques** G1 structure, G2 citations, G4 chiffres, G5 formulations absolues ; (3) **agent relecteur** (un appel LLM, rapport de relecture) ; (4) **évaluation humaine** sur échantillon avec kappa ; (5) **comparaison avec une baseline** (LLM seul) |
 | **Critiquer les résultats** | Tableau de métriques pipeline vs baseline, exemples d'échecs (paragraphes signalés, références inventées par la baseline), limites (section 5) |
 
 Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AHA), déjà ingérés (187 chunks avec `chunk_id`). **Aucune nouvelle ingestion.**
@@ -16,8 +16,17 @@ Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AH
 - **Le LLM n'écrit jamais une référence** : il cite des `chunk_id`, et la bibliographie vient de `corpus/meta.json`.
 - **Prompts versionnés** dans `prompts/` : `redacteur_v1.md`, `relecteur_v1.md`, `baseline_v1.md`, ainsi que `sections.json` (déjà fait). Ils seront reproduits en annexe.
 - **Pas de boucle** : ni régénération automatique, ni correction automatique. Les garde-fous et le relecteur **détectent et signalent**, sans corriger. C'est plus simple et plus lisible pour l'oral.
-- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels, durée).
-- **Quota Gemini (chat)** : un *Wait* entre deux appels (60 / RPM, plus une marge). Une exécution complète fait environ 12 appels.
+- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels de chat et d'embeddings, durée).
+- **Quotas Gemini du plan gratuit**, relevés le 26/10/2026 sur https://ai.dev/rate-limit. Remise à zéro quotidienne à minuit, heure du Pacifique : 8 h à Paris jusqu'au 01/11 inclus, 9 h à partir du 02/11 (fin de l'heure d'été américaine).
+
+  | Modèle | Requêtes / min (RPM) | Tokens / min (TPM) | Requêtes / jour (RPD) |
+  |---|---|---|---|
+  | `gemini-3.8-flash` (rédacteur, relecteur, baseline) | 5 | 250 000 | **20** |
+  | `gemini-embedding-001` (ingestion, requêtes de recherche) | 100 | 30 000 | 1 000 |
+
+  - *Wait* de **15 s** entre deux appels de chat (60 s / 5 RPM = 12 s, plus une marge).
+  - Une exécution complète de `10-argumentaire` fait **9 appels de chat** (8 sections + conclusion) et 28 requêtes d'embeddings. Avec le relecteur et la baseline : **11 appels de chat**, plus de la moitié du quota du jour.
+  - Donc : les essais portent sur 1 ou 2 sections (paramètre en tête de `10-argumentaire`), **aucune exécution complète sans l'accord du groupe**, et l'exécution finale officielle se fait un jour où le quota est entier (section 4).
 - Rédaction en **français** ; requêtes de recherche fixes en **anglais** (`sections.json`).
 
 ## 2. Workflows n8n
@@ -41,10 +50,8 @@ Manual Trigger → lecture de `meta.json` → *Split Out* (un item par document)
 
 Statut : **terminé**, à ne plus modifier sauf en cas de bug.
 
-Statut : **terminé**, à ne plus modifier sauf en cas de bug.
-
 ### WF10 — `10-argumentaire` (un seul workflow)
-Manual Trigger → lecture de `prompts/sections.json` et de `corpus/meta.json` → *Loop Over Items* sur les sections (hors conclusion), avec pour chaque section :
+Manual Trigger → **Paramètres** (nœud en tête : modèle et **liste des sections à générer**, pour déboguer sur 1 ou 2 sections ; décision du 26/10/2026) → lecture de `prompts/sections.json` et de `corpus/meta.json` → *Loop Over Items* sur les sections (hors conclusion), avec pour chaque section :
 
 **A. Récupération dans Qdrant** (paramètres dans `prompts/sections.json`, décision du 17/10/2026) :
    - **2 ou 3 requêtes par section** (angles différents), **en anglais** comme le corpus, **fixes** (pas d'appel au LLM pour les formuler) ; la rédaction reste en français ;
@@ -71,14 +78,19 @@ Règles du prompt :
 | **G1 Structure** | JSON valide, champs présents, au moins un paragraphe |
 | **G2 Citations** | chaque `chunk_id` cité fait partie des chunks récupérés ; un paragraphe sans citation déclenche une alerte |
 | **G4 Chiffres** | chaque nombre ou pourcentage d'un paragraphe figure dans un chunk qu'il cite |
+| **G5 Formulations absolues** | aucune formulation interdite par la règle 7 de `redacteur_v1.md` : « prouve » et ses formes (prouvé, prouvent…), « toujours », « aucun risque ». Simple liste de mots, sans analyse du contexte |
 
 Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire ; le détail va dans `verif_<run_id>.json`.
 
-**D.** *Wait* (quota), puis section suivante.
+**D.** *Wait* de 15 s (quota), puis section suivante.
 
 **Conclusion** : un appel au rédacteur avec les sections déjà générées, sans nouvelle recherche, et un parti pris POUR clair. Il ne peut citer que des `chunk_id` déjà utilisés (G1 + G2).
 
-**Relecteur** : un appel Gemini, prompt distinct `relecteur_v1.md`. Il reçoit l'argumentaire assemblé et la consigne.
+**Relecteur** (option A, décision du 26/10/2026) : **un seul appel** Gemini, prompt distinct `relecteur_v1.md`. Il reçoit :
+- l'argumentaire assemblé ;
+- la consigne ;
+- le texte des chunks cités ;
+- l'année de chaque document (depuis `meta.json`).
 
 Grille :
 - conformité à la structure ;
@@ -107,7 +119,7 @@ Sortie : `outputs/metriques.csv`
 | Sections imposées présentes | | | auto |
 | Références existantes et correctes | 100 % par construction | **vérification manuelle de chaque référence** | manuel |
 | Paragraphes avec au moins une citation | | | auto |
-| Paragraphes signalés `⚠` (G2/G4) | | non applicable | auto |
+| Paragraphes signalés `⚠` (G2/G4/G5) | | non applicable | auto |
 | `[INFORMATION NON DISPONIBLE]` | | | auto |
 | Problèmes relevés par le relecteur, par gravité | | non applicable | auto |
 | Nombre d'appels, durée | | | auto |
@@ -129,6 +141,8 @@ Sortie : `outputs/metriques.csv`
 | 6 | Évaluation humaine (groupe) | 0,75 h |
 | | **Pipeline** | **≈ 6,5 h** |
 
+**Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Elle consomme 11 appels sur 20, ce qui laisse une marge pour une seule relance en cas d'erreur 429 ou 5xx. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
+
 Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal de `implémentation.md`.
 
 **À garder pour le rapport et l'oral** :
@@ -146,7 +160,8 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Recherche bibliographique automatisée (équations générées par LLM, PubMed / Europe PMC, screening des abstracts) | Revue ciblée manuelle, non exhaustive, avec un biais de sélection possible | Workflow de recherche PubMed + screening par double LLM, avec arbitre (exemple « multi-agents » de la consigne) + diagramme PRISMA |
 | Corpus de 4 documents (au lieu des ~20 identifiés dans `corpus.md`) | Sections éthique, socio-économique et réglementaire pauvres ; un seul document « contre » | Ingérer le corpus complet (quota d'embeddings, idempotence de l'ingestion) |
 | Système multi-agents (2 rédacteurs + superviseur) | Un seul point de vue de génération | 2 rédacteurs de modèles différents + arbitre en cas de discordance |
-| Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
+| Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
+| Détection des formulations absolues (G5) par une simple liste de mots, sans analyse du contexte | Faux positifs : « pas toujours », formule prudente, est signalée. Faux négatifs : « outil de repérage robuste et rigoureusement validé » (exécution du 21/10) passe | Repérage par le relecteur, ou classifieur de sur-affirmations |
 | Boucle de régénération après garde-fous et correction après relecture | Les défauts sont signalés, pas corrigés | Boucle bornée (2 itérations) + comparaison avant / après |
 | Relecteur de la même famille de modèle que le rédacteur | Risque de complaisance | Relecteur d'un autre fournisseur |
 | Une seule exécution | Variabilité des sorties non mesurée | 3 à 5 exécutions, stabilité des citations et des conclusions |

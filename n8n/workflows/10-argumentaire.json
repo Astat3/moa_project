@@ -171,7 +171,7 @@
     },
     {
       "id": "d0000000-0000-4000-8000-000000000010",
-      "name": "Garde-fous G1 G2 G4",
+      "name": "Garde-fous G1 G2 G4 G5",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -179,7 +179,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// G1 structure, G2 citations, G4 chiffres : détection et signalement seulement, sans nouvelle tentative (pipeline.md, WF10 C).\nconst MARQUEUR = '[INFORMATION NON DISPONIBLE DANS LE CORPUS]';\nconst { section, chunks, stats } = $('Sélection des chunks').first().json;\nconst recuperes = new Map(chunks.map((c) => [c.chunk_id, c]));\nconst r = $json;\n\n// G1 : appel réussi, JSON valide, champs présents, au moins un paragraphe.\nconst g1 = [];\nlet sortie = null;\nif (r.statusCode !== 200) {\n  g1.push(`appel Gemini en échec (HTTP ${r.statusCode}) : ${r.body?.error?.message ?? ''}`);\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { sortie = JSON.parse(texte); } catch { g1.push(\"la réponse n'est pas du JSON valide\"); }\n}\nif (sortie && (!Array.isArray(sortie.paragraphes) || sortie.paragraphes.length === 0)) g1.push('aucun paragraphe');\nif (sortie && !Array.isArray(sortie.contre_arguments_traites)) g1.push('champ contre_arguments_traites absent');\n\n// G4 : nombres comparés après normalisation (virgule décimale française, séparateurs de milliers).\nconst nombres = (s) => [...new Set(s\n  .replace(/\\b[A-Z]\\d{2}-[0-9a-f]{8}\\b/g, '')\n  .replace(/(\\d)[\\s  ](?=\\d{3}\\b)/g, '$1')\n  .replace(/(\\d),(\\d)/g, '$1.$2')\n  .match(/\\d+(?:\\.\\d+)?/g) ?? [])];\nconst normSource = (s) => s.replace(/(\\d),(?=\\d{3}\\b)/g, '$1');\nconst present = (n, textes) => textes.some((t) => new RegExp(`(?<![\\\\d.])${n.replace('.', '\\\\.')}(?!\\\\d|\\\\.\\\\d)`).test(normSource(t)));\n\nconst paragraphes = (sortie?.paragraphes ?? []).map((par) => {\n  const alertes = [];\n  const citations = par.citations ?? [];\n  // G2 : chaque chunk_id cité doit faire partie des chunks récupérés ; un paragraphe factuel doit citer.\n  const inconnues = citations.filter((id) => !recuperes.has(id));\n  if (inconnues.length) alertes.push(`G2 : citation hors des chunks récupérés (${inconnues.join(', ')})`);\n  if (!citations.length && !par.texte.includes(MARQUEUR)) alertes.push('G2 : paragraphe sans citation');\n  const textesCites = citations.filter((id) => recuperes.has(id)).map((id) => recuperes.get(id).texte);\n  const absents = nombres(par.texte).filter((n) => !present(n, textesCites));\n  if (absents.length) alertes.push(`G4 : nombre(s) absent(s) des chunks cités (${absents.join(', ')})`);\n  return { texte: par.texte, citations, alertes };\n});\nconst contre = sortie?.contre_arguments_traites ?? [];\nconst alertes_section = contre.filter((id) => !recuperes.has(id)).map((id) => `G2 : contre-argument hors des chunks récupérés (${id})`);\nreturn [{ json: {\n  section, g1, alertes_section, paragraphes, contre_arguments_traites: contre, chunks, stats,\n  usage: r.body?.usageMetadata, version: r.body?.modelVersion,\n} }];"
+        "jsCode": "// G1 structure, G2 citations, G4 chiffres, G5 formulations absolues : détection et signalement seulement, sans nouvelle tentative (pipeline.md, WF10 C).\nconst MARQUEUR = '[INFORMATION NON DISPONIBLE DANS LE CORPUS]';\nconst { section, chunks, stats } = $('Sélection des chunks').first().json;\nconst recuperes = new Map(chunks.map((c) => [c.chunk_id, c]));\nconst r = $json;\n\n// G1 : appel réussi, JSON valide, champs présents, au moins un paragraphe.\nconst g1 = [];\nlet sortie = null;\nif (r.statusCode !== 200) {\n  g1.push(`appel Gemini en échec (HTTP ${r.statusCode}) : ${r.body?.error?.message ?? ''}`);\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { sortie = JSON.parse(texte); } catch { g1.push(\"la réponse n'est pas du JSON valide\"); }\n}\nif (sortie && (!Array.isArray(sortie.paragraphes) || sortie.paragraphes.length === 0)) g1.push('aucun paragraphe');\nif (sortie && !Array.isArray(sortie.contre_arguments_traites)) g1.push('champ contre_arguments_traites absent');\n\n// G4 : nombres comparés après normalisation (virgule décimale française, séparateurs de milliers).\nconst nombres = (s) => [...new Set(s\n  .replace(/\\b[A-Z]\\d{2}-[0-9a-f]{8}\\b/g, '')\n  .replace(/(\\d)[\\s  ](?=\\d{3}\\b)/g, '$1')\n  .replace(/(\\d),(\\d)/g, '$1.$2')\n  .match(/\\d+(?:\\.\\d+)?/g) ?? [])];\nconst normSource = (s) => s.replace(/(\\d),(?=\\d{3}\\b)/g, '$1');\nconst present = (n, textes) => textes.some((t) => new RegExp(`(?<![\\\\d.])${n.replace('.', '\\\\.')}(?!\\\\d|\\\\.\\\\d)`).test(normSource(t)));\n\n// G5 : formulations absolues interdites, reprises de la règle 7 de redacteur_v1.md (« prouve » et ses formes, « toujours », « aucun risque »).\nconst ABSOLUES = /(?<!\\p{L})(?:prouv\\p{L}*|toujours|aucun\\s+risque)(?!\\p{L})/giu;\nconst absolues = (s) => [...new Set((s.match(ABSOLUES) ?? []).map((m) => m.toLowerCase().replace(/\\s+/g, ' ')))];\n\nconst paragraphes = (sortie?.paragraphes ?? []).map((par) => {\n  const alertes = [];\n  const citations = par.citations ?? [];\n  // G2 : chaque chunk_id cité doit faire partie des chunks récupérés ; un paragraphe factuel doit citer.\n  const inconnues = citations.filter((id) => !recuperes.has(id));\n  if (inconnues.length) alertes.push(`G2 : citation hors des chunks récupérés (${inconnues.join(', ')})`);\n  if (!citations.length && !par.texte.includes(MARQUEUR)) alertes.push('G2 : paragraphe sans citation');\n  const textesCites = citations.filter((id) => recuperes.has(id)).map((id) => recuperes.get(id).texte);\n  const absents = nombres(par.texte).filter((n) => !present(n, textesCites));\n  if (absents.length) alertes.push(`G4 : nombre(s) absent(s) des chunks cités (${absents.join(', ')})`);\n  const formules = absolues(par.texte);\n  if (formules.length) alertes.push(`G5 : formulation absolue (${formules.map((f) => `« ${f} »`).join(', ')})`);\n  return { texte: par.texte, citations, alertes };\n});\nconst contre = sortie?.contre_arguments_traites ?? [];\nconst alertes_section = contre.filter((id) => !recuperes.has(id)).map((id) => `G2 : contre-argument hors des chunks récupérés (${id})`);\nreturn [{ json: {\n  section, g1, alertes_section, paragraphes, contre_arguments_traites: contre, chunks, stats,\n  usage: r.body?.usageMetadata, version: r.body?.modelVersion,\n} }];"
       }
     },
     {
@@ -192,7 +192,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Assemblage : chunk_id → [n, p. X] (n = numéro du document, dans l'ordre de première citation),\n// bibliographie générée depuis corpus/meta.json (jamais par le LLM), paragraphes signalés marqués ⚠.\n// Sorties : argumentaire_<run_id>.md, verif_<run_id>.json, une ligne ajoutée à runs.jsonl.\nconst prep = $('Préparer la section').first().json;\nconst sections = $input.all().map(({ json }) => json);\nconst numeros = new Map();\nconst renvoi = (citations, chunks) => {\n  const etiquettes = [...new Set(citations.map((id) => {\n    const c = chunks.find((x) => x.chunk_id === id);\n    if (!c) return '?';\n    if (!numeros.has(c.doc_id)) numeros.set(c.doc_id, numeros.size + 1);\n    return `${numeros.get(c.doc_id)}, p. ${c.page}`;\n  }))];\n  return etiquettes.length ? ` [${etiquettes.join(' ; ')}]` : '';\n};\nconst lignes = [\n  \"# Argumentaire : autorisation FDA de la notification d'hypertension de l'Apple Watch\",\n  '',\n  `Position : **POUR** · exécution \\`${prep.run_id}\\` · modèle \\`${prep.modele}\\` · prompt \\`redacteur_v1\\``,\n  '',\n  `> ⚠ : paragraphe signalé par les garde-fous (G2 citations, G4 chiffres). Détail dans \\`verif_${prep.run_id}.json\\`.`,\n  '',\n];\nfor (const s of sections) {\n  lignes.push(`## ${s.section.titre}`, '');\n  if (s.g1.length) lignes.push(`> ⚠ G1 : ${s.g1.join(' ; ')}`, '');\n  for (const p of s.paragraphes) lignes.push(`${p.alertes.length ? '⚠ ' : ''}${p.texte}${renvoi(p.citations, s.chunks)}`, '');\n}\nlignes.push('## Références', '');\nfor (const [doc, n] of numeros) {\n  const d = prep.meta.find((x) => x.doc_id === doc);\n  lignes.push(`${n}. ${d.reference} ${d.url}`);\n}\nconst paragraphes = sections.flatMap((s) => s.paragraphes);\nconst resume = {\n  paragraphes: paragraphes.length,\n  signales: paragraphes.filter((p) => p.alertes.length).length,\n  g1: sections.reduce((n, s) => n + s.g1.length, 0),\n};\nconst verif = {\n  run_id: prep.run_id, modele: prep.modele, resume,\n  sections: sections.map((s) => ({\n    id: s.section.id, g1: s.g1, alertes_section: s.alertes_section, selection: s.stats,\n    paragraphes: s.paragraphes, contre_arguments_traites: s.contre_arguments_traites,\n    chunks_recuperes: s.chunks.map(({ texte, ...c }) => c),\n  })),\n};\nconst run = {\n  run_id: prep.run_id, horodatage: $now.toISO(), workflow: '10-argumentaire',\n  modele: prep.modele, version_modele: sections[0]?.version,\n  prompts: ['redacteur_v1.md', 'sections.json v1'], sections: sections.map((s) => s.section.id),\n  appels: { chat: sections.length, embeddings: $('Préparer la section').all().length },\n  tokens: sections.map((s) => s.usage), duree_s: Math.round((Date.now() - prep.debut) / 1000), ...resume,\n};\nconst fichier = (nom, contenu, mimeType, ajout = false) => ({\n  json: { nom, ajout },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`argumentaire_${prep.run_id}.md`, lignes.join('\\n') + '\\n', 'text/markdown'),\n  fichier(`verif_${prep.run_id}.json`, JSON.stringify(verif, null, 2) + '\\n', 'application/json'),\n  fichier('runs.jsonl', JSON.stringify(run) + '\\n', 'application/x-ndjson', true),\n];"
+        "jsCode": "// Assemblage : chunk_id → [n, p. X] (n = numéro du document, dans l'ordre de première citation),\n// bibliographie générée depuis corpus/meta.json (jamais par le LLM), paragraphes signalés marqués ⚠.\n// Sorties : argumentaire_<run_id>.md, verif_<run_id>.json, une ligne ajoutée à runs.jsonl.\nconst prep = $('Préparer la section').first().json;\nconst sections = $input.all().map(({ json }) => json);\nconst numeros = new Map();\nconst renvoi = (citations, chunks) => {\n  const etiquettes = [...new Set(citations.map((id) => {\n    const c = chunks.find((x) => x.chunk_id === id);\n    if (!c) return '?';\n    if (!numeros.has(c.doc_id)) numeros.set(c.doc_id, numeros.size + 1);\n    return `${numeros.get(c.doc_id)}, p. ${c.page}`;\n  }))];\n  return etiquettes.length ? ` [${etiquettes.join(' ; ')}]` : '';\n};\nconst lignes = [\n  \"# Argumentaire : autorisation FDA de la notification d'hypertension de l'Apple Watch\",\n  '',\n  `Position : **POUR** · exécution \\`${prep.run_id}\\` · modèle \\`${prep.modele}\\` · prompt \\`redacteur_v1\\``,\n  '',\n  `> ⚠ : paragraphe signalé par les garde-fous (G2 citations, G4 chiffres, G5 formulations absolues). Détail dans \\`verif_${prep.run_id}.json\\`.`,\n  '',\n];\nfor (const s of sections) {\n  lignes.push(`## ${s.section.titre}`, '');\n  if (s.g1.length) lignes.push(`> ⚠ G1 : ${s.g1.join(' ; ')}`, '');\n  for (const p of s.paragraphes) lignes.push(`${p.alertes.length ? '⚠ ' : ''}${p.texte}${renvoi(p.citations, s.chunks)}`, '');\n}\nlignes.push('## Références', '');\nfor (const [doc, n] of numeros) {\n  const d = prep.meta.find((x) => x.doc_id === doc);\n  lignes.push(`${n}. ${d.reference} ${d.url}`);\n}\nconst paragraphes = sections.flatMap((s) => s.paragraphes);\nconst resume = {\n  paragraphes: paragraphes.length,\n  signales: paragraphes.filter((p) => p.alertes.length).length,\n  g1: sections.reduce((n, s) => n + s.g1.length, 0),\n};\nconst verif = {\n  run_id: prep.run_id, modele: prep.modele, resume,\n  sections: sections.map((s) => ({\n    id: s.section.id, g1: s.g1, alertes_section: s.alertes_section, selection: s.stats,\n    paragraphes: s.paragraphes, contre_arguments_traites: s.contre_arguments_traites,\n    chunks_recuperes: s.chunks.map(({ texte, ...c }) => c),\n  })),\n};\nconst run = {\n  run_id: prep.run_id, horodatage: $now.toISO(), workflow: '10-argumentaire',\n  modele: prep.modele, version_modele: sections[0]?.version,\n  prompts: ['redacteur_v1.md', 'sections.json v1'], sections: sections.map((s) => s.section.id),\n  appels: { chat: sections.length, embeddings: $('Préparer la section').all().length },\n  tokens: sections.map((s) => s.usage), duree_s: Math.round((Date.now() - prep.debut) / 1000), ...resume,\n};\nconst fichier = (nom, contenu, mimeType, ajout = false) => ({\n  json: { nom, ajout },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`argumentaire_${prep.run_id}.md`, lignes.join('\\n') + '\\n', 'text/markdown'),\n  fichier(`verif_${prep.run_id}.json`, JSON.stringify(verif, null, 2) + '\\n', 'application/json'),\n  fichier('runs.jsonl', JSON.stringify(run) + '\\n', 'application/x-ndjson', true),\n];"
       }
     },
     {
@@ -296,18 +296,7 @@
       "main": [
         [
           {
-            "node": "Garde-fous G1 G2 G4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Garde-fous G1 G2 G4": {
-      "main": [
-        [
-          {
-            "node": "Assemblage et fichiers",
+            "node": "Garde-fous G1 G2 G4 G5",
             "type": "main",
             "index": 0
           }
@@ -335,6 +324,17 @@
           }
         ]
       ]
+    },
+    "Garde-fous G1 G2 G4 G5": {
+      "main": [
+        [
+          {
+            "node": "Assemblage et fichiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -344,9 +344,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "b7efd147-ef40-45d9-ba2f-8f8048c515de",
+  "versionId": "443f203c-8642-472d-9e12-81ad18b25e94",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 2,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

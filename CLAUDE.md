@@ -57,21 +57,20 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - Validation du groupe par l'enseignant : **à faire / fait ?**
 - Date de l'oral : **à compléter** (fixée par l'administration)
 
-## 4. Architecture cible (v1, option B — détail dans `pipeline.md`)
+## 4. Architecture cible (v2 minimale, option B — détail dans `pipeline.md`)
 ```
-[Corpus choisi par le groupe : 15–20 PDF + meta.json]   (corpus.md)
+[Corpus figé : 4 PDF (D06, D07, D09, D12) + meta.json]   (corpus.md)
       │
- WF00 Ingestion : PDF → chunks → embeddings Gemini (`gemini-embedding-001`) → Qdrant (chunk_id, doc_id, versant, rôle)
+ WF00 Ingestion (terminé) : PDF → nettoyage → chunks → embeddings Gemini (`gemini-embedding-001`) → Qdrant (chunk_id, doc_id, versant, rôle)
       │
- WF10 Rédaction par section (Gemini) : citations obligatoires par chunk_id, contre-arguments forcés
+ 10-argumentaire : Paramètres (sections à générer) → pour chaque section (Loop + Wait 15 s) :
+      récupération multi-requêtes (sections.json) → rédacteur Gemini (HTTP, JSON) → garde-fous G1 G2 G4 G5 (signalement ⚠, sans correction)
+   → conclusion → assemblage : Markdown + bibliographie générée par le code depuis meta.json
+   → relecteur Gemini : liste de problèmes, sans correction
       │
- WF20 Garde-fous : G1 structure · G2 citations · G3 fidélité (juge Claude Haiku) · G4 chiffres  ──► régénération (2 fois max)
+ 50-baseline (Gemini seul, sans RAG)  ──►  eval/evaluer.py : métriques pipeline vs baseline + évaluation humaine (kappa)
       │
- WF30 Agent examinateur (Gemini) : liste de problèmes → 1 passe de correction
-      │
- WF40 Assemblage : Markdown + bibliographie générée par le code depuis meta.json → Pandoc → PDF
-      │
- WF50 Baseline (Gemini seul, sans RAG)  ──►  WF60 Évaluation : métriques pipeline vs baseline + évaluation humaine (kappa)
+ Pandoc → PDF (hors n8n)
 ```
 
 ### Stack technique pressentie
@@ -82,8 +81,8 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - **Vector store** : Qdrant
 - **LLM** : **API Gemini de Google** (clé créée dans Google AI Studio, plan gratuit). Remplace Mistral depuis le 2026-09-30 (voir section 5).
   - Credential n8n : **« Google Gemini(PaLM) API »**, host `https://generativelanguage.googleapis.com`. La clé est saisie **uniquement** dans ce credential, par l'utilisateur : jamais dans `.env`, un workflow exporté, un terminal ou une conversation. Claude Code ne la lit jamais.
-  - Génération : nœud *Google Gemini Chat Model*. Les ID de modèles disponibles et les **quotas du plan gratuit** (requêtes par minute et par jour, par modèle) se lisent dans Google AI Studio : ne pas les supposer, les reporter dans `pipeline.md`.
-  - Embeddings : nœud *Embeddings Google Gemini*, modèle **`gemini-embedding-001`** (texte seul ; 3 072 dimensions par défaut, 768 ou 1 536 possibles). **La dimension de la collection Qdrant doit être exactement celle produite par le nœud.** Changer de modèle d'embeddings (ex. `gemini-embedding-2`) impose de tout réindexer : espaces vectoriels incompatibles.
+  - Génération : nœud **HTTP Request** direct vers `generateContent` (credential Gemini de n8n, mode JSON avec schéma), modèle **`gemini-3.8-flash`** (choisi le 21/10, validé le 26/10). Quotas du plan gratuit (relevés le 26/10 sur https://ai.dev/rate-limit, détail dans `pipeline.md` § 1) : **5 RPM, 250 000 TPM, 20 RPD**, remise à zéro à minuit heure du Pacifique.
+  - Embeddings : nœud *Embeddings Google Gemini*, modèle **`gemini-embedding-001`** (texte seul ; 3 072 dimensions par défaut, 768 ou 1 536 possibles ; quotas : 100 RPM, 30 000 TPM, 1 000 RPD). **La dimension de la collection Qdrant doit être exactement celle produite par le nœud.** Changer de modèle d'embeddings (ex. `gemini-embedding-2`) impose de tout réindexer : espaces vectoriels incompatibles.
   - **Argument RGPD à reformuler pour l'oral** : Google est un fournisseur américain, l'argument « fournisseur européen » tombe. En revanche, pour les utilisateurs de l'EEE, les conditions des services payants s'appliquent aussi au quota gratuit : les prompts et réponses ne servent pas à améliorer les modèles (Gemini API Additional Terms of Service, à citer). Le corpus ne contient que des publications, aucune donnée patient.
   - Ollama reste optionnel.
 - **Claude (API Anthropic)** : une clé avec **environ 4 $ de crédit restant**, utilisable pour des tests. Même règle : clé saisie uniquement dans les *credentials* n8n.
@@ -117,13 +116,19 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-21 | **Modèle de chat : `gemini-3.8-flash`** (nom exact, pas l'alias `gemini-flash-latest`) | Test de fumée : seul modèle récent ouvert au plan gratuit ; `gemini-3.1-pro` a un quota à 0, `gemini-2.5-pro` n'est plus proposé |
 | 2026-10-21 | Rédacteur appelé par **HTTP Request** direct (`generateContent`, mode JSON avec schéma), au lieu du nœud *Google Gemini Chat Model* | Sortie JSON garantie, erreurs (429…) visibles, pas de relances cachées de LangChain |
 | 2026-10-21 | `./prompts` (lecture seule) et `./outputs` montés dans n8n ; `N8N_RESTRICT_FILE_ACCESS_TO` étendu (séparateur `;`) | Prompts versionnés lus par le workflow, sorties écrites dans le dépôt |
+| 2026-10-26 | Appel HTTP direct du rédacteur **validé** ; montages `prompts/` et `outputs/` validés | Voir le 21/10 |
+| 2026-10-26 | **`redacteur_v1` gardé jusqu'au bout**, sauf décision contraire | Ses défauts du 21/10 servent de matière à la critique des résultats |
+| 2026-10-26 | Quotas relevés (chat : 5 RPM, 250 000 TPM, 20 RPD ; embeddings : 100 RPM, 30 000 TPM, 1 000 RPD). *Wait* de 15 s entre deux appels de chat ; paramètre en tête de `10-argumentaire` listant les sections à générer ; nombre d'appels de chat dans `runs.jsonl` ; **jamais d'exécution complète sans accord** ; exécution finale officielle (sections, relecteur, baseline) un jour où le quota est entier | 11 appels de chat pour l'exécution finale, sur 20 par jour |
+| 2026-10-26 | **Relecteur, option A** : un seul appel ; il reçoit l'argumentaire, la consigne, le texte des chunks cités et l'année de chaque document (`meta.json`) | Permettre au relecteur de repérer les ajouts non sourcés et les liens inventés entre sources (aucun juge de fidélité) |
+| 2026-10-26 | **G5** ajouté aux garde-fous : formulations absolues interdites par la règle 7 de `redacteur_v1` (« prouve » et ses formes, « toujours », « aucun risque »), marquage ⚠ | Contrôle automatique, sans coût, d'une règle du prompt |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
 - [x] Offre Mistral : le plan Free ne permet pas d'activer de clé API → passage à l'API Gemini
-- [ ] Quotas du plan gratuit Gemini : embeddings = **100 par minute** (mesuré le 30/09, chaque texte d'un lot compte). **Quota journalier et quotas des modèles de chat encore inconnus** : la documentation ne donne plus les valeurs et renvoie à Google AI Studio. À relever et reporter dans `pipeline.md` §0
+- [x] Quotas du plan gratuit Gemini : relevés le 26/10 dans AI Studio et reportés dans `pipeline.md` § 1
+- [ ] Le 26/10, AI Studio affichait 309 requêtes d'embeddings et un RPM saturé, alors que n8n n'a rien exécuté depuis le 21/10 (historique et journal d'événements). Hypothèse : le graphique montre le pic d'une période, celui du 30/09 (deux ingestions de 153 chunks, dont une sans lots). À vérifier : la période choisie dans le graphique. Sinon, la clé sert ailleurs et il faut la renouveler
 - [x] Modèle Gemini du rédacteur, du relecteur et de la baseline : `gemini-3.8-flash` (21/10)
-- [ ] **RPM, RPD et TPM de `gemini-3.8-flash`** : à lire dans AI Studio (https://ai.dev/rate-limit). Non mesurés par rafale, pour ne pas entamer un quota journalier inconnu. Indispensables pour l'étape 2 (≈ 12 appels)
+- [x] **RPM, RPD et TPM de `gemini-3.8-flash`** : 5 RPM, 250 000 TPM, 20 RPD (26/10)
 - [x] Dimension des embeddings : **3 072**, imposée (le nœud n8n n'expose pas ce réglage) ; collection `moa_corpus` en 3 072, distance cosinus
 - [x] `chunk_id` : SHA-1 du texte, ajouté aux 187 points par `set_payload` + index (17/10)
 - [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
@@ -162,6 +167,8 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 ## 9. Conventions de travail avec Claude
 - Répondre en français, de façon directe et concrète.
 - **Aucune correction silencieuse** : signaler toute erreur (de fond, de lien, de structure) et attendre l'accord avant de corriger.
+- **Divergence avec la spec** (`pipeline.md`) : la signaler **et attendre l'accord** avant de la coder ; la signaler en la codant ne suffit pas (rappel du 26/10).
+- **Quota Gemini** (20 appels de chat par jour) : ne jamais lancer d'exécution complète de `10-argumentaire`, ni l'exécution finale (relecteur, baseline), sans l'accord de l'utilisateur. Les essais se font sur 1 ou 2 sections.
 - Ne pas signaler comme défauts les états transitoires du chantier.
 - Toute affirmation factuelle intégrée au rapport doit avoir une source vérifiée (les sources sont contrôlées au hasard par les enseignants).
 - Mettre à jour les sections 5, 6 et 8 à la fin de chaque session, et consigner l'étape dans `implémentation.md`.
