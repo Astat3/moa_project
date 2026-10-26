@@ -16,7 +16,7 @@ Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AH
 - **Le LLM n'écrit jamais une référence** : il cite des `chunk_id`, et la bibliographie vient de `corpus/meta.json`.
 - **Prompts versionnés** dans `prompts/` : `redacteur_v1.md`, `relecteur_v1.md`, `baseline_v1.md`, ainsi que `sections.json` (déjà fait). Ils seront reproduits en annexe.
 - **Pas de boucle** : ni régénération automatique, ni correction automatique. Les garde-fous et le relecteur **détectent et signalent**, sans corriger. C'est plus simple et plus lisible pour l'oral.
-- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels de chat et d'embeddings, durée).
+- **Traçabilité minimale** : une ligne par exécution dans `outputs/runs.jsonl` (run_id, horodatage, modèle, versions des prompts, nombre d'appels de chat et d'embeddings, **tentatives par section et pour le relecteur**, durée). La ligne est écrite à la fin, après le relecteur.
 - **Quotas Gemini du plan gratuit**, relevés le 26/10/2026 sur https://ai.dev/rate-limit. Remise à zéro quotidienne à minuit, heure du Pacifique : 8 h à Paris jusqu'au 01/11 inclus, 9 h à partir du 02/11 (fin de l'heure d'été américaine).
 
   | Modèle | Requêtes / min (RPM) | Tokens / min (TPM) | Requêtes / jour (RPD) |
@@ -25,7 +25,7 @@ Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AH
   | `gemini-embedding-001` (ingestion, requêtes de recherche) | 100 | 30 000 | 1 000 |
 
   - *Wait* de **15 s** entre deux appels de chat (60 s / 5 RPM = 12 s, plus une marge).
-  - Une exécution complète de `10-argumentaire` fait **9 appels de chat** (8 sections + conclusion) et 28 requêtes d'embeddings. Avec le relecteur et la baseline : **11 appels de chat**, plus de la moitié du quota du jour.
+  - Une exécution complète de `10-argumentaire` fait **10 appels de chat** (8 sections, conclusion, relecteur) et 28 requêtes d'embeddings. Avec la baseline : **11 appels de chat**, plus de la moitié du quota du jour. Chaque appel peut être relancé une fois (429 ou 5xx), donc 22 au pire.
   - Donc : les essais portent sur 1 ou 2 sections (paramètre en tête de `10-argumentaire`), **aucune exécution complète sans l'accord du groupe**, et l'exécution finale officielle se fait un jour où le quota est entier (section 4).
 - Rédaction en **français** ; requêtes de recherche fixes en **anglais** (`sections.json`).
 
@@ -61,7 +61,11 @@ Manual Trigger → **Paramètres** (nœud en tête : modèle et **liste des sect
    - pas de MMR : un plafond codé dans un nœud Code est déterministe et plus simple à expliquer.
    Pourquoi : au test du 17/10/2026, le top 5 venait d'un seul document (D12), et D06 (performances d'Apple) n'apparaissait pas.
 
-**B. Rédacteur** (Gemini, prompt `redacteur_v1.md`). Il reçoit la section, la consigne, la position POUR et les chunks avec leur `chunk_id`. Appel par un nœud **HTTP Request** direct à `generateContent` (credential Gemini de n8n), modèle **`gemini-3.8-flash`**, en **mode JSON avec schéma** (`responseMimeType` + `responseSchema`) ; réponse complète conservée même en cas d'erreur HTTP (429, 5xx…), pour que G1 la signale. Délai maximal de **600 s** par appel (180 s au départ, dépassé le 26/10). Un délai dépassé **arrête l'exécution** : le mode « continuer après erreur » de n8n renverrait l'objet d'erreur brut, sans masquer la requête, donc avec la clé. Il renvoie :
+**B. Rédacteur** (Gemini, prompt `redacteur_v1.md`). Il reçoit la section, la consigne, la position POUR et les chunks avec leur `chunk_id`. Appel par un nœud **HTTP Request** direct à `generateContent` (credential Gemini de n8n), modèle **`gemini-3.8-flash`**, en **mode JSON avec schéma** (`responseMimeType` + `responseSchema`) ; réponse complète conservée même en cas d'erreur HTTP (« ne jamais lever d'erreur »). Délai maximal de **600 s** par appel (180 s au départ, dépassé le 26/10).
+- **Relance unique** (décision du 26/10/2026) : IF « Relancer le rédacteur ? » (HTTP 429 ou 5xx) → *Wait* 60 s → « Rédacteur (2e tentative) » (copie du nœud HTTP) → garde-fous. Un second échec est signalé par G1. Le nombre de tentatives (1 ou 2) va dans `verif` et `runs.jsonl`. Le « Retry On Fail » de n8n ne convenait pas : attente plafonnée à 5 s par le moteur, pas de relance sur un 503 reçu en mode « ne jamais lever d'erreur », tentatives invisibles.
+- **Délai dépassé** : pas de relance, car après 600 s l'API est saturée. Le nœud est en « continuer après erreur », donc l'erreur est signalée par G1 sans arrêter l'exécution. Ce mode est sans risque : un test du 26/10 montre que l'objet d'erreur ne contient que le message et la cause, ni l'URL, ni les paramètres, ni les en-têtes. La clé n'y figure pas.
+
+Il renvoie :
 ```json
 {"section": "technique",
  "paragraphes": [{"texte": "...", "citations": ["D06-1a2b3c4d"]}],
@@ -78,7 +82,7 @@ Règles du prompt :
 | **G1 Structure** | JSON valide, champs présents, au moins un paragraphe |
 | **G2 Citations** | chaque `chunk_id` cité fait partie des chunks récupérés ; un paragraphe sans citation déclenche une alerte |
 | **G4 Chiffres** | chaque nombre ou pourcentage d'un paragraphe figure dans un chunk qu'il cite |
-| **G5 Formulations absolues** | aucune formulation interdite par la règle 7 de `redacteur_v1.md` : « prouve » et ses formes (prouvé, prouvent…), « toujours », « aucun risque ». Simple liste de mots, sans analyse du contexte |
+| **G5 Formulations absolues** | liste de mots, élargie le 26/10 au-delà de la règle 7 de `redacteur_v1.md`. Termes signalés :<br>• « prouve » et « démontre » (et leurs formes) ;<br>• « toujours », « aucun risque » ;<br>• « robuste », « rigoureusement », « solide(s) », « incontestable » ;<br>• « garanti » (et ses formes) ;<br>• « certainement », et « certain » en emploi affirmatif (« est certain »), pas comme quantificateur (« certains patients »).<br>Les formes niées (« pas toujours », « non prouvé », « n'a pas été démontré ») ne sont pas signalées |
 
 Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire ; le détail va dans `verif_<run_id>.json`.
 
@@ -100,17 +104,26 @@ Grille :
 - conformité à la structure ;
 - contre-arguments non traités ;
 - sur-affirmations ;
+- **affirmations non soutenues par les chunks cités** (ajout du 26/10) ;
+- **liens et chronologie entre sources, d'après les années des documents** (ajout du 26/10) ;
 - équilibre entre versants ;
 - clarté de la conclusion.
 
 Il renvoie une **liste de problèmes** en JSON (`{section, gravite: haute|moyenne|basse, probleme}`), **sans réécriture ni correction automatique**. Sortie : `relecture_<run_id>.json`.
+- Nœuds : Écrire dans `outputs/` → *Wait* 15 s → Prompt du relecteur → Relecteur (HTTP, mode JSON avec schéma) → même relance unique que le rédacteur (429 ou 5xx, *Wait* 60 s, « Relecteur (2e tentative) ») → Relecture et traces (`relecture_<run_id>.json` + ligne de `runs.jsonl`).
+- Les extraits lui sont donnés avec le même renvoi `[n, p. X]` que dans le Markdown, avec le document et son année.
+- Le prompt définit la gravité :
+  - haute : affirmation non soutenue, lien inventé, erreur ;
+  - moyenne : sur-affirmation, contre-argument non traité ;
+  - basse : structure, équilibre, clarté.
+- Le prompt demande de citer entre guillemets le passage en cause.
 
 **Assemblage** (nœud Code, avant le relecteur) :
 - les sections sont mises dans l'ordre de la consigne ;
 - les `chunk_id` deviennent des numéros [n] ;
 - la bibliographie est générée depuis `meta.json`.
 
-Sortie : `outputs/argumentaire_<run_id>.md`, plus une ligne dans `runs.jsonl`. La conversion en PDF se fait avec Pandoc, hors n8n.
+Sortie : `outputs/argumentaire_<run_id>.md` et `verif_<run_id>.json`, écrits avant le relecteur ; la ligne de `runs.jsonl` est écrite après lui. La conversion en PDF se fait avec Pandoc, hors n8n.
 
 ### WF50 — `50-baseline`
 Un seul appel Gemini, même modèle, même consigne, même structure, position POUR, prompt `baseline_v1.md`, **sans RAG ni garde-fous**. On lui demande de **citer ses sources**, pour pouvoir compter les références inventées. Sortie : `outputs/baseline_<run_id>.md`.
@@ -133,6 +146,11 @@ Sortie : `outputs/metriques.csv`
 - **2 membres du groupe** les jugent indépendamment : `SOUTENU`, `PARTIEL` ou `NON_SOUTENU` ;
 - le script calcule le **kappa de Cohen**. Compter environ 45 min.
 
+**Relecteur contre relecture humaine** (pour le rapport : « X défauts repérés sur Y ») :
+1. Relecture humaine des nouvelles sorties **avant** de lire `relecture_<run_id>.json`, pour ne pas être influencé. Elle part des défauts déjà relevés (technique le 21/10, réglementaire le 26/10), à revérifier sur le nouveau texte. Chaque défaut est noté avec le passage en cause et son type dans la grille. Les défauts invisibles pour le relecteur, comme « QXO » périmé, ne peuvent pas être repérés à partir des extraits : ils sont comptés à part.
+2. Appariement : un défaut est « repéré » si le relecteur cite le même passage avec un problème de même nature.
+3. Résultat : **X défauts repérés sur Y**, puis les problèmes que le relecteur ajoute, classés en défauts confirmés (manqués par la relecture humaine) et en fausses alertes. Ce n'est qu'une comparaison sur une exécution, sans valeur statistique.
+
 ## 4. Ordre de construction
 | # | Étape | Estimation |
 |---|---|---|
@@ -145,7 +163,9 @@ Sortie : `outputs/metriques.csv`
 | 6 | Évaluation humaine (groupe) | 0,75 h |
 | | **Pipeline** | **≈ 6,5 h** |
 
-**Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Elle consomme 11 appels sur 20, ce qui laisse une marge pour une seule relance en cas d'erreur 429 ou 5xx. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
+**Prochaine exécution, le 27/10 après 8 h, avec l'accord du groupe** : technique, éthique, réglementaire et conclusion (4 appels), puis le relecteur (1 appel). Cela fait 5 appels de chat, 10 au plus avec les relances, et 11 requêtes d'embeddings. Les paramètres sont déjà réglés dans `10-argumentaire`. Ensuite : comparaison relecteur contre relecture humaine (section 3).
+
+**Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Elle consomme 11 appels sur 20 sans relance. Avec les relances automatiques (une par appel au plus), le pire cas dépasse le quota : si plus de 9 relances sont nécessaires, il faut arrêter et reporter l'exécution. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
 
 Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal de `implémentation.md`.
 
@@ -165,8 +185,10 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Corpus de 4 documents (au lieu des ~20 identifiés dans `corpus.md`) | Sections éthique, socio-économique et réglementaire pauvres ; un seul document « contre » | Ingérer le corpus complet (quota d'embeddings, idempotence de l'ingestion) |
 | Système multi-agents (2 rédacteurs + superviseur) | Un seul point de vue de génération | 2 rédacteurs de modèles différents + arbitre en cas de discordance |
 | Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
-| Pas de relance ni de signalement par G1 quand un appel au rédacteur dépasse le délai ou échoue au niveau réseau | Toute l'exécution s'arrête, sans fichier de sortie (26/10 : plus de 180 s pour la section « éthique ») | Relance bornée, ou mode « continuer après erreur » avec un filtrage de l'objet d'erreur |
-| Détection des formulations absolues (G5) par une simple liste de mots, sans analyse du contexte | Faux positifs : « pas toujours », formule prudente, est signalée. Faux négatifs : « outil de repérage robuste et rigoureusement validé » (exécution du 21/10) passe | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| Une seule relance (429 ou 5xx), aucune après un délai dépassé | En cas de saturation durable de l'API (26/10 : 503 et un appel de 6 min 22 s), la section n'est pas rédigée ; elle est signalée par G1 | Relances espacées sur plusieurs minutes, ou offre payante |
+| Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Sur les sorties du 21/10 et du 26/10, G5 signale bien les sur-affirmations relevées en relecture (« robuste et rigoureusement validé », « principes solides », « garantissant ainsi », « démontrant la viabilité »). Mais le contexte reste ignoré : faux positifs possibles (« un argument solide ») et sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| Corpus figé dans une version donnée de chaque document | **Fidélité ≠ exactitude** : « code produit QXO » (26/10) est fidèle au chunk de D07, mais périmé (remplacé par SFR dans la correction administrative du 12/09, absente du corpus). Ni les garde-fous ni le relecteur, qui ne voient que les extraits, ne peuvent le repérer | Ingérer les versions corrigées ; vérification humaine des faits réglementaires ; version du document dans les métadonnées |
+| Pas de contrôle automatique des liens entre sources | **Défaut systématique** : le lien inventé AHA (déclaration de déc. 2025) → FDA (autorisation de sept. 2025) revient d'une exécution à l'autre (« pour répondre à ces exigences », 21/10 ; « l'autorisation répond à ces exigences », 26/10) | Années des documents données au rédacteur et règle explicite dans le prompt (`redacteur_v2`) ; repérage par le relecteur (option A) |
 | Boucle de régénération après garde-fous et correction après relecture | Les défauts sont signalés, pas corrigés | Boucle bornée (2 itérations) + comparaison avant / après |
 | Relecteur de la même famille de modèle que le rédacteur | Risque de complaisance | Relecteur d'un autre fournisseur |
 | Une seule exécution | Variabilité des sorties non mesurée | 3 à 5 exécutions, stabilité des citations et des conclusions |

@@ -160,7 +160,7 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
 - Validations : appel HTTP direct du rédacteur, montages `prompts/` et `outputs/`, `redacteur_v1` gardé jusqu'au bout (ses défauts servent à la critique). Quotas relevés par le groupe dans AI Studio (`pipeline.md` § 1) : `gemini-3.8-flash` à **20 appels par jour**, d'où un paramètre listant les sections à générer et l'interdiction de lancer une exécution complète sans accord.
 - **Contrôle de `moa_corpus`, sans ingestion** : 187 points (D06 22, D07 47, D09 59, D12 59), 187 `chunk_id` distincts, aucun point sans `chunk_id`, index `keyword` présent.
 - **309 requêtes d'embeddings affichées par AI Studio le 26/10, RPM saturé** : n8n n'a rien exécuté depuis le 21/10. La table des exécutions (rétention de 14 jours) et le journal d'événements ne montrent aucun lancement depuis cette date. Consommation du pipeline : 17/10 = 191 (ingestion de 187 chunks + 4 requêtes de test) ; 21/10 = 4 ; 26/10 = 0. Le 30/09 en revanche : deux ingestions de 153 chunks (la première sans lots, quota par minute dépassé), plus un diagnostic et une requête de test, soit environ 309. Hypothèse : le graphique affiche le pic d'une période, pas la journée. À confirmer par le groupe ; sinon la clé est utilisée ailleurs.
-- Incident : `10-argumentaire` a été archivé dans l'interface le 26/10 à 19 h 50, pendant la suppression de `zz-diag-gemini`. Réimporté (donc désarchivé) avec G5.
+- Incident : `10-argumentaire` a été archivé dans l'interface le 26/10 à 19 h 50, pendant la suppression de `zz-diag-gemini` (erreur de manipulation, confirmée par le groupe). Réimporté (donc désarchivé) avec G5.
 - **G5** testé hors ligne : « prouvé », « prouve », « prouvent », « toujours », « aucun risque » sont signalés ; « éprouvée », « approuvé », « improuvable » ne le sont pas. Limites : « pas toujours » (formule prudente) est signalé, et « outil robuste et rigoureusement validé » (21/10) passe. Aucun des 4 paragraphes du 21/10 n'aurait été signalé.
 - **Étape 2a, structure** (19 nœuds) : Paramètres → Lire → Préparer les sections → *Loop* (une section à la fois) : Requêtes → Qdrant → Sélection → Prompt → Rédacteur → Garde-fous G1 G2 G4 G5 → IF « Conclusion ? » → *Wait* 15 s → *Loop*. En sortie de boucle : IF « Conclusion demandée ? » → Chunks déjà cités → mêmes nœuds Prompt, Rédacteur et Garde-fous → Assemblage. Conclusion branchée après la boucle, choix du groupe.
 - **Test de la tuyauterie sans appel de chat** : variante de même ID avec un rédacteur simulé (nœud Code), sorties préfixées `test_` puis supprimées. Boucle, pauses, conclusion, G5 et assemblage vérifiés pour 7 requêtes d'embeddings et aucun appel de chat. Ensuite, réimport du vrai workflow.
@@ -180,6 +180,33 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - § 2 : « proscrit les algorithmes adaptatifs » durcit « does not include provisions for », et « validation stricte garantissant » durcit « such that the modified device remains as safe and effective ».
 - `version_modele` manquait dans `runs.jsonl` quand la première section échoue : corrigé (première version renvoyée).
 - Quota du 26/10 : au plus 4 appels de chat sur 20 (1 délai dépassé + 3). On ne sait pas si les 503 sont décomptés.
+
+**Soir du 26/10 : étape 3 préparée, rien n'est lancé**
+- **G5 élargi** (décision du groupe) :
+  - les 28 cas d'essai passent, hors ligne ;
+  - sur les sorties réelles, 6 paragraphes sur 9 sont signalés, tous à raison : « solides » et « démontré » (21/10 § 1), « démontrant la viabilité » (§ 3), « robuste », « rigoureusement » (§ 4), « garantissant » (26/10 §§ 1 et 2) ;
+  - aucun faux positif sur ces textes ;
+  - « pas toujours » n'est pas signalé ;
+  - correction en cours de test : « sans aucun risque » était pris pour une forme niée, à cause de « sans ». « Aucun risque » est maintenant signalé dans tous les cas.
+- **Relances** : « Retry On Fail » ne convenait pas. Le code du moteur montre que l'attente est plafonnée à `Math.min(5000, …)`, et que la relance ne se déclenche que sur une erreur levée ou un champ `error`. Un 503 reçu en « ne jamais lever d'erreur » n'est donc pas relancé, et les tentatives ne sont pas tracées. Le groupe a choisi une relance explicite : IF 429/5xx → *Wait* 60 s → copie du nœud HTTP. Elle s'applique aux sections, à la conclusion et au relecteur. Un délai dépassé n'est pas relancé : il est signalé par G1.
+- **Test des objets d'erreur** (workflow temporaire de même ID que `test-gemini`, exécution non sauvegardée, aucun appel de chat) :
+  - en « continuer après erreur », l'erreur ne contient que le message et la cause, pour un 404 avec la clé en paramètre, un délai dépassé, et un 400 avec une clé factice en en-tête ;
+  - aucune occurrence de `AIza` dans la sortie ;
+  - le code de n8n ne garde de la requête que l'URL (sans les paramètres), la méthode, le corps et les en-têtes, et le nœud HTTP ne renvoie ensuite que le message et la cause.
+
+  **Correction** : la phrase écrite plus tôt dans `pipeline.md` (« continuer après erreur » exposerait la clé) n'avait pas été vérifiée. Elle était fausse et a été remplacée.
+- **Clé en en-tête `x-goog-api-key`** (question du groupe, non codée) : c'est faisable, avec un credential *Header Auth* saisi par l'utilisateur et le nœud HTTP en « generic credential ». Mais ce n'est plus utile pour « continuer après erreur ». Inconvénients : un second credential qui contient la même clé, car le nœud d'embeddings garde le sien. Avantage : la clé ne passe plus dans l'URL, ce qui compte pour les journaux d'un proxy éventuel.
+- **Relecteur** :
+  - prompt `prompts/relecteur_v1.md` ;
+  - 11 nœuds ajoutés, 30 au total ;
+  - la ligne de `runs.jsonl` est écrite après le relecteur, avec les tentatives par section ;
+  - tous les chemins ont été testés avec un rédacteur et un relecteur simulés : technique 200 ; éthique 503 puis 200 ; réglementaire délai dépassé, signalé par G1 sans arrêt ; relecteur 503 puis 200 ;
+  - `runs.jsonl` donne 7 appels de chat, conformément au plan ;
+  - sorties `test_` supprimées.
+- Un seul `10-argumentaire` dans n8n (`MoaWf10Argumentaire`, non archivé) ; aucun workflow actif.
+- **Défauts de référence à revérifier sur les sorties du 27/10**, avant de lire la relecture :
+  - technique (21/10) : principes « solides » ; résultat d'une seule étude généralisé ; réserve « only three subjects » omise ; lien inventé AHA → étude d'Apple ; « suivi sur le long terme » non soutenu ; « robuste et rigoureusement validé » ; sensibilité de 41,2 % non discutée ; objections de l'AHA sans réponse ;
+  - réglementaire (26/10) : « garantissant ainsi un usage approprié » ; « l'autorisation répond à ces exigences » (lien inventé) ; « proscrit » et « validation stricte garantissant » durcissent la source ; « QXO » périmé, que le relecteur ne peut pas voir.
 
 ## Étape 5 — Garde-fous (WF20)
 - G1 structure · G2 citations ∈ chunks récupérés · G3 fidélité (juge Claude Haiku) · G4 chiffres présents dans la source
@@ -219,7 +246,12 @@ Protocole :
 - [ ] Graphical abstract (figure d'ouverture)
 - [ ] Description du pipeline et de la méthodologie
 - [ ] Contrôle qualité (méthodes citées)
-- [ ] Critique des résultats
+- [ ] Critique des résultats. Matière déjà relevée :
+  - « tout est vert » ne veut pas dire « tout est juste » : 0 paragraphe signalé le 21/10, malgré des distorsions relevées à la relecture ;
+  - **fidélité ≠ exactitude** : « code produit QXO » (26/10) est fidèle au chunk de D07, mais périmé, car le corpus contient la version d'avant la correction administrative du 12/09 (SFR) ;
+  - **défaut systématique** : le lien inventé AHA (déc. 2025) → FDA (sept. 2025) revient d'une exécution à l'autre (21/10 technique, 26/10 réglementaire) ;
+  - G5 version 1 (règle 7 seule) ne repérait aucun défaut réel. Après élargissement, il en repère 7, mais reste aveugle au contexte ;
+  - l'API saturée (503, appel de 6 min 22 s) est une limite pratique d'un service gratuit
 - [ ] Annexe : argumentaire généré + critères de sélection du corpus et équations de recherche manuelles + prompts
 
 ## Étape 10 — Oral (10 min + 10 min de questions)
@@ -262,3 +294,4 @@ Protocole :
 | 2026-10-21 | Étape 0 : test de fumée Gemini (`test-gemini`) → `gemini-3.8-flash` retenu (Pro fermé au plan gratuit). Étape 1 : `10-argumentaire` sur la section « technique » de bout en bout, premier Markdown (`outputs/argumentaire_20261021-165636.md`), 0 paragraphe signalé ; `./prompts` et `./outputs` montés dans n8n ; prompt `redacteur_v1.md` | RPM inconnu (test en rafale risqué) ; clé Gemini en paramètre d'URL ; distorsions qualitatives invisibles pour G1, G2 et G4 | RPM à lire dans AI Studio ; appels HTTP sans erreur levée + contrôle des sorties ; relecteur et évaluation humaine pour la fidélité | à faire : capture de `10-argumentaire` |
 | 2026-10-26 | Reprise : validations du 21/10 (HTTP direct, `redacteur_v1` gardé) ; quotas Gemini dans `pipeline.md` (chat : 5 RPM, 20 RPD) ; contrôle de `moa_corpus` (187 points, 0 doublon) ; relecteur option A (spec) ; **G5** formulations absolues ; `CLAUDE.md` § 4 en v2 ; exécution finale planifiée un jour de quota entier | 309 requêtes d'embeddings affichées alors que n8n n'a rien exécuté depuis le 21/10 ; `10-argumentaire` archivé par erreur | Hypothèse du pic du 30/09, à vérifier dans AI Studio ; workflow réimporté | — |
 | 2026-10-26 | Étape 2a : `10-argumentaire` avec boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections en tête, G5 ; tuyauterie testée avec un rédacteur simulé ; essai éthique + réglementaire + conclusion (`outputs/argumentaire_20261026-201619.md`) : réglementaire rédigé (2 paragraphes cités + 3 `[INFORMATION NON DISPONIBLE]`), éthique et conclusion en 503 | API Gemini saturée (« high demand ») : premier appel au-delà de 180 s, un appel réussi en 6 min 22 s ; « continuer après erreur » exposerait la clé ; nouveau lien inventé entre AHA et FDA, invisible pour G1 à G5 | Délai porté à 600 s ; les 503 sont signalés par G1 sans arrêt ; relance d'éthique et de la conclusion à prévoir ; défaut gardé pour la critique | à faire : capture de `10-argumentaire` (boucle) |
+| 2026-10-26 | Étape 3 préparée (rien lancé) : relecteur option A (`relecteur_v1.md`, grille + 2 critères) ; relance unique sur 429/5xx (*Wait* 60 s) pour les sections, la conclusion et le relecteur ; délai dépassé signalé par G1 ; G5 élargi (négations, « certain » affirmatif) ; tentatives dans `runs.jsonl` ; paramètres réglés pour le 27/10 (technique, éthique, réglementaire, conclusion + relecteur = 5 appels) | « Retry On Fail » inadapté (5 s au plus, pas de relance sur un 503 en « ne jamais lever d'erreur ») ; affirmation non vérifiée sur la fuite de clé dans les erreurs | Relance explicite dans le graphe ; test des objets d'erreur : pas de clé, affirmation corrigée ; tous les chemins testés avec des appels simulés | à faire : capture de `10-argumentaire` (relances + relecteur) |

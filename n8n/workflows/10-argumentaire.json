@@ -29,7 +29,7 @@
       ],
       "parameters": {
         "operation": "read",
-        "fileSelector": "/home/node/{prompts/sections.json,prompts/redacteur_v1.md,corpus/meta.json}",
+        "fileSelector": "/home/node/{prompts/sections.json,prompts/redacteur_v1.md,prompts/relecteur_v1.md,corpus/meta.json}",
         "options": {}
       }
     },
@@ -154,7 +154,8 @@
           "id": "dnEq1coathu1PnvB",
           "name": "Google Gemini(PaLM) Api account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "id": "d0000000-0000-4000-8000-000000000010",
@@ -162,11 +163,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2640,
+        3080,
         200
       ],
       "parameters": {
-        "jsCode": "// G1 structure, G2 citations, G4 chiffres, G5 formulations absolues : détection et signalement seulement, sans nouvelle tentative (pipeline.md, WF10 C).\nconst MARQUEUR = '[INFORMATION NON DISPONIBLE DANS LE CORPUS]';\nconst { section, chunks, stats } = $('Prompt du rédacteur').first().json;\nconst recuperes = new Map(chunks.map((c) => [c.chunk_id, c]));\nconst r = $json;\n\n// G1 : appel réussi, JSON valide, champs présents, au moins un paragraphe.\nconst g1 = [];\nlet sortie = null;\nif (r.statusCode !== 200) {\n  g1.push(`appel Gemini en échec (HTTP ${r.statusCode}) : ${r.body?.error?.message ?? ''}`);\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { sortie = JSON.parse(texte); } catch { g1.push(\"la réponse n'est pas du JSON valide\"); }\n}\nif (sortie && (!Array.isArray(sortie.paragraphes) || sortie.paragraphes.length === 0)) g1.push('aucun paragraphe');\nif (sortie && !Array.isArray(sortie.contre_arguments_traites)) g1.push('champ contre_arguments_traites absent');\n\n// G4 : nombres comparés après normalisation (virgule décimale française, séparateurs de milliers).\nconst nombres = (s) => [...new Set(s\n  .replace(/\\b[A-Z]\\d{2}-[0-9a-f]{8}\\b/g, '')\n  .replace(/(\\d)[\\s  ](?=\\d{3}\\b)/g, '$1')\n  .replace(/(\\d),(\\d)/g, '$1.$2')\n  .match(/\\d+(?:\\.\\d+)?/g) ?? [])];\nconst normSource = (s) => s.replace(/(\\d),(?=\\d{3}\\b)/g, '$1');\nconst present = (n, textes) => textes.some((t) => new RegExp(`(?<![\\\\d.])${n.replace('.', '\\\\.')}(?!\\\\d|\\\\.\\\\d)`).test(normSource(t)));\n\n// G5 : formulations absolues interdites, reprises de la règle 7 de redacteur_v1.md (« prouve » et ses formes, « toujours », « aucun risque »).\nconst ABSOLUES = /(?<!\\p{L})(?:prouv\\p{L}*|toujours|aucun\\s+risque)(?!\\p{L})/giu;\nconst absolues = (s) => [...new Set((s.match(ABSOLUES) ?? []).map((m) => m.toLowerCase().replace(/\\s+/g, ' ')))];\n\nconst paragraphes = (sortie?.paragraphes ?? []).map((par) => {\n  const alertes = [];\n  const citations = par.citations ?? [];\n  // G2 : chaque chunk_id cité doit faire partie des chunks récupérés ; un paragraphe factuel doit citer.\n  const inconnues = citations.filter((id) => !recuperes.has(id));\n  if (inconnues.length) alertes.push(`G2 : citation hors des chunks récupérés (${inconnues.join(', ')})`);\n  if (!citations.length && !par.texte.includes(MARQUEUR)) alertes.push('G2 : paragraphe sans citation');\n  const textesCites = citations.filter((id) => recuperes.has(id)).map((id) => recuperes.get(id).texte);\n  const absents = nombres(par.texte).filter((n) => !present(n, textesCites));\n  if (absents.length) alertes.push(`G4 : nombre(s) absent(s) des chunks cités (${absents.join(', ')})`);\n  const formules = absolues(par.texte);\n  if (formules.length) alertes.push(`G5 : formulation absolue (${formules.map((f) => `« ${f} »`).join(', ')})`);\n  return { texte: par.texte, citations, alertes };\n});\nconst contre = sortie?.contre_arguments_traites ?? [];\nconst alertes_section = contre.filter((id) => !recuperes.has(id)).map((id) => `G2 : contre-argument hors des chunks récupérés (${id})`);\nreturn [{ json: {\n  section, g1, alertes_section, paragraphes, contre_arguments_traites: contre, chunks, stats,\n  usage: r.body?.usageMetadata, version: r.body?.modelVersion,\n} }];"
+        "jsCode": "// G1 structure, G2 citations, G4 chiffres, G5 formulations absolues : détection et signalement seulement, sans nouvelle tentative (pipeline.md, WF10 C).\nconst MARQUEUR = '[INFORMATION NON DISPONIBLE DANS LE CORPUS]';\nconst { section, chunks, stats } = $('Prompt du rédacteur').first().json;\nconst recuperes = new Map(chunks.map((c) => [c.chunk_id, c]));\nconst r = $json;\nconst tentatives = $prevNode.name === 'Rédacteur (2e tentative)' ? 2 : 1;\n\n// G1 : appel réussi, JSON valide, champs présents, au moins un paragraphe.\nconst g1 = [];\nlet sortie = null;\nif (r.statusCode !== 200) {\n  const motif = r.statusCode ? `HTTP ${r.statusCode} : ${r.body?.error?.message ?? ''}` : (r.error?.message ?? 'pas de réponse');\n  g1.push(`appel Gemini en échec après ${tentatives} tentative(s) (${motif})`);\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { sortie = JSON.parse(texte); } catch { g1.push(\"la réponse n'est pas du JSON valide\"); }\n}\nif (sortie && (!Array.isArray(sortie.paragraphes) || sortie.paragraphes.length === 0)) g1.push('aucun paragraphe');\nif (sortie && !Array.isArray(sortie.contre_arguments_traites)) g1.push('champ contre_arguments_traites absent');\n\n// G4 : nombres comparés après normalisation (virgule décimale française, séparateurs de milliers).\nconst nombres = (s) => [...new Set(s\n  .replace(/\\b[A-Z]\\d{2}-[0-9a-f]{8}\\b/g, '')\n  .replace(/(\\d)[\\s  ](?=\\d{3}\\b)/g, '$1')\n  .replace(/(\\d),(\\d)/g, '$1.$2')\n  .match(/\\d+(?:\\.\\d+)?/g) ?? [])];\nconst normSource = (s) => s.replace(/(\\d),(?=\\d{3}\\b)/g, '$1');\nconst present = (n, textes) => textes.some((t) => new RegExp(`(?<![\\\\d.])${n.replace('.', '\\\\.')}(?!\\\\d|\\\\.\\\\d)`).test(normSource(t)));\n\n// G5 : formulations absolues. Règle 7 de redacteur_v1.md (« prouve », « toujours », « aucun risque »), élargie le 26/10\n// aux sur-affirmations relevées en relecture. Les formes niées (« pas toujours », « non prouvé ») ne sont pas signalées,\n// sauf « (sans) aucun risque », absolu par lui-même ; « certain » ne l'est qu'en emploi affirmatif (« est certain »), pas comme quantificateur (« certains patients »).\nconst TERMES = String.raw`(?:prouv|démontr)(?:e|é|ée|és|ées|ent|ant)|toujours(?!\\s+pas)|robustes?|rigoureusement|solides?|incontestables?|incontestablement|garanti(?:e|es|s|t|ssant|ssent)?|certainement|(?:est|sont|soit|semble|semblent|paraît|paraissent)\\s+certaine?s?`;\nconst NEGATION = String.raw`(?:(?:^|[^\\p{L}])(?:pas|non|jamais|ni|sans)\\s+(?:(?:été|encore|toujours|forcément|totalement|entièrement|clairement)\\s+)?|(?:^|[^\\p{L}])ne\\s+|(?:^|[^\\p{L}])n['’])`;\nconst ABSOLUES = new RegExp(String.raw`(?<!\\p{L})(?:(?<!${NEGATION})(?:${TERMES})|aucun\\s+risque)(?!\\p{L})`, 'giu');\nconst absolues = (s) => [...new Set((s.match(ABSOLUES) ?? []).map((m) => m.toLowerCase().replace(/\\s+/g, ' ')))];\n\nconst paragraphes = (sortie?.paragraphes ?? []).map((par) => {\n  const alertes = [];\n  const citations = par.citations ?? [];\n  // G2 : chaque chunk_id cité doit faire partie des chunks récupérés ; un paragraphe factuel doit citer.\n  const inconnues = citations.filter((id) => !recuperes.has(id));\n  if (inconnues.length) alertes.push(`G2 : citation hors des chunks récupérés (${inconnues.join(', ')})`);\n  if (!citations.length && !par.texte.includes(MARQUEUR)) alertes.push('G2 : paragraphe sans citation');\n  const textesCites = citations.filter((id) => recuperes.has(id)).map((id) => recuperes.get(id).texte);\n  const absents = nombres(par.texte).filter((n) => !present(n, textesCites));\n  if (absents.length) alertes.push(`G4 : nombre(s) absent(s) des chunks cités (${absents.join(', ')})`);\n  const formules = absolues(par.texte);\n  if (formules.length) alertes.push(`G5 : formulation absolue (${formules.map((f) => `« ${f} »`).join(', ')})`);\n  return { texte: par.texte, citations, alertes };\n});\nconst contre = sortie?.contre_arguments_traites ?? [];\nconst alertes_section = contre.filter((id) => !recuperes.has(id)).map((id) => `G2 : contre-argument hors des chunks récupérés (${id})`);\nreturn [{ json: {\n  section, tentatives, g1, alertes_section, paragraphes, contre_arguments_traites: contre, chunks, stats,\n  usage: r.body?.usageMetadata, version: r.body?.modelVersion,\n} }];"
       }
     },
     {
@@ -175,11 +176,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3300,
+        3740,
         0
       ],
       "parameters": {
-        "jsCode": "// Assemblage : chunk_id → [n, p. X] (n = numéro du document, dans l'ordre de première citation),\n// bibliographie générée depuis corpus/meta.json (jamais par le LLM), paragraphes signalés marqués ⚠.\n// Sorties : argumentaire_<run_id>.md, verif_<run_id>.json, une ligne ajoutée à runs.jsonl.\nconst prep = $('Préparer les sections').first().json;\n// Sections : sortie « done » de la boucle ; conclusion : entrée de ce nœud, si elle a été générée.\nconst sections = [\n  ...$('Une section à la fois').all(0).map(({ json }) => json),\n  ...$input.all().map(({ json }) => json).filter((s) => s.section.id === 'conclusion'),\n];\nconst numeros = new Map();\nconst renvoi = (citations, chunks) => {\n  const etiquettes = [...new Set(citations.map((id) => {\n    const c = chunks.find((x) => x.chunk_id === id);\n    if (!c) return '?';\n    if (!numeros.has(c.doc_id)) numeros.set(c.doc_id, numeros.size + 1);\n    return `${numeros.get(c.doc_id)}, p. ${c.page}`;\n  }))];\n  return etiquettes.length ? ` [${etiquettes.join(' ; ')}]` : '';\n};\nconst lignes = [\n  \"# Argumentaire : autorisation FDA de la notification d'hypertension de l'Apple Watch\",\n  '',\n  `Position : **POUR** · exécution \\`${prep.run_id}\\` · modèle \\`${prep.modele}\\` · prompt \\`redacteur_v1\\``,\n  '',\n  `> ⚠ : paragraphe signalé par les garde-fous (G2 citations, G4 chiffres, G5 formulations absolues). Détail dans \\`verif_${prep.run_id}.json\\`.`,\n  '',\n];\nfor (const s of sections) {\n  lignes.push(`## ${s.section.titre}`, '');\n  if (s.g1.length) lignes.push(`> ⚠ G1 : ${s.g1.join(' ; ')}`, '');\n  for (const p of s.paragraphes) lignes.push(`${p.alertes.length ? '⚠ ' : ''}${p.texte}${renvoi(p.citations, s.chunks)}`, '');\n}\nlignes.push('## Références', '');\nfor (const [doc, n] of numeros) {\n  const d = prep.meta.find((x) => x.doc_id === doc);\n  lignes.push(`${n}. ${d.reference} ${d.url}`);\n}\nconst paragraphes = sections.flatMap((s) => s.paragraphes);\nconst resume = {\n  paragraphes: paragraphes.length,\n  signales: paragraphes.filter((p) => p.alertes.length).length,\n  g1: sections.reduce((n, s) => n + s.g1.length, 0),\n};\nconst verif = {\n  run_id: prep.run_id, modele: prep.modele, resume,\n  sections: sections.map((s) => ({\n    id: s.section.id, g1: s.g1, alertes_section: s.alertes_section, selection: s.stats,\n    paragraphes: s.paragraphes, contre_arguments_traites: s.contre_arguments_traites,\n    chunks_recuperes: s.chunks.map(({ texte, ...c }) => c),\n  })),\n};\nconst run = {\n  run_id: prep.run_id, horodatage: $now.toISO(), workflow: '10-argumentaire',\n  modele: prep.modele, version_modele: sections.find((s) => s.version)?.version,\n  prompts: ['redacteur_v1.md', 'sections.json v1'], sections: sections.map((s) => s.section.id),\n  appels: { chat: sections.length, embeddings: sections.reduce((n, s) => n + s.stats.requetes, 0) },\n  tokens: sections.map((s) => s.usage), duree_s: Math.round((Date.now() - prep.debut) / 1000), ...resume,\n};\nconst fichier = (nom, contenu, mimeType, ajout = false) => ({\n  json: { nom, ajout },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`argumentaire_${prep.run_id}.md`, lignes.join('\\n') + '\\n', 'text/markdown'),\n  fichier(`verif_${prep.run_id}.json`, JSON.stringify(verif, null, 2) + '\\n', 'application/json'),\n  fichier('runs.jsonl', JSON.stringify(run) + '\\n', 'application/x-ndjson', true),\n];"
+        "jsCode": "// Assemblage : chunk_id → [n, p. X] (n = numéro du document, dans l'ordre de première citation),\n// bibliographie générée depuis corpus/meta.json (jamais par le LLM), paragraphes signalés marqués ⚠.\n// Sorties : argumentaire_<run_id>.md et verif_<run_id>.json. Les entrées du relecteur et la ligne de runs.jsonl\n// (écrite après le relecteur, pour compter tous les appels) passent dans le JSON du premier item.\nconst prep = $('Préparer les sections').first().json;\n// Sections : sortie « done » de la boucle ; conclusion : entrée de ce nœud, si elle a été générée.\nconst sections = [\n  ...$('Une section à la fois').all(0).map(({ json }) => json),\n  ...$input.all().map(({ json }) => json).filter((s) => s.section.id === 'conclusion'),\n];\nconst numeros = new Map();\nconst extraits = new Map(); // chunks cités, avec le même renvoi que dans le Markdown (entrée du relecteur)\nconst renvoi = (citations, chunks) => {\n  const etiquettes = [...new Set(citations.map((id) => {\n    const c = chunks.find((x) => x.chunk_id === id);\n    if (!c) return '?';\n    if (!numeros.has(c.doc_id)) numeros.set(c.doc_id, numeros.size + 1);\n    const etiquette = `${numeros.get(c.doc_id)}, p. ${c.page}`;\n    if (!extraits.has(id)) extraits.set(id, { renvoi: etiquette, doc_id: c.doc_id, role: c.role, texte: c.texte });\n    return etiquette;\n  }))];\n  return etiquettes.length ? ` [${etiquettes.join(' ; ')}]` : '';\n};\nconst lignes = [\n  \"# Argumentaire : autorisation FDA de la notification d'hypertension de l'Apple Watch\",\n  '',\n  `Position : **POUR** · exécution \\`${prep.run_id}\\` · modèle \\`${prep.modele}\\` · prompt \\`redacteur_v1\\``,\n  '',\n  `> ⚠ : paragraphe signalé par les garde-fous (G2 citations, G4 chiffres, G5 formulations absolues). Détail dans \\`verif_${prep.run_id}.json\\`.`,\n  '',\n];\nfor (const s of sections) {\n  lignes.push(`## ${s.section.titre}`, '');\n  if (s.g1.length) lignes.push(`> ⚠ G1 : ${s.g1.join(' ; ')}`, '');\n  for (const p of s.paragraphes) lignes.push(`${p.alertes.length ? '⚠ ' : ''}${p.texte}${renvoi(p.citations, s.chunks)}`, '');\n}\nlignes.push('## Références', '');\nconst documents = [];\nfor (const [doc, n] of numeros) {\n  const d = prep.meta.find((x) => x.doc_id === doc);\n  lignes.push(`${n}. ${d.reference} ${d.url}`);\n  documents.push(`[${n}] ${d.reference} (${d.annee})`);\n}\nconst markdown = lignes.join('\\n') + '\\n';\nconst paragraphes = sections.flatMap((s) => s.paragraphes);\nconst resume = {\n  paragraphes: paragraphes.length,\n  signales: paragraphes.filter((p) => p.alertes.length).length,\n  g1: sections.reduce((n, s) => n + s.g1.length, 0),\n};\nconst verif = {\n  run_id: prep.run_id, modele: prep.modele, resume,\n  sections: sections.map((s) => ({\n    id: s.section.id, tentatives: s.tentatives, g1: s.g1, alertes_section: s.alertes_section, selection: s.stats,\n    paragraphes: s.paragraphes, contre_arguments_traites: s.contre_arguments_traites,\n    chunks_recuperes: s.chunks.map(({ texte, ...c }) => c),\n  })),\n};\nconst run = {\n  run_id: prep.run_id, horodatage: $now.toISO(), workflow: '10-argumentaire',\n  modele: prep.modele, version_modele: sections.find((s) => s.version)?.version,\n  prompts: ['redacteur_v1.md', 'sections.json v1'], sections: sections.map((s) => s.section.id),\n  appels: { chat: sections.reduce((n, s) => n + s.tentatives, 0), embeddings: sections.reduce((n, s) => n + s.stats.requetes, 0) },\n  tentatives: Object.fromEntries(sections.map((s) => [s.section.id, s.tentatives])),\n  tokens: sections.map((s) => s.usage), duree_s: Math.round((Date.now() - prep.debut) / 1000), ...resume,\n};\nconst relecture = {\n  markdown,\n  documents: documents.join('\\n'),\n  extraits: [...extraits.values()].map((e) => ({ ...e, annee: prep.meta.find((d) => d.doc_id === e.doc_id).annee })),\n};\nconst fichier = (nom, contenu, mimeType, json = {}) => ({\n  json: { nom, ajout: false, ...json },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`argumentaire_${prep.run_id}.md`, markdown, 'text/markdown', { relecture, run }),\n  fichier(`verif_${prep.run_id}.json`, JSON.stringify(verif, null, 2) + '\\n', 'application/json'),\n];"
       }
     },
     {
@@ -188,7 +189,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1.1,
       "position": [
-        3520,
+        3960,
         0
       ],
       "parameters": {
@@ -210,7 +211,7 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Lecture des entrées versionnées (prompts/sections.json, prompts/redacteur_v1.md, corpus/meta.json),\n// puis un item par section demandée dans Paramètres, dans l'ordre de la consigne. La conclusion est traitée après la boucle.\nconst { modele, sections: demandees } = $('Paramètres').first().json;\nconst fichiers = {};\n$input.all().forEach(({ json }, i) => {\n  fichiers[$('Lire les fichiers').itemMatching(i).binary.data.fileName] = json.data;\n});\nconst config = JSON.parse(fichiers['sections.json']);\nconst inconnues = demandees.filter((id) => !config.sections.some((s) => s.id === id));\nif (inconnues.length) throw new Error(`Paramètres : section(s) inconnue(s) : ${inconnues.join(', ')}`);\nconst sections = config.sections.filter((s) => demandees.includes(s.id) && s.id !== 'conclusion');\nif (!sections.length) throw new Error('Paramètres : il faut au moins une section en plus de la conclusion');\nconst commun = {\n  run_id: $now.toFormat('yyyyLLdd-HHmmss'),\n  debut: Date.now(),\n  modele,\n  parametres: config.parametres_retrieval,\n  meta: JSON.parse(fichiers['meta.json']),\n  template: fichiers['redacteur_v1.md'],\n  conclusion: demandees.includes('conclusion') ? config.sections.find((s) => s.id === 'conclusion') : null,\n};\nreturn sections.map((section) => ({ json: { ...commun, section } }));"
+        "jsCode": "// Lecture des entrées versionnées (prompts/sections.json, prompts/redacteur_v1.md, prompts/relecteur_v1.md, corpus/meta.json),\n// puis un item par section demandée dans Paramètres, dans l'ordre de la consigne. La conclusion est traitée après la boucle.\nconst { modele, sections: demandees } = $('Paramètres').first().json;\nconst fichiers = {};\n$input.all().forEach(({ json }, i) => {\n  fichiers[$('Lire les fichiers').itemMatching(i).binary.data.fileName] = json.data;\n});\nconst config = JSON.parse(fichiers['sections.json']);\nconst inconnues = demandees.filter((id) => !config.sections.some((s) => s.id === id));\nif (inconnues.length) throw new Error(`Paramètres : section(s) inconnue(s) : ${inconnues.join(', ')}`);\nconst sections = config.sections.filter((s) => demandees.includes(s.id) && s.id !== 'conclusion');\nif (!sections.length) throw new Error('Paramètres : il faut au moins une section en plus de la conclusion');\nconst commun = {\n  run_id: $now.toFormat('yyyyLLdd-HHmmss'),\n  debut: Date.now(),\n  modele,\n  parametres: config.parametres_retrieval,\n  meta: JSON.parse(fichiers['meta.json']),\n  template: fichiers['redacteur_v1.md'],\n  template_relecteur: fichiers['relecteur_v1.md'],\n  structure: config.sections.map(({ id, titre, consigne }) => ({ id, titre, consigne })),\n  conclusion: demandees.includes('conclusion') ? config.sections.find((s) => s.id === 'conclusion') : null,\n};\nreturn sections.map((section) => ({ json: { ...commun, section } }));"
       }
     },
     {
@@ -219,7 +220,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "parameters": {
-        "jsCode": "// Paramètres de l'exécution, à modifier ici.\n// Quota de gemini-3.8-flash au plan gratuit : 5 appels par minute, 20 par jour (remise à zéro à minuit, heure du Pacifique).\n// Une exécution complète (8 sections + conclusion) fait 9 appels de chat : pour déboguer, lister 1 ou 2 sections.\n// Pas d'exécution complète sans l'accord du groupe (pipeline.md, section 1).\n// Identifiants (prompts/sections.json) : contexte, enjeux_fda, technique, ethique, social_economique,\n// reglementaire, parcours_soins, autres, conclusion (rédigée après les autres, à partir des sections générées).\nreturn [{ json: {\n  modele: 'gemini-3.8-flash',\n  sections: ['ethique', 'reglementaire', 'conclusion'],\n} }];"
+        "jsCode": "// Paramètres de l'exécution, à modifier ici.\n// Quota de gemini-3.8-flash au plan gratuit : 5 appels par minute, 20 par jour (remise à zéro à minuit, heure du Pacifique).\n// Une exécution complète fait 10 appels de chat (8 sections, conclusion, relecteur), 20 au plus avec les relances\n// (une seule relance par appel, sur 429 ou 5xx) : pour déboguer, lister 1 ou 2 sections.\n// Pas d'exécution complète sans l'accord du groupe (pipeline.md, section 1).\n// Identifiants (prompts/sections.json) : contexte, enjeux_fda, technique, ethique, social_economique,\n// reglementaire, parcours_soins, autres, conclusion (rédigée après les autres, à partir des sections générées).\nreturn [{ json: {\n  modele: 'gemini-3.8-flash',\n  sections: ['technique', 'ethique', 'reglementaire', 'conclusion'],\n} }];"
       },
       "position": [
         220,
@@ -259,7 +260,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2860,
+        3300,
         200
       ],
       "parameters": {
@@ -292,7 +293,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        3080,
+        3520,
         400
       ],
       "parameters": {
@@ -346,6 +347,268 @@
         1980,
         -220
       ]
+    },
+    {
+      "id": "839a4ff2-0428-4eed-86b3-a180e01be043",
+      "name": "Relancer le rédacteur ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c81c7c1-20b1-4b0a-bdb9-9adfa42b2b03",
+              "leftValue": "={{ $json.statusCode === 429 || $json.statusCode >= 500 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0dfd8c34-3af0-4039-9f57-d1d6ccca79e8",
+      "name": "Attente 60 s (rédacteur)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        420
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 60,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "e3135b07-4b27-4cd7-95af-de0f99f94b59",
+      "name": "Rédacteur (2e tentative)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $('Prompt du rédacteur').first().json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $('Prompt du rédacteur').first().json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $('Prompt du rédacteur').first().json.schema } }) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "aed98dd7-f73d-4eb5-9a2b-a869a443bdb8",
+      "name": "Pause quota Gemini 15 s (relecteur)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4180,
+        0
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 15,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "c30fe164-abcd-4e11-bebd-d31d44818767",
+      "name": "Prompt du relecteur",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Remplit le prompt versionné (prompts/relecteur_v1.md), option A : argumentaire assemblé, consigne,\n// texte des chunks cités et année de chaque document (corpus/meta.json). Un seul appel, sans correction automatique.\nconst prep = $('Préparer les sections').first().json;\nconst { relecture } = $('Assemblage et fichiers').first().json;\nconst consigne = prep.structure.map((s) => `- ${s.id} : ${s.titre}. ${s.consigne}`).join('\\n');\nconst extraits = relecture.extraits\n  .map((e) => `[${e.renvoi}] ${e.doc_id} (${e.annee}) · rôle : ${e.role}\\n${e.texte}`)\n  .join('\\n\\n---\\n\\n');\nconst valeurs = { POSITION: 'POUR', CONSIGNE: consigne, ARGUMENTAIRE: relecture.markdown, DOCUMENTS: relecture.documents, EXTRAITS: extraits };\nconst prompt = prep.template_relecteur.replace(/\\{\\{(\\w+)\\}\\}/g, (m, k) => valeurs[k] ?? m);\n// Schéma imposé à Gemini (mode JSON).\nconst chaine = { type: 'STRING' };\nconst schema = {\n  type: 'OBJECT',\n  properties: {\n    problemes: { type: 'ARRAY', items: { type: 'OBJECT', properties: {\n      section: chaine, gravite: { type: 'STRING', format: 'enum', enum: ['haute', 'moyenne', 'basse'] }, probleme: chaine,\n    }, required: ['section', 'gravite', 'probleme'] } },\n  },\n  required: ['problemes'],\n};\nreturn [{ json: { modele: prep.modele, prompt, schema } }];"
+      }
+    },
+    {
+      "id": "01140a43-3f7a-4c46-b833-b6a14e75a5e8",
+      "name": "Relecteur (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4620,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $json.schema } }) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "9baddc4d-ba4c-4e78-8e03-d360610f8628",
+      "name": "Relancer le relecteur ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4840,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9d305274-306d-4290-879f-fb90a3fb2b7b",
+              "leftValue": "={{ $json.statusCode === 429 || $json.statusCode >= 500 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "803a28e3-3112-40a9-956e-ae0b31036d92",
+      "name": "Attente 60 s (relecteur)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4840,
+        220
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 60,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "d447a83f-1766-418c-9cb4-f86332d03c7f",
+      "name": "Relecteur (2e tentative)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5060,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $('Prompt du relecteur').first().json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $('Prompt du relecteur').first().json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $('Prompt du relecteur').first().json.schema } }) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "afbcaf59-2605-4dde-96cb-6b5b6d3ffba1",
+      "name": "Relecture et traces",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5500,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Rapport de relecture (relecture_<run_id>.json : liste de problèmes, sans correction) et ligne de runs.jsonl,\n// écrite ici pour compter tous les appels de chat, relances comprises.\nconst prep = $('Préparer les sections').first().json;\nconst { run } = $('Assemblage et fichiers').first().json;\nconst r = $json;\nconst tentatives = $prevNode.name === 'Relecteur (2e tentative)' ? 2 : 1;\nlet problemes = null;\nlet erreur = null;\nif (r.statusCode !== 200) {\n  const motif = r.statusCode ? `HTTP ${r.statusCode} : ${r.body?.error?.message ?? ''}` : (r.error?.message ?? 'pas de réponse');\n  erreur = `appel Gemini en échec après ${tentatives} tentative(s) (${motif})`;\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { problemes = JSON.parse(texte).problemes; } catch { erreur = \"la réponse n'est pas du JSON valide\"; }\n  if (!erreur && !Array.isArray(problemes)) { erreur = 'champ problemes absent'; problemes = null; }\n}\nconst par_gravite = problemes && Object.fromEntries(['haute', 'moyenne', 'basse'].map((g) => [g, problemes.filter((p) => p.gravite === g).length]));\nconst relecture = {\n  run_id: prep.run_id, modele: prep.modele, prompt: 'relecteur_v1.md', tentatives, erreur,\n  version: r.body?.modelVersion, usage: r.body?.usageMetadata, par_gravite, problemes,\n};\nconst ligne = {\n  ...run,\n  horodatage: $now.toISO(),\n  prompts: [...run.prompts, 'relecteur_v1.md'],\n  appels: { ...run.appels, chat: run.appels.chat + tentatives },\n  tentatives: { ...run.tentatives, relecteur: tentatives },\n  tokens: [...run.tokens, r.body?.usageMetadata],\n  relecteur: { problemes: problemes?.length ?? null, par_gravite, erreur },\n  duree_s: Math.round((Date.now() - prep.debut) / 1000),\n};\nconst fichier = (nom, contenu, mimeType, ajout = false) => ({\n  json: { nom, ajout },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`relecture_${prep.run_id}.json`, JSON.stringify(relecture, null, 2) + '\\n', 'application/json'),\n  fichier('runs.jsonl', JSON.stringify(ligne) + '\\n', 'application/x-ndjson', true),\n];"
+      }
+    },
+    {
+      "id": "30324a7e-d99e-48a5-b888-adc2b597df80",
+      "name": "Écrire relecture et traces",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        5720,
+        0
+      ],
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/outputs/{{ $json.nom }}",
+        "dataPropertyName": "data",
+        "options": {
+          "append": "={{ $json.ajout }}"
+        }
+      }
     }
   ],
   "connections": {
@@ -481,7 +744,7 @@
       "main": [
         [
           {
-            "node": "Garde-fous G1 G2 G4 G5",
+            "node": "Relancer le rédacteur ?",
             "type": "main",
             "index": 0
           }
@@ -567,6 +830,141 @@
           }
         ]
       ]
+    },
+    "Relancer le rédacteur ?": {
+      "main": [
+        [
+          {
+            "node": "Attente 60 s (rédacteur)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Garde-fous G1 G2 G4 G5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente 60 s (rédacteur)": {
+      "main": [
+        [
+          {
+            "node": "Rédacteur (2e tentative)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rédacteur (2e tentative)": {
+      "main": [
+        [
+          {
+            "node": "Garde-fous G1 G2 G4 G5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Écrire dans outputs": {
+      "main": [
+        [
+          {
+            "node": "Pause quota Gemini 15 s (relecteur)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause quota Gemini 15 s (relecteur)": {
+      "main": [
+        [
+          {
+            "node": "Prompt du relecteur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt du relecteur": {
+      "main": [
+        [
+          {
+            "node": "Relecteur (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relecteur (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Relancer le relecteur ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relancer le relecteur ?": {
+      "main": [
+        [
+          {
+            "node": "Attente 60 s (relecteur)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Relecture et traces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente 60 s (relecteur)": {
+      "main": [
+        [
+          {
+            "node": "Relecteur (2e tentative)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relecteur (2e tentative)": {
+      "main": [
+        [
+          {
+            "node": "Relecture et traces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relecture et traces": {
+      "main": [
+        [
+          {
+            "node": "Écrire relecture et traces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -576,9 +974,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "a3b7b782-321c-48df-993c-d375cd5a9e07",
+  "versionId": "210bad82-fe20-481b-a9a2-7163f3702044",
   "activeVersionId": null,
-  "versionCounter": 2,
+  "versionCounter": 3,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

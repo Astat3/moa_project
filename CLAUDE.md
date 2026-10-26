@@ -121,6 +121,10 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-26 | Quotas relevés (chat : 5 RPM, 250 000 TPM, 20 RPD ; embeddings : 100 RPM, 30 000 TPM, 1 000 RPD). *Wait* de 15 s entre deux appels de chat ; paramètre en tête de `10-argumentaire` listant les sections à générer ; nombre d'appels de chat dans `runs.jsonl` ; **jamais d'exécution complète sans accord** ; exécution finale officielle (sections, relecteur, baseline) un jour où le quota est entier | 11 appels de chat pour l'exécution finale, sur 20 par jour |
 | 2026-10-26 | **Relecteur, option A** : un seul appel ; il reçoit l'argumentaire, la consigne, le texte des chunks cités et l'année de chaque document (`meta.json`) | Permettre au relecteur de repérer les ajouts non sourcés et les liens inventés entre sources (aucun juge de fidélité) |
 | 2026-10-26 | **G5** ajouté aux garde-fous : formulations absolues interdites par la règle 7 de `redacteur_v1` (« prouve » et ses formes, « toujours », « aucun risque »), marquage ⚠ | Contrôle automatique, sans coût, d'une règle du prompt |
+| 2026-10-26 | Étape 2a : conclusion **après la boucle**, sans *Wait* avant elle (la boucle attend déjà 15 s) ; délai du rédacteur de 600 s ; archivage de `10-argumentaire` = erreur de manipulation | Choix du groupe |
+| 2026-10-26 | **G5 élargi** :<br>• termes ajoutés : robuste, rigoureusement, solide(s), démontré, incontestable, garanti/garantissant, certainement ;<br>• formes niées non signalées ;<br>• « certain » seulement en emploi affirmatif ;<br>• testé hors ligne | La version initiale ne repérait aucun des défauts réels |
+| 2026-10-26 | **Relance unique explicite** (429 ou 5xx → *Wait* 60 s → copie du nœud HTTP) pour les sections, la conclusion et le relecteur. Délai dépassé : pas de relance, signalement G1 (nœud en « continuer après erreur »). Tentatives dans `verif` et `runs.jsonl`. « Retry On Fail » écarté | Le moteur de n8n plafonne l'attente à 5 s, ne relance pas un 503 reçu en « ne jamais lever d'erreur », et ne trace pas les tentatives. Test du 26/10 : l'objet d'erreur de « continuer après erreur » ne contient pas la clé |
+| 2026-10-26 | **Grille du relecteur** : + « affirmations non soutenues par les chunks cités », + « liens et chronologie entre sources (années des documents) » ; prompt `relecteur_v1.md` | Exploiter les entrées de l'option A |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
@@ -134,8 +138,10 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
 - [x] Commande d'export : remplacée par `sh n8n/exporter.sh` (17/10)
 - [x] Référence de D12 : 83(3):e00254, confirmé par Crossref (17/10)
-- [ ] Relancer l'essai 2a (éthique + conclusion) quand l'API Gemini n'est plus saturée : 2 ou 3 appels de chat, avec accord
-- [ ] Grille du relecteur : ajouter « affirmations non soutenues par les chunks cités » et « liens et chronologie entre sources » ? Proposition de Claude (26/10), pour exploiter les entrées de l'option A. Les deux essais ont produit un lien inventé entre l'AHA (déc. 2025) et la FDA (sept. 2025)
+- [ ] **Exécution du 27/10 après 8 h, avec accord** : technique + éthique + réglementaire + conclusion + relecteur, soit 5 appels de chat (10 au plus avec les relances). Paramètres déjà réglés. Ensuite, comparaison relecteur contre relecture humaine (`pipeline.md` § 3)
+- [x] Grille du relecteur : 2 critères ajoutés (26/10)
+- [ ] Clé Gemini en en-tête `x-goog-api-key` (credential *Header Auth*) : faisable, mais inutile pour « continuer après erreur », dont l'objet d'erreur ne contient pas la clé (test du 26/10). À trancher par le groupe ; non codé
+- [ ] Workflows « MOA » et « My workflow » (brouillons du 30/09) à supprimer dans l'interface n8n ?
 - [ ] Requête forcée `role = contre` : 2 chunks garantis sur 10 au plus (proposition de Claude, dans `prompts/sections.json`), à valider
 - [ ] Les commits contiennent l'e-mail de l'auteur (configuration git `user.email`). Passer à l'adresse *noreply* de GitHub pour les prochains commits ?
 - [ ] Double screening : deux modèles Gemini différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
@@ -160,7 +166,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 1. Environnement local | ✅ stack opérationnelle ; test de fumée Gemini réussi le 21/10 (`gemini-3.8-flash`, workflow `test-gemini`) ; `prompts/` et `outputs/` montés |
 | 2. Constitution du corpus | ✅ figé à 4 documents (D06, D07, D09, D12), plan v2 |
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
-| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4/G5 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout, 34 s, 0 paragraphe signalé. **Étape 2a (26/10)** : boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections, G5, délai de 600 s. Essai éthique + réglementaire + conclusion : réglementaire rédigé, éthique et conclusion en 503 (API saturée, signalés par G1). Reste : relancer éthique + conclusion, puis le relecteur ; exécution complète seulement avec accord |
+| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4/G5 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout, 34 s, 0 paragraphe signalé. **Étape 2a (26/10)** : boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections, G5, délai de 600 s. Essai éthique + réglementaire + conclusion : réglementaire rédigé, éthique et conclusion en 503 (API saturée, signalés par G1). **Étape 3 prête (26/10 au soir, non exécutée)** : relecteur option A, relance unique sur 429/5xx, G5 élargi ; tous les chemins testés avec un rédacteur et un relecteur simulés. Reste : exécution du 27/10 avec accord, puis comparaison avec la relecture humaine ; exécution complète seulement avec accord |
 | 5. Baseline (`50-baseline`) | ⚪ |
 | 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | ⚪ |
 | 7. Rapport écrit | ⚪ |
