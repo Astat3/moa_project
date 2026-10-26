@@ -157,6 +157,22 @@ Sortie : `outputs/metriques.csv`
 - **2 membres du groupe** les jugent indépendamment : `SOUTENU`, `PARTIEL` ou `NON_SOUTENU` ;
 - le script calcule le **kappa de Cohen**. Compter environ 45 min.
 
+**Mise en œuvre** (26/10/2026, bibliothèque standard de Python seulement) :
+- **Métriques** : `python3 eval/evaluer.py metriques <run_id pipeline> [<run_id baseline>]`.
+  - Lit `verif_`, `relecture_`, `baseline_` et `runs.jsonl`, puis écrit `metriques.csv`.
+  - Les alertes sont celles enregistrées pendant l'exécution, sans recalcul. Une exécution antérieure à G5 n'a donc pas d'alerte G5.
+- **Fichiers à remplir à la main**, créés en même temps mais **jamais écrasés** : `eval_humaine_juge1.csv` et `eval_humaine_juge2.csv` (une copie par évaluateur, pour juger sans voir les réponses de l'autre), et `references_baseline.csv` (pour chaque référence : existe, correcte, commentaire).
+- **Affirmation** = une phrase (6 mots au moins) d'un paragraphe qui cite au moins un chunk, hors `[INFORMATION NON DISPONIBLE]`. Elle est présentée avec le texte des chunks cités par son paragraphe.
+- **Tirage** : 15 affirmations au hasard, avec le `run_id` pour graine, donc reproductible.
+- **Jugement** :
+  - `SOUTENU` : appuyée par les extraits cités ;
+  - `PARTIEL` : en partie seulement, ou formulée plus fort que la source ;
+  - `NON_SOUTENU` : absente des extraits, ou contredite.
+- **Kappa** : `python3 eval/evaluer.py kappa outputs/eval_humaine_juge1.csv outputs/eval_humaine_juge2.csv`. Donne l'accord observé, le kappa et la matrice de confusion, aussi écrits dans `kappa.txt`.
+- **Format des CSV** : tableur français (« ; », UTF-8 avec BOM).
+- **Texte des chunks** : `verif_<run_id>.json` contient désormais le texte des chunks récupérés (assemblage modifié le 26/10). Les exécutions antérieures ne l'ont pas : le CSV le signale.
+- **Testé** sur les sorties du 21/10 et du 26/10 et sur une exécution simulée (pipeline et baseline). Le kappa a été vérifié sur un exemple calculé à la main (κ = 0,516).
+
 **G5 n'est évalué que sur l'exécution finale.** Sa liste de termes a été construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties. Son score sur ces sorties (« 6 paragraphes sur 9, sans faux positif ») ne mesure donc pas sa performance : c'est du surajustement. **La liste est gelée depuis le 26/10.**
 
 **Relecteur contre liste de défauts de référence** (pour le rapport : « X défauts confirmés repérés par le relecteur sur Y » ; protocole corrigé le 26/10) :
