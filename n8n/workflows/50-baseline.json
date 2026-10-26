@@ -1,0 +1,363 @@
+{
+  "updatedAt": "2026-10-26T20:02:28.099Z",
+  "createdAt": "2026-10-26T20:02:28.099Z",
+  "id": "MoaWf50Baseline",
+  "name": "50-baseline",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "5746e114-0c26-439d-9941-d42622f8f526",
+      "name": "Lancer",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "984a6308-6db7-49b5-b8ac-2a4db5ef7dfb",
+      "name": "Paramètres",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Paramètres de la baseline (prompts/baseline_v1.md), à modifier ici. Un seul appel de chat (2 avec la relance).\n// Pour comparer, lister les mêmes sections que l'exécution de 10-argumentaire comparée (identifiants de prompts/sections.json).\n// Pas d'exécution sans l'accord du groupe (quota : 20 appels de chat par jour).\nreturn [{ json: {\n  modele: 'gemini-3.8-flash',\n  sections: ['contexte', 'enjeux_fda', 'technique', 'ethique', 'social_economique', 'reglementaire', 'parcours_soins', 'autres', 'conclusion'],\n} }];"
+      }
+    },
+    {
+      "id": "537bbd24-2461-4095-be04-3e96ec054729",
+      "name": "Lire les fichiers",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "/home/node/{prompts/sections.json,prompts/baseline_v1.md}",
+        "options": {}
+      }
+    },
+    {
+      "id": "61c81e7b-eee1-4f05-ab9b-c224e9156622",
+      "name": "Texte des fichiers",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      }
+    },
+    {
+      "id": "33cee2a5-59be-4c35-a07d-a92592245f5f",
+      "name": "Prompt de la baseline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Remplit le prompt versionné (prompts/baseline_v1.md) : même consigne et même structure que le pipeline, position POUR,\n// sans corpus ni garde-fous. Un seul appel pour tout l'argumentaire ; le modèle doit citer ses sources.\nconst { modele, sections: demandees } = $('Paramètres').first().json;\nconst fichiers = {};\n$input.all().forEach(({ json }, i) => {\n  fichiers[$('Lire les fichiers').itemMatching(i).binary.data.fileName] = json.data;\n});\nconst config = JSON.parse(fichiers['sections.json']);\nconst inconnues = demandees.filter((id) => !config.sections.some((s) => s.id === id));\nif (inconnues.length) throw new Error(`Paramètres : section(s) inconnue(s) : ${inconnues.join(', ')}`);\nconst sections = config.sections.filter((s) => demandees.includes(s.id)).map(({ id, titre, consigne }) => ({ id, titre, consigne }));\nconst valeurs = { POSITION: 'POUR', SECTIONS: sections.map((s) => `- ${s.id} : ${s.titre}. ${s.consigne}`).join('\\n') };\nconst prompt = fichiers['baseline_v1.md'].replace(/\\{\\{(\\w+)\\}\\}/g, (m, k) => valeurs[k] ?? m);\n// Schéma imposé à Gemini (mode JSON), au même titre que pour le rédacteur du pipeline.\nconst chaine = { type: 'STRING' };\nconst schema = {\n  type: 'OBJECT',\n  properties: {\n    sections: { type: 'ARRAY', items: { type: 'OBJECT', properties: {\n      id: chaine,\n      paragraphes: { type: 'ARRAY', items: { type: 'OBJECT', properties: {\n        texte: chaine, references: { type: 'ARRAY', items: { type: 'INTEGER' } },\n      }, required: ['texte', 'references'] } },\n    }, required: ['id', 'paragraphes'] } },\n    references: { type: 'ARRAY', items: { type: 'OBJECT', properties: {\n      numero: { type: 'INTEGER' }, reference: chaine,\n    }, required: ['numero', 'reference'] } },\n  },\n  required: ['sections', 'references'],\n};\nreturn [{ json: { run_id: $now.toFormat('yyyyLLdd-HHmmss'), debut: Date.now(), modele, sections, prompt, schema } }];"
+      }
+    },
+    {
+      "id": "9cd1051f-32d6-461b-bd9e-777277c11b42",
+      "name": "Baseline (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $json.schema } }) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e92d1184-38a5-44d9-81a0-1f12fbc66f48",
+      "name": "Relancer la baseline ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c81c7c1-20b1-4b0a-bdb9-9adfa42b2b03",
+              "leftValue": "={{ $json.statusCode === 429 || $json.statusCode >= 500 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a8cc587c-9fbe-4e61-aa9b-5edddff91cb0",
+      "name": "Attente 60 s (baseline)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        220
+      ],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 60,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "63351f25-6d87-4ebc-825c-ffd9a1774697",
+      "name": "Baseline (2e tentative)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/{{ $('Prompt de la baseline').first().json.modele }}:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $('Prompt de la baseline').first().json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $('Prompt de la baseline').first().json.schema } }) }}",
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googlePalmApi": {
+          "id": "dnEq1coathu1PnvB",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4cf263de-e6f5-48fc-a036-4ae632963ca9",
+      "name": "Assemblage de la baseline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Assemblage de la baseline : Markdown (références générées par le modèle, non vérifiées), JSON brut pour eval/evaluer.py\n// et une ligne dans runs.jsonl. Aucun garde-fou : c'est le point de comparaison du pipeline.\nconst prep = $('Prompt de la baseline').first().json;\nconst r = $json;\nconst tentatives = $prevNode.name === 'Baseline (2e tentative)' ? 2 : 1;\nlet sortie = null;\nlet erreur = null;\nif (r.statusCode !== 200) {\n  const motif = r.statusCode ? `HTTP ${r.statusCode} : ${r.body?.error?.message ?? ''}` : (r.error?.message ?? 'pas de réponse');\n  erreur = `appel Gemini en échec après ${tentatives} tentative(s) (${motif})`;\n} else {\n  const texte = (r.body?.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text).join('');\n  try { sortie = JSON.parse(texte); } catch { erreur = \"la réponse n'est pas du JSON valide\"; }\n}\nconst recues = new Map((sortie?.sections ?? []).map((s) => [s.id, s]));\nconst lignes = [\n  \"# Baseline : autorisation FDA de la notification d'hypertension de l'Apple Watch\",\n  '',\n  `Position : **POUR** · exécution \\`${prep.run_id}\\` · modèle \\`${prep.modele}\\` · prompt \\`baseline_v1\\` · **Gemini seul, sans RAG ni garde-fous**`,\n  '',\n  \"> Les références ci-dessous ont été générées par le modèle et **n'ont pas été vérifiées**.\",\n  '',\n];\nif (erreur) lignes.push(`> Échec : ${erreur}`, '');\nfor (const s of prep.sections) {\n  lignes.push(`## ${s.titre}`, '');\n  const recue = recues.get(s.id);\n  if (!recue?.paragraphes?.length) { lignes.push('> Section absente de la réponse.', ''); continue; }\n  for (const p of recue.paragraphes) lignes.push(`${p.texte}${p.references?.length ? ` [${p.references.join(', ')}]` : ''}`, '');\n}\nlignes.push('## Références (générées par le modèle, non vérifiées)', '');\nfor (const ref of sortie?.references ?? []) lignes.push(`${ref.numero}. ${ref.reference}`);\nconst resume = {\n  sections_presentes: prep.sections.filter((s) => recues.get(s.id)?.paragraphes?.length).length,\n  sections_inattendues: [...recues.keys()].filter((id) => !prep.sections.some((s) => s.id === id)),\n  paragraphes: prep.sections.reduce((n, s) => n + (recues.get(s.id)?.paragraphes?.length ?? 0), 0),\n  references: sortie?.references?.length ?? 0,\n  erreur,\n};\nconst brut = {\n  run_id: prep.run_id, modele: prep.modele, prompt: 'baseline_v1.md', sections_demandees: prep.sections.map((s) => s.id),\n  tentatives, erreur, version: r.body?.modelVersion, usage: r.body?.usageMetadata, sortie,\n};\nconst run = {\n  run_id: prep.run_id, horodatage: $now.toISO(), workflow: '50-baseline', modele: prep.modele, version_modele: r.body?.modelVersion,\n  prompts: ['baseline_v1.md', 'sections.json v1'], sections: prep.sections.map((s) => s.id),\n  appels: { chat: tentatives, embeddings: 0 }, tentatives: { baseline: tentatives }, tokens: [r.body?.usageMetadata],\n  duree_s: Math.round((Date.now() - prep.debut) / 1000), ...resume,\n};\nconst fichier = (nom, contenu, mimeType, ajout = false) => ({\n  json: { nom, ajout },\n  binary: { data: { data: Buffer.from(contenu, 'utf8').toString('base64'), mimeType, fileName: nom } },\n});\nreturn [\n  fichier(`baseline_${prep.run_id}.md`, lignes.join('\\n') + '\\n', 'text/markdown'),\n  fichier(`baseline_${prep.run_id}.json`, JSON.stringify(brut, null, 2) + '\\n', 'application/json'),\n  fichier('runs.jsonl', JSON.stringify(run) + '\\n', 'application/x-ndjson', true),\n];"
+      }
+    },
+    {
+      "id": "ec1a3f4c-6d83-42ab-8c23-cc1ae13d308e",
+      "name": "Écrire dans outputs",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        0
+      ],
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/outputs/{{ $json.nom }}",
+        "dataPropertyName": "data",
+        "options": {
+          "append": "={{ $json.ajout }}"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Lancer": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres": {
+      "main": [
+        [
+          {
+            "node": "Lire les fichiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire les fichiers": {
+      "main": [
+        [
+          {
+            "node": "Texte des fichiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texte des fichiers": {
+      "main": [
+        [
+          {
+            "node": "Prompt de la baseline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt de la baseline": {
+      "main": [
+        [
+          {
+            "node": "Baseline (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baseline (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Relancer la baseline ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relancer la baseline ?": {
+      "main": [
+        [
+          {
+            "node": "Attente 60 s (baseline)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assemblage de la baseline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente 60 s (baseline)": {
+      "main": [
+        [
+          {
+            "node": "Baseline (2e tentative)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baseline (2e tentative)": {
+      "main": [
+        [
+          {
+            "node": "Assemblage de la baseline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemblage de la baseline": {
+      "main": [
+        [
+          {
+            "node": "Écrire dans outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "03fca956-d4e3-4226-ad18-dcac81c8cec6",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -128,6 +128,17 @@ Sortie : `outputs/argumentaire_<run_id>.md` et `verif_<run_id>.json`, écrits av
 ### WF50 — `50-baseline`
 Un seul appel Gemini, même modèle, même consigne, même structure, position POUR, prompt `baseline_v1.md`, **sans RAG ni garde-fous**. On lui demande de **citer ses sources**, pour pouvoir compter les références inventées. Sortie : `outputs/baseline_<run_id>.md`.
 
+Mise en œuvre (26/10/2026) :
+- **Chaîne** : Paramètres → lecture de `sections.json` et `baseline_v1.md` → Prompt → HTTP `generateContent` → même relance unique que le pipeline (429 ou 5xx, *Wait* 60 s) → Assemblage → fichiers.
+- **Paramètres** : modèle, et sections à générer. Par défaut les 9 sections, à aligner sur l'exécution de `10-argumentaire` comparée.
+- **Mode JSON avec schéma**, comme le rédacteur : `sections` → `paragraphes` `{texte, references: [n]}`, plus une liste `references` `{numero, reference}`.
+- **Prompt** : il reprend les règles de `redacteur_v1` qui ne dépendent pas du corpus (chiffres exacts, `[INFORMATION NON DISPONIBLE]`, contre-arguments, pas de formulation absolue, 3 à 6 paragraphes de 60 à 150 mots). Il interdit d'inventer des références, comme `redacteur_v1` interdit d'inventer des `chunk_id`.
+- **Sorties** :
+  - `baseline_<run_id>.md`, avec les références marquées « non vérifiées » ;
+  - `baseline_<run_id>.json`, la sortie brute, pour `eval/evaluer.py` ;
+  - une ligne dans `runs.jsonl`.
+- Testé avec un appel simulé (503 puis relance).
+
 ## 3. Évaluation — script `eval/evaluer.py` (hors n8n)
 Sortie : `outputs/metriques.csv`
 
