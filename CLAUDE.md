@@ -134,6 +134,8 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
 - [x] Commande d'export : remplacée par `sh n8n/exporter.sh` (17/10)
 - [x] Référence de D12 : 83(3):e00254, confirmé par Crossref (17/10)
+- [ ] Relancer l'essai 2a (éthique + conclusion) quand l'API Gemini n'est plus saturée : 2 ou 3 appels de chat, avec accord
+- [ ] Grille du relecteur : ajouter « affirmations non soutenues par les chunks cités » et « liens et chronologie entre sources » ? Proposition de Claude (26/10), pour exploiter les entrées de l'option A. Les deux essais ont produit un lien inventé entre l'AHA (déc. 2025) et la FDA (sept. 2025)
 - [ ] Requête forcée `role = contre` : 2 chunks garantis sur 10 au plus (proposition de Claude, dans `prompts/sections.json`), à valider
 - [ ] Les commits contiennent l'e-mail de l'auteur (configuration git `user.email`). Passer à l'adresse *noreply* de GitHub pour les prochains commits ?
 - [ ] Double screening : deux modèles Gemini différents (ex. un grand et un petit) ou le même modèle avec deux prompts ?
@@ -158,7 +160,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 1. Environnement local | ✅ stack opérationnelle ; test de fumée Gemini réussi le 21/10 (`gemini-3.8-flash`, workflow `test-gemini`) ; `prompts/` et `outputs/` montés |
 | 2. Constitution du corpus | ✅ figé à 4 documents (D06, D07, D09, D12), plan v2 |
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
-| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout (récupération, rédacteur, G1/G2/G4, Markdown + bibliographie), 34 s, 0 paragraphe signalé. Reste : toutes les sections + conclusion, relecteur |
+| 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4/G5 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout, 34 s, 0 paragraphe signalé. **Étape 2a (26/10)** : boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections, G5, délai de 600 s. Essai éthique + réglementaire + conclusion : réglementaire rédigé, éthique et conclusion en 503 (API saturée, signalés par G1). Reste : relancer éthique + conclusion, puis le relecteur ; exécution complète seulement avec accord |
 | 5. Baseline (`50-baseline`) | ⚪ |
 | 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | ⚪ |
 | 7. Rapport écrit | ⚪ |

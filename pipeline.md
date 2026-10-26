@@ -61,7 +61,7 @@ Manual Trigger → **Paramètres** (nœud en tête : modèle et **liste des sect
    - pas de MMR : un plafond codé dans un nœud Code est déterministe et plus simple à expliquer.
    Pourquoi : au test du 17/10/2026, le top 5 venait d'un seul document (D12), et D06 (performances d'Apple) n'apparaissait pas.
 
-**B. Rédacteur** (Gemini, prompt `redacteur_v1.md`). Il reçoit la section, la consigne, la position POUR et les chunks avec leur `chunk_id`. Appel par un nœud **HTTP Request** direct à `generateContent` (credential Gemini de n8n), modèle **`gemini-3.8-flash`**, en **mode JSON avec schéma** (`responseMimeType` + `responseSchema`) ; réponse complète conservée même en cas d'erreur, pour que G1 la signale. Il renvoie :
+**B. Rédacteur** (Gemini, prompt `redacteur_v1.md`). Il reçoit la section, la consigne, la position POUR et les chunks avec leur `chunk_id`. Appel par un nœud **HTTP Request** direct à `generateContent` (credential Gemini de n8n), modèle **`gemini-3.8-flash`**, en **mode JSON avec schéma** (`responseMimeType` + `responseSchema`) ; réponse complète conservée même en cas d'erreur HTTP (429, 5xx…), pour que G1 la signale. Délai maximal de **600 s** par appel (180 s au départ, dépassé le 26/10). Un délai dépassé **arrête l'exécution** : le mode « continuer après erreur » de n8n renverrait l'objet d'erreur brut, sans masquer la requête, donc avec la clé. Il renvoie :
 ```json
 {"section": "technique",
  "paragraphes": [{"texte": "...", "citations": ["D06-1a2b3c4d"]}],
@@ -85,6 +85,10 @@ Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire 
 **D.** *Wait* de 15 s (quota), puis section suivante.
 
 **Conclusion** : un appel au rédacteur avec les sections déjà générées, sans nouvelle recherche, et un parti pris POUR clair. Il ne peut citer que des `chunk_id` déjà utilisés (G1 + G2).
+Branchée **après la boucle** (choix du 26/10/2026) : IF « Conclusion demandée ? » → Code « Chunks déjà cités » → mêmes nœuds Prompt, Rédacteur et Garde-fous que les sections (G4 et G5 s'appliquent donc aussi) → IF « Conclusion ? » → Assemblage.
+- Ses extraits sont les chunks cités par les paragraphes et les contre-arguments traités des sections.
+- Les sections rédigées, avec les `chunk_id` cités par chaque paragraphe, sont ajoutées à la suite de la consigne (`{{CONSIGNE}}`), faute d'autre emplacement dans `redacteur_v1.md`, qui reste inchangé.
+- Un paragraphe de section marqué `⚠` est transmis tel quel.
 
 **Relecteur** (option A, décision du 26/10/2026) : **un seul appel** Gemini, prompt distinct `relecteur_v1.md`. Il reçoit :
 - l'argumentaire assemblé ;
@@ -161,6 +165,7 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Corpus de 4 documents (au lieu des ~20 identifiés dans `corpus.md`) | Sections éthique, socio-économique et réglementaire pauvres ; un seul document « contre » | Ingérer le corpus complet (quota d'embeddings, idempotence de l'ingestion) |
 | Système multi-agents (2 rédacteurs + superviseur) | Un seul point de vue de génération | 2 rédacteurs de modèles différents + arbitre en cas de discordance |
 | Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
+| Pas de relance ni de signalement par G1 quand un appel au rédacteur dépasse le délai ou échoue au niveau réseau | Toute l'exécution s'arrête, sans fichier de sortie (26/10 : plus de 180 s pour la section « éthique ») | Relance bornée, ou mode « continuer après erreur » avec un filtrage de l'objet d'erreur |
 | Détection des formulations absolues (G5) par une simple liste de mots, sans analyse du contexte | Faux positifs : « pas toujours », formule prudente, est signalée. Faux négatifs : « outil de repérage robuste et rigoureusement validé » (exécution du 21/10) passe | Repérage par le relecteur, ou classifieur de sur-affirmations |
 | Boucle de régénération après garde-fous et correction après relecture | Les défauts sont signalés, pas corrigés | Boucle bornée (2 itérations) + comparaison avant / après |
 | Relecteur de la même famille de modèle que le rédacteur | Risque de complaisance | Relecteur d'un autre fournisseur |
