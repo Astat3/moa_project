@@ -146,10 +146,14 @@ Sortie : `outputs/metriques.csv`
 - **2 membres du groupe** les jugent indépendamment : `SOUTENU`, `PARTIEL` ou `NON_SOUTENU` ;
 - le script calcule le **kappa de Cohen**. Compter environ 45 min.
 
-**Relecteur contre relecture humaine** (pour le rapport : « X défauts repérés sur Y ») :
-1. Relecture humaine des nouvelles sorties **avant** de lire `relecture_<run_id>.json`, pour ne pas être influencé. Elle part des défauts déjà relevés (technique le 21/10, réglementaire le 26/10), à revérifier sur le nouveau texte. Chaque défaut est noté avec le passage en cause et son type dans la grille. Les défauts invisibles pour le relecteur, comme « QXO » périmé, ne peuvent pas être repérés à partir des extraits : ils sont comptés à part.
-2. Appariement : un défaut est « repéré » si le relecteur cite le même passage avec un problème de même nature.
-3. Résultat : **X défauts repérés sur Y**, puis les problèmes que le relecteur ajoute, classés en défauts confirmés (manqués par la relecture humaine) et en fausses alertes. Ce n'est qu'une comparaison sur une exécution, sans valeur statistique.
+**G5 n'est évalué que sur l'exécution finale.** Sa liste de termes a été construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties. Son score sur ces sorties (« 6 paragraphes sur 9, sans faux positif ») ne mesure donc pas sa performance : c'est du surajustement. **La liste est gelée depuis le 26/10.**
+
+**Relecteur contre liste de défauts de référence** (pour le rapport : « X défauts confirmés repérés par le relecteur sur Y » ; protocole corrigé le 26/10) :
+1. Claude relit les nouvelles sorties **avant** d'ouvrir `relecture_<run_id>.json`. Il écrit sa liste de défauts dans `outputs/defauts_reference_<run_id>.md`, avec pour chaque défaut l'affirmation, le chunk cité, le défaut et son type dans la grille. Il part des défauts déjà relevés (technique le 21/10, réglementaire le 26/10), à revérifier sur le nouveau texte.
+2. **Un membre du groupe valide chaque défaut** (confirmé ou rejeté), sans avoir vu la sortie du relecteur.
+3. Ensuite seulement, l'appariement. Un défaut confirmé est « repéré » si le relecteur cite le même passage avec un problème de même nature. Résultat : **X défauts confirmés repérés sur Y**. Les problèmes que le relecteur ajoute sont triés **par un humain** en vrais défauts et fausses alertes.
+- Le cas QXO/SFR est compté à part : il est invisible depuis les extraits.
+- À écrire dans le rapport : la liste de référence a été produite avec l'aide d'un LLM (Claude), puis validée par le groupe. Sans cette validation, la comparaison ne mesurerait que l'accord entre deux LLM, pas la détection de défauts réels. Une seule exécution : pas de valeur statistique.
 
 ## 4. Ordre de construction
 | # | Étape | Estimation |
@@ -163,9 +167,17 @@ Sortie : `outputs/metriques.csv`
 | 6 | Évaluation humaine (groupe) | 0,75 h |
 | | **Pipeline** | **≈ 6,5 h** |
 
-**Prochaine exécution, le 27/10 après 8 h, avec l'accord du groupe** : technique, éthique, réglementaire et conclusion (4 appels), puis le relecteur (1 appel). Cela fait 5 appels de chat, 10 au plus avec les relances, et 11 requêtes d'embeddings. Les paramètres sont déjà réglés dans `10-argumentaire`. Ensuite : comparaison relecteur contre relecture humaine (section 3).
+**Prochaine exécution, le 27/10 après 8 h, avec l'accord du groupe** : technique, éthique, réglementaire et conclusion (4 appels), puis le relecteur (1 appel). Cela fait 5 appels de chat, 10 au plus avec les relances, et 11 requêtes d'embeddings. Les paramètres sont déjà réglés dans `10-argumentaire`.
+- **Règle d'arrêt** : si le premier appel dépasse 3 minutes, ou renvoie un 503 malgré la relance, on arrête et on réessaie dans l'heure.
+- Ensuite : comparaison avec le relecteur selon le protocole corrigé (section 3) ; la validation par le groupe peut se faire le 27/10 au soir.
+- Derniers correctifs éventuels, **sans toucher à la liste de G5**. Tout correctif de prompt passe par une validation d'Adam.
+
+**Échéance : pipeline prêt le 28/10 après-midi.**
 
 **Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Elle consomme 11 appels sur 20 sans relance. Avec les relances automatiques (une par appel au plus), le pire cas dépasse le quota : si plus de 9 relances sont nécessaires, il faut arrêter et reporter l'exécution. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
+- Prévue le **28/10 après 8 h**, avec la même règle d'arrêt.
+- Suivie de `eval/evaluer.py` sur cette exécution.
+- Ensuite, **gel** : plus aucune modification des prompts, de G5 ni des workflows.
 
 Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal de `implémentation.md`.
 
@@ -186,7 +198,9 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Système multi-agents (2 rédacteurs + superviseur) | Un seul point de vue de génération | 2 rédacteurs de modèles différents + arbitre en cas de discordance |
 | Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
 | Une seule relance (429 ou 5xx), aucune après un délai dépassé | En cas de saturation durable de l'API (26/10 : 503 et un appel de 6 min 22 s), la section n'est pas rédigée ; elle est signalée par G1 | Relances espacées sur plusieurs minutes, ou offre payante |
-| Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Sur les sorties du 21/10 et du 26/10, G5 signale bien les sur-affirmations relevées en relecture (« robuste et rigoureusement validé », « principes solides », « garantissant ainsi », « démontrant la viabilité »). Mais le contexte reste ignoré : faux positifs possibles (« un argument solide ») et sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Le contexte est ignoré. Faux positifs possibles (« un argument solide »). Sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| Liste de G5 construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties | **Surajustement** : « 6 paragraphes sur 9, sans faux positif » ne mesure pas la performance de G5. Seuls ses résultats sur l'exécution finale comptent, et la liste est gelée depuis le 26/10 | Construire la liste sur un jeu de développement, puis l'évaluer sur un jeu de test distinct, annoté à la main |
+| Liste de défauts de référence écrite par un LLM (Claude), pour évaluer le relecteur | Sans validation humaine, on ne mesurerait que l'accord entre deux LLM. Chaque défaut est donc validé par un membre du groupe avant l'appariement ; l'échantillon reste petit (une exécution) | Annotation indépendante par deux cliniciens, avant toute sortie du relecteur |
 | Corpus figé dans une version donnée de chaque document | **Fidélité ≠ exactitude** : « code produit QXO » (26/10) est fidèle au chunk de D07, mais périmé (remplacé par SFR dans la correction administrative du 12/09, absente du corpus). Ni les garde-fous ni le relecteur, qui ne voient que les extraits, ne peuvent le repérer | Ingérer les versions corrigées ; vérification humaine des faits réglementaires ; version du document dans les métadonnées |
 | Pas de contrôle automatique des liens entre sources | **Défaut systématique** : le lien inventé AHA (déclaration de déc. 2025) → FDA (autorisation de sept. 2025) revient d'une exécution à l'autre (« pour répondre à ces exigences », 21/10 ; « l'autorisation répond à ces exigences », 26/10) | Années des documents données au rédacteur et règle explicite dans le prompt (`redacteur_v2`) ; repérage par le relecteur (option A) |
 | Boucle de régénération après garde-fous et correction après relecture | Les défauts sont signalés, pas corrigés | Boucle bornée (2 itérations) + comparaison avant / après |

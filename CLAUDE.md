@@ -122,9 +122,11 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-26 | **Relecteur, option A** : un seul appel ; il reçoit l'argumentaire, la consigne, le texte des chunks cités et l'année de chaque document (`meta.json`) | Permettre au relecteur de repérer les ajouts non sourcés et les liens inventés entre sources (aucun juge de fidélité) |
 | 2026-10-26 | **G5** ajouté aux garde-fous : formulations absolues interdites par la règle 7 de `redacteur_v1` (« prouve » et ses formes, « toujours », « aucun risque »), marquage ⚠ | Contrôle automatique, sans coût, d'une règle du prompt |
 | 2026-10-26 | Étape 2a : conclusion **après la boucle**, sans *Wait* avant elle (la boucle attend déjà 15 s) ; délai du rédacteur de 600 s ; archivage de `10-argumentaire` = erreur de manipulation | Choix du groupe |
-| 2026-10-26 | **G5 élargi** :<br>• termes ajoutés : robuste, rigoureusement, solide(s), démontré, incontestable, garanti/garantissant, certainement ;<br>• formes niées non signalées ;<br>• « certain » seulement en emploi affirmatif ;<br>• testé hors ligne | La version initiale ne repérait aucun des défauts réels |
+| 2026-10-26 | **G5 élargi** :<br>• termes ajoutés : robuste, rigoureusement, solide(s), démontré, incontestable, garanti/garantissant, certainement ;<br>• formes niées non signalées ;<br>• « certain » seulement en emploi affirmatif ;<br>• testé hors ligne | La version initiale ne repérait aucun des défauts réels. **Liste gelée le 26/10** : construite sur les sorties qu'elle évalue (surajustement), seuls ses résultats sur l'exécution finale comptent |
 | 2026-10-26 | **Relance unique explicite** (429 ou 5xx → *Wait* 60 s → copie du nœud HTTP) pour les sections, la conclusion et le relecteur. Délai dépassé : pas de relance, signalement G1 (nœud en « continuer après erreur »). Tentatives dans `verif` et `runs.jsonl`. « Retry On Fail » écarté | Le moteur de n8n plafonne l'attente à 5 s, ne relance pas un 503 reçu en « ne jamais lever d'erreur », et ne trace pas les tentatives. Test du 26/10 : l'objet d'erreur de « continuer après erreur » ne contient pas la clé |
 | 2026-10-26 | **Grille du relecteur** : + « affirmations non soutenues par les chunks cités », + « liens et chronologie entre sources (années des documents) » ; prompt `relecteur_v1.md` | Exploiter les entrées de l'option A |
+| 2026-10-26 | **Boîte aux lettres `echanges/`** (rapport de Claude Code, consignes de la revue) ; en-tête `x-goog-api-key` non retenu ; **protocole corrigé** de comparaison avec le relecteur : liste de défauts de référence écrite par Claude, puis validée défaut par défaut par un membre du groupe avant l'appariement | La liste de Claude seule ne mesurerait que l'accord entre deux LLM |
+| 2026-10-26 | **Échéance : pipeline prêt le 28/10 après-midi.** Essai le 27/10, exécution finale officielle le 28/10, puis gel des prompts, de G5 et des workflows | Le rapport et l'oral viennent ensuite |
 
 ## 6. Questions ouvertes / à trancher
 - [x] Position : POUR
@@ -138,9 +140,13 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - [x] Diversité du retrieval pour WF10 : plusieurs requêtes + plafond par document (17/10, voir section 5)
 - [x] Commande d'export : remplacée par `sh n8n/exporter.sh` (17/10)
 - [x] Référence de D12 : 83(3):e00254, confirmé par Crossref (17/10)
-- [ ] **Exécution du 27/10 après 8 h, avec accord** : technique + éthique + réglementaire + conclusion + relecteur, soit 5 appels de chat (10 au plus avec les relances). Paramètres déjà réglés. Ensuite, comparaison relecteur contre relecture humaine (`pipeline.md` § 3)
+- [ ] **Essai du 27/10 après 8 h, avec le feu vert d'Adam** :
+  - technique + éthique + réglementaire + conclusion + relecteur, soit 5 appels de chat (10 au plus avec les relances) ; paramètres déjà réglés ;
+  - règle d'arrêt : si le premier appel dépasse 3 min ou échoue malgré la relance, on arrête et on réessaie dans l'heure ;
+  - ensuite, comparaison avec le relecteur selon le protocole corrigé (`pipeline.md` § 3).
+- [ ] **Exécution finale officielle le 28/10 après 8 h, avec le feu vert d'Adam** : toutes les sections, la conclusion, le relecteur et la baseline (11 appels), puis `eval/evaluer.py`, puis **gel**. Échéance : pipeline prêt le 28/10 après-midi
 - [x] Grille du relecteur : 2 critères ajoutés (26/10)
-- [ ] Clé Gemini en en-tête `x-goog-api-key` (credential *Header Auth*) : faisable, mais inutile pour « continuer après erreur », dont l'objet d'erreur ne contient pas la clé (test du 26/10). À trancher par le groupe ; non codé
+- [x] Clé Gemini en en-tête `x-goog-api-key` : **non retenu** (26/10). Gain trop faible pour une clé stockée dans deux credentials ; « continuer après erreur » ne l'expose pas de toute façon (test du 26/10)
 - [ ] Workflows « MOA » et « My workflow » (brouillons du 30/09) à supprimer dans l'interface n8n ?
 - [ ] Requête forcée `role = contre` : 2 chunks garantis sur 10 au plus (proposition de Claude, dans `prompts/sections.json`), à valider
 - [ ] Les commits contiennent l'e-mail de l'auteur (configuration git `user.email`). Passer à l'adresse *noreply* de GitHub pour les prochains commits ?
@@ -176,6 +182,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 - Répondre en français, de façon directe et concrète.
 - **Aucune correction silencieuse** : signaler toute erreur (de fond, de lien, de structure) et attendre l'accord avant de corriger.
 - **Divergence avec la spec** (`pipeline.md`) : la signaler **et attendre l'accord** avant de la coder ; la signaler en la codant ne suffit pas (rappel du 26/10).
+- **Boîte aux lettres `echanges/`** (règles dans `echanges/README.md`) : à la fin de chaque étape, écrire le rapport dans `echanges/rapport.md`, en plus de la réponse dans le terminal. Le rapport contient les résultats, les questions et les choix à valider, avec les options et une recommandation. Le fichier est remplacé à chaque fois, avec en tête la date, l'heure et le commit. `echanges/consignes.md` n'est exécuté qu'après l'accord explicite d'Adam. Aucune clé dans ces fichiers.
 - **Quota Gemini** (20 appels de chat par jour) : ne jamais lancer d'exécution complète de `10-argumentaire`, ni l'exécution finale (relecteur, baseline), sans l'accord de l'utilisateur. Les essais se font sur 1 ou 2 sections.
 - Ne pas signaler comme défauts les états transitoires du chantier.
 - Toute affirmation factuelle intégrée au rapport doit avoir une source vérifiée (les sources sont contrôlées au hasard par les enseignants).
