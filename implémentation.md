@@ -226,6 +226,28 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - G5 signale « démontré », « garantissant » et « garantit ».
 - La comparaison avec le relecteur n'a pas pu se faire : il n'y a eu ni argumentaire ni relecture.
 
+**Exécution complète candidate `20261027-093507`** (consignes de 9 h 30 ; seuil de 420 s) :
+- **Déroulé** :
+  - premier lancement à 9 h 26 : arrêt `delai` à 422 s (503, puis relance en 406 s) ;
+  - relancement à 9 h 35 : **terminé en 47 min**, statut `termine`.
+- **Appels** : 14 appels de chat (10 appels et 4 relances), 28 requêtes d'embeddings.
+- **Latence** : de 142 à 494 s par appel réussi.
+- **Baseline `20261027-102233`** : 293 s, 9 sections sur 9, 27 paragraphes, 22 références.
+- **Quota du jour épuisé** : 20 appels.
+- **Critère « sans défaut technique » non rempli** :
+  - éthique et parcours de soins sont en échec G1 (503 aux deux tentatives) ;
+  - la section « enjeux FDA » contient 91 caractères nuls : Gemini a renvoyé `\u0000e9` au lieu de « é » dans son JSON (`finishReason: STOP`). G4 signale les « nombres » qui en résultent ;
+  - la conclusion est entièrement écrite sans accents.
+- **Liste de défauts de référence** (`outputs/defauts_reference_20261027-093507.md`), écrite sans ouvrir la relecture :
+  - 30 défauts de fond, dont 11 de gravité haute et 4 liens inventés entre l'AHA et Apple ou la FDA (A3, A9, A18, A25) ;
+  - 4 défauts de structure et de forme ;
+  - 2 défauts invisibles depuis les extraits (QXO, deux fois).
+  
+  Elle est en attente de validation par un membre du groupe.
+- **Garde-fous** :
+  - G5 signale 5 paragraphes, chacun avec un vrai défaut. Il fait aussi une fausse alerte (« sans lien prouve ») et manque « demontre », écrit sans accent ;
+  - G4 n'a repéré que la corruption de l'encodage.
+
 ## Étape 5 — Garde-fous (WF20)
 - G1 structure · G2 citations ∈ chunks récupérés · G3 fidélité (juge Claude Haiku) · G4 chiffres présents dans la source
 - Régénération si échec, 2 itérations au maximum
@@ -323,3 +345,4 @@ Protocole :
 | 2026-10-27 | Essai du point 3 (technique, éthique, réglementaire, conclusion, relecteur) : **deux arrêts par la règle du premier appel**. Essai 1 : 503 puis relance réussie, durée réelle d'environ 308 s, mais 41 145 s affichées à cause d'un saut d'horloge de la VM. Essai 2 : 241 s. Aucune sortie, 3 appels de chat consommés. Extrait des deux sections rédigées dans `outputs/brouillons_arretes_20261027.json` | Horloge de la VM Podman figée pendant la veille du Mac (11 h 20 de retard), recalée en pleine exécution ; API Gemini environ 8 fois plus lente que le 21/10 | Contrôle d'horloge avant chaque exécution (`chronyc makestep`) ; arrêt après la relance prévue par la règle, décision sur le seuil demandée à Adam ; le lien inventé AHA → Apple revient dans 4 sorties sur 4 | — |
 | 2026-10-27 | Consignes de 9 h 30 : **seuil de la règle d'arrêt porté à 420 s** (essai et exécution finale) ; l'essai devient une **exécution complète candidate** (9 sections dont la conclusion, relecteur, puis baseline : 11 appels). Paramètres réglés sur les 9 sections | Latence de 4 à 5 min observée le 27/10 (34 s le 21/10, même prompt) : le seuil de 180 s arrêtait des appels réussis | Seuil relevé, l'arrêt sur échec après relance est conservé ; contrôle d'horloge systématique avant chaque lancement | — |
 | 2026-10-27 | Exécution complète candidate, lancement de 9 h 26 : **arrêt `delai` à 422 s** (seuil de 420 s). Premier appel (contexte) : 503 en 16 s, puis relance réussie en 406 s. La mesure additionne les deux tentatives, sans l'attente de relance : la relance seule serait passée. Délai de la baseline porté à 1 200 s (décision d'Adam, débit d'environ 10 à 18 tokens/s). Nouvel essai lancé dans l'heure, avec la baseline enchaînée | API très lente et instable (503 au premier essai, 2 fois sur 3 ce matin) ; 5 appels de chat consommés à 9 h 34 | Réessai prévu par la règle ; le quota de demain reste intact pour le filet de sécurité ; question sur la mesure (inclure ou non l'essai échoué) posée à Adam | — |
+| 2026-10-27 | Exécution complète candidate `20261027-093507` (47 min, 14 appels) et baseline `20261027-102233` (9 sections sur 9, 22 références) ; liste de défauts de référence écrite sans ouvrir la relecture (30 de fond + 4 de forme + 2 invisibles depuis les extraits) | 2 sections en échec G1 (503 après relance) ; caractères nuls dans « enjeux FDA » (`\u0000e9` renvoyé par Gemini) ; conclusion sans accents ; quota du jour épuisé | Exécution non éligible comme officielle (critère technique) ; correctifs proposés à Adam (réparation de l'encodage, détection de l'absence d'accents, seconde relance, réutilisation de la baseline) ; validation de la liste par le groupe avant l'appariement | — |

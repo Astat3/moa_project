@@ -146,6 +146,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
   - technique + éthique + réglementaire + conclusion + relecteur, soit 5 appels de chat (10 au plus avec les relances) ; paramètres déjà réglés ;
   - règle d'arrêt : si le premier appel dépasse 3 min ou échoue malgré la relance, on arrête et on réessaie dans l'heure. Elle est appliquée automatiquement par le workflow et testée par simulation le 26/10 ;
   - ensuite, comparaison avec le relecteur selon le protocole corrigé (`pipeline.md` § 3).
+  - **27/10, exécution complète candidate `20261027-093507` (et baseline `20261027-102233`)** : terminée, mais critère technique non rempli (2 sections en échec G1, encodage corrompu dans « enjeux FDA », conclusion sans accents). Liste de défauts de référence à valider par le groupe, puis appariement avec la relecture. Correctifs pour le 28/10 à valider (`echanges/rapport.md`)
   - **27/10, 9 h 05 et 9 h 13 : deux arrêts** (premier appel en 308 s, puis en 241 s ; API lente). Décision attendue : seuil, nouvel essai ou report (voir `echanges/rapport.md`)
 - [ ] **Avant chaque exécution, contrôler l'horloge de la VM Podman** (écart avec l'hôte > 5 s → `podman machine ssh 'sudo chronyc makestep'`). Le 27/10, son retard de 11 h 20 après la veille du Mac a faussé `run_id` et durées
 - [ ] **Exécution finale officielle le 28/10 après 8 h, avec le feu vert d'Adam** : toutes les sections, la conclusion, le relecteur et la baseline (11 appels), puis `eval/evaluer.py`, puis **gel**. Échéance : pipeline prêt le 28/10 après-midi
