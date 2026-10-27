@@ -25,7 +25,7 @@ Corpus **figé à 4 documents** (D06 Apple, D07 FDA K250507, D09 Elgendi, D12 AH
   | `gemini-embedding-001` (ingestion, requêtes de recherche) | 100 | 30 000 | 1 000 |
 
   - *Wait* de **15 s** entre deux appels de chat (60 s / 5 RPM = 12 s, plus une marge).
-  - Une exécution complète de `10-argumentaire` fait **10 appels de chat** (8 sections, conclusion, relecteur) et 28 requêtes d'embeddings. Avec la baseline : **11 appels de chat**, plus de la moitié du quota du jour. Chaque appel peut être relancé une fois (429 ou 5xx), donc 22 au pire.
+  - Une exécution complète de `10-argumentaire` fait **10 appels de chat** (8 sections, conclusion, relecteur) et 28 requêtes d'embeddings. Avec la baseline : **11 appels de chat**, plus de la moitié du quota du jour. Depuis le 27/10, chaque appel peut être relancé jusqu'à 2 fois (429 ou 5xx), dans la limite d'un budget de 18 appels de chat par exécution (nœud Paramètres).
   - Donc : les essais portent sur 1 ou 2 sections (paramètre en tête de `10-argumentaire`), **aucune exécution complète sans l'accord du groupe**, et l'exécution finale officielle se fait un jour où le quota est entier (section 4).
 - Rédaction en **français** ; requêtes de recherche fixes en **anglais** (`sections.json`).
 
@@ -62,7 +62,25 @@ Manual Trigger → **Paramètres** (nœud en tête : modèle et **liste des sect
    Pourquoi : au test du 17/10/2026, le top 5 venait d'un seul document (D12), et D06 (performances d'Apple) n'apparaissait pas.
 
 **B. Rédacteur** (Gemini, prompt `redacteur_v1.md`). Il reçoit la section, la consigne, la position POUR et les chunks avec leur `chunk_id`. Appel par un nœud **HTTP Request** direct à `generateContent` (credential Gemini de n8n), modèle **`gemini-3.8-flash`**, en **mode JSON avec schéma** (`responseMimeType` + `responseSchema`) ; réponse complète conservée même en cas d'erreur HTTP (« ne jamais lever d'erreur »). Délai maximal de **600 s** par appel (180 s au départ, dépassé le 26/10).
-- **Relance unique** (décision du 26/10/2026) : IF « Relancer le rédacteur ? » (HTTP 429 ou 5xx) → *Wait* 60 s → « Rédacteur (2e tentative) » (copie du nœud HTTP) → garde-fous. Un second échec est signalé par G1. Le nombre de tentatives (1 ou 2) va dans `verif` et `runs.jsonl`. Le « Retry On Fail » de n8n ne convenait pas : attente plafonnée à 5 s par le moteur, pas de relance sur un 503 reçu en mode « ne jamais lever d'erreur », tentatives invisibles.
+- **Relances** :
+  - jusqu'au 26/10 : une seule relance, après 60 s ;
+  - **depuis le 27/10 : jusqu'à 2 relances**, après 60 s puis 120 s, sur HTTP 429 ou 5xx seulement ;
+  - **budget global** : une relance n'est tentée que si le total des appels de chat de l'exécution reste ≤ `budget_appels_chat` (18, dans le nœud Paramètres). Au-delà, l'échec est signalé par G1 avec la mention du budget.
+
+  Chaîne : Rédacteur → Code « Relance ? (rédacteur) » (compteurs de l'exécution dans `$execution.customData` : appels de chat, tentative en cours) → IF → *Wait* 60 s → IF « 3e tentative ? » → *Wait* 60 s de plus → « Rédacteur (relance) » → retour au Code de décision.
+
+  Les 120 s sont obtenues par deux attentes de 60 s. Au-delà de 65 s, le nœud *Wait* de n8n confie l'exécution à la base pour la reprendre plus tard, ce qui casserait une exécution lancée en CLI (code du nœud vérifié).
+
+  Les tentatives, les relances refusées faute de budget et le budget vont dans `verif` et `runs.jsonl`.
+
+  Le « Retry On Fail » de n8n ne convenait pas : son attente est plafonnée à 5 s par le moteur, il ne relance pas un 503 reçu en mode « ne jamais lever d'erreur », et ses tentatives sont invisibles.
+- **Décodage de la réponse** (27/10) : ce n'est pas une correction de contenu.
+  - Gemini a renvoyé `\u0000e9` au lieu de « é » le 27/10.
+  - Juste après la lecture de la réponse, et **avant** G1 à G5, un caractère NUL suivi de 2 chiffres hexadécimaux est remplacé par le caractère correspondant (`\u0000e9` → « é »). G4 et G5 travaillent ainsi sur le texte réparé.
+  - Le motif est strict : tout autre caractère NUL est laissé tel quel et signalé par G1.
+  - Le nombre de remplacements va dans `verif` et `runs.jsonl`.
+  - Le même décodage s'applique à la réponse du relecteur.
+  - Il n'enfreint pas le principe « les garde-fous signalent sans corriger » : il rétablit le texte tel que le modèle l'a voulu, sans rien changer à son contenu.
 - **Délai dépassé** : pas de relance, car après 600 s l'API est saturée. Le nœud est en « continuer après erreur », donc l'erreur est signalée par G1 sans arrêter l'exécution. Ce mode est sans risque : un test du 26/10 montre que l'objet d'erreur ne contient que le message et la cause, ni l'URL, ni les paramètres, ni les en-têtes. La clé n'y figure pas.
 
 Il renvoie :
@@ -79,10 +97,10 @@ Règles du prompt :
 **C. Garde-fous** (un seul nœud Code, sans coût, **sans nouvelle tentative**) :
 | Garde-fou | Contrôle |
 |---|---|
-| **G1 Structure** | JSON valide, champs présents, au moins un paragraphe |
+| **G1 Structure** | JSON valide, champs présents, au moins un paragraphe. Depuis le 27/10 :<br>• aucun caractère NUL restant après le décodage ;<br>• une section rédigée (200 caractères au moins hors marqueur) contient au moins un caractère accentué |
 | **G2 Citations** | chaque `chunk_id` cité fait partie des chunks récupérés ; un paragraphe sans citation déclenche une alerte |
 | **G4 Chiffres** | chaque nombre ou pourcentage d'un paragraphe figure dans un chunk qu'il cite |
-| **G5 Formulations absolues** | liste de mots, élargie le 26/10 au-delà de la règle 7 de `redacteur_v1.md`. Termes signalés :<br>• « prouve » et « démontre » (et leurs formes) ;<br>• « toujours », « aucun risque » ;<br>• « robuste », « rigoureusement », « solide(s) », « incontestable » ;<br>• « garanti » (et ses formes) ;<br>• « certainement », et « certain » en emploi affirmatif (« est certain »), pas comme quantificateur (« certains patients »).<br>Les formes niées (« pas toujours », « non prouvé », « n'a pas été démontré ») ne sont pas signalées |
+| **G5 Formulations absolues** | liste de mots, élargie le 26/10 au-delà de la règle 7 de `redacteur_v1.md`. Termes signalés :<br>• « prouve » et « démontre » (et leurs formes) ;<br>• « toujours », « aucun risque » ;<br>• « robuste », « rigoureusement », « solide(s) », « incontestable » ;<br>• « garanti » (et ses formes) ;<br>• « certainement », et « certain » en emploi affirmatif (« est certain »), pas comme quantificateur (« certains patients »).<br>Les formes niées (« pas toujours », « non prouvé », « n'a pas été démontré ») ne sont pas signalées.<br>**Depuis le 27/10, la comparaison ignore les accents** (texte et liste normalisés) : c'est une correction du comparateur, la liste gelée est inchangée |
 
 Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire ; le détail va dans `verif_<run_id>.json`.
 
@@ -122,7 +140,7 @@ Grille :
 - clarté de la conclusion.
 
 Il renvoie une **liste de problèmes** en JSON (`{section, gravite: haute|moyenne|basse, probleme}`), **sans réécriture ni correction automatique**. Sortie : `relecture_<run_id>.json`.
-- Nœuds : Écrire dans `outputs/` → *Wait* 15 s → Prompt du relecteur → Relecteur (HTTP, mode JSON avec schéma) → même relance unique que le rédacteur (429 ou 5xx, *Wait* 60 s, « Relecteur (2e tentative) ») → Relecture et traces (`relecture_<run_id>.json` + ligne de `runs.jsonl`).
+- Nœuds : Écrire dans `outputs/` → *Wait* 15 s → Prompt du relecteur → Relecteur (HTTP, mode JSON avec schéma) → mêmes relances que le rédacteur, avec le même budget (Code « Relance ? (relecteur) », « Relecteur (relance) ») → Relecture et traces (`relecture_<run_id>.json` + ligne de `runs.jsonl`).
 - Les extraits lui sont donnés avec le même renvoi `[n, p. X]` que dans le Markdown, avec le document et son année.
 - Le prompt définit la gravité :
   - haute : affirmation non soutenue, lien inventé, erreur ;
@@ -151,6 +169,7 @@ Mise en œuvre (26/10/2026) :
   - `baseline_<run_id>.json`, la sortie brute, pour `eval/evaluer.py` ;
   - une ligne dans `runs.jsonl`.
 - Testé avec un appel simulé (503 puis relance).
+- **Baseline officielle : `baseline_20261027-102233`**, produite le 27/10 avec le même modèle (`gemini-3.8-flash`) et les mêmes règles (`baseline_v1.md`), avec un délai de 1 200 s. Décision du 27/10 : elle n'utilise ni le RAG ni les garde-fous, donc elle ne dépend pas du pipeline, et la garder libère un appel pour les relances. 9 sections sur 9, 27 paragraphes, 22 références. Pas de caractère NUL ni de section sans accents : `eval/evaluer.py` n'a pas besoin de la réparer.
 
 ## 3. Évaluation — script `eval/evaluer.py` (hors n8n)
 Sortie : `outputs/metriques.csv`
@@ -219,8 +238,10 @@ Sortie : `outputs/metriques.csv`
 
 **Échéance : pipeline prêt le 28/10 après-midi.**
 
-**Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Elle consomme 11 appels sur 20 sans relance. Avec les relances automatiques (une par appel au plus), le pire cas dépasse le quota : si plus de 9 relances sont nécessaires, il faut arrêter et reporter l'exécution. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
-- Prévue le **28/10 après 8 h**, avec la même règle d'arrêt.
+**Exécution finale officielle** (après les étapes 3 et 4 déboguées sur 1 ou 2 sections) : toutes les sections, puis le relecteur, puis la baseline, **le même jour**, un jour où le quota de chat est entier (aucun essai ce jour-là avant l'exécution), après la remise à zéro de 8 h (9 h à partir du 02/11). Depuis le 27/10 : 10 appels de chat (9 sections dont la conclusion, et le relecteur), plus les relances, dans la limite d'un budget de 18 appels. La baseline officielle est celle du 27/10, qui n'est pas refaite. Elle n'est lancée qu'avec l'accord du groupe. Ses fichiers sont ceux du rapport.
+- Prévue le **28/10 à 8 h pile**, au moment de la remise à zéro du quota et d'une charge plus faible, après le contrôle de l'horloge, avec la même règle d'arrêt.
+- **Exécution 1, non officielle** : `20261027-093507`, gardée pour ses défauts techniques (2 sections en échec G1, encodage, conclusion sans accents). Elle répond en partie à la limite « une seule exécution » : le lien inventé AHA → Apple/FDA y revient. **La comparaison avec le relecteur se fait sur elle** (liste de référence prête) ; elle n'est pas refaite sur l'exécution finale, faute de temps.
+- **Gel le 27/10 au soir**, après les correctifs testés par simulation : plus aucune modification des prompts, de G5 ni des workflows.
 - Suivie de `eval/evaluer.py` sur cette exécution.
 - Ensuite, **gel** : plus aucune modification des prompts, de G5 ni des workflows.
 
@@ -242,9 +263,10 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Corpus de 4 documents (au lieu des ~20 identifiés dans `corpus.md`) | Sections éthique, socio-économique et réglementaire pauvres ; un seul document « contre » | Ingérer le corpus complet (quota d'embeddings, idempotence de l'ingestion) |
 | Système multi-agents (2 rédacteurs + superviseur) | Un seul point de vue de génération | 2 rédacteurs de modèles différents + arbitre en cas de discordance |
 | Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
-| Une seule relance (429 ou 5xx), aucune après un délai dépassé | En cas de saturation durable de l'API (26/10 : 503 et un appel de 6 min 22 s), la section n'est pas rédigée ; elle est signalée par G1 | Relances espacées sur plusieurs minutes, ou offre payante |
-| Pas de contrôle de l'encodage ni de la langue des sorties | Le 27/10, Gemini a renvoyé `\u0000e9` au lieu de « é » dans une section (91 caractères corrompus, repérés seulement par G4), et une conclusion entièrement sans accents. G5 ne voit plus les mots sans accent (« demontre ») | Réparation des séquences `\u0000xx` et détection des textes sans accents (correctifs proposés le 27/10, à valider) |
+| Relances limitées : 2 au plus par appel (60 s puis 120 s), budget de 18 appels par exécution, aucune relance après un délai dépassé | En cas de saturation durable de l'API, une section peut rester vide, signalée par G1. Le 27/10, 2 sections sur 10 étaient vides avec une seule relance | Relances espacées sur plusieurs minutes, ou offre payante (quota plus large) |
+| Pas de contrôle de l'encodage ni de la langue des sorties | Le 27/10, Gemini a renvoyé `\u0000e9` au lieu de « é » dans une section (91 caractères corrompus, repérés seulement par G4), et une conclusion entièrement sans accents. G5 ne voit plus les mots sans accent (« demontre ») | **Fait le 27/10** : décodage des séquences NUL + 2 chiffres hexadécimaux avant les garde-fous, alerte G1 pour les textes sans accents, G5 insensible aux accents. Restent : pas de correction des textes sans accents (aucun changement de prompt), et un contrôle de la langue limité aux accents |
 | Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Le contexte est ignoré. Faux positifs possibles (« un argument solide »). Sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| **G5 compare sans tenir compte des accents depuis le 27/10.** Cause : la conclusion du 27/10, écrite sans accents, échappait à « démontre ». C'est une correction générique du comparateur : aucun terme ajouté ni retiré | Une fausse alerte nouvelle est possible : « les résultats démontrent une spécificité de 92,3 % » (conclusion du 27/10, § 3) est un simple compte rendu | — |
 | Liste de G5 construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties | **Surajustement** : « 6 paragraphes sur 9, sans faux positif » ne mesure pas la performance de G5. Seuls ses résultats sur l'exécution finale comptent, et la liste est gelée depuis le 26/10 | Construire la liste sur un jeu de développement, puis l'évaluer sur un jeu de test distinct, annoté à la main |
 | Liste de défauts de référence écrite par un LLM (Claude), pour évaluer le relecteur | Sans validation humaine, on ne mesurerait que l'accord entre deux LLM. Chaque défaut est donc validé par un membre du groupe avant l'appariement ; l'échantillon reste petit (une exécution) | Annotation indépendante par deux cliniciens, avant toute sortie du relecteur |
 | Corpus figé dans une version donnée de chaque document | **Fidélité ≠ exactitude** : « code produit QXO » (26/10) est fidèle au chunk de D07, mais périmé (remplacé par SFR dans la correction administrative du 12/09, absente du corpus). Ni les garde-fous ni le relecteur, qui ne voient que les extraits, ne peuvent le repérer | Ingérer les versions corrigées ; vérification humaine des faits réglementaires ; version du document dans les métadonnées |

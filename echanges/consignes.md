@@ -1,19 +1,25 @@
-# Consignes — 27/10/2026, 9 h 30 · après le commit 02882a0
-Revue du rapport de ce matin. **À exécuter seulement après la validation explicite d'Adam.**
+# Consignes — 27/10/2026, 10 h 45 · après le commit d5f96f1
+Revue du rapport de l'exécution candidate. **À exécuter seulement après la validation explicite d'Adam.**
 
-## 1. Seuil : option A (420 s)
-Tu as raison, mon seuil de 180 s était trop serré : un appel lent mais réussi ne coûte que du temps. On garde l'arrêt sur échec après relance, et le seuil passe à **420 s** pour l'essai et pour l'exécution finale. Note le changement dans `pipeline.md` et `implémentation.md`, avec la raison (latence de 4 à 5 min observée le 27/10, contre 34 s le 21/10).
+## 1. Accents corrompus : validé, avec deux précisions
+- La réparation est un **décodage**, pas une correction de contenu. Place-la juste après la lecture de la réponse de Gemini, **avant** les garde-fous, pour que G4 et G5 travaillent sur le texte réparé. Dans `pipeline.md`, présente-la comme telle, sinon elle contredit le principe « les garde-fous signalent sans corriger ».
+- Motif strict : seulement un caractère NUL suivi de 2 chiffres hexadécimaux. Compte les réparations dans verif, et **signale (G1) tout caractère NUL restant** qui ne correspond pas au motif, au lieu de le deviner.
+- Vérifie que la baseline d'aujourd'hui n'a pas le même défaut. Si elle l'a, applique la même réparation dans `eval/evaluer.py`, pour traiter les deux côtés à égalité.
 
-## 2. Changement de plan : l'essai d'aujourd'hui devient une exécution candidate
-L'API est instable et l'échéance est demain après-midi. Pour ne pas tout miser sur demain matin :
-- **Lance aujourd'hui l'exécution complète** : toutes les sections, conclusion, relecteur, puis baseline (11 appels ; 3 déjà consommés, donc 14 sur 20, avec 6 de marge pour les relances).
-- Si elle va au bout sans défaut technique (pas de section en échec G1, fichiers complets) **et** qu'Adam valide, **elle devient l'exécution officielle** : gel, `eval/evaluer.py`, export et commit. Demain matin ne sert alors que de filet de sécurité.
-- Si elle révèle un bug à corriger, on corrige, puis on refait l'exécution finale demain après 8 h, comme prévu.
-- Dans les deux cas, applique ensuite le protocole de comparaison avec le relecteur (ta liste de défauts **avant** d'ouvrir la relecture).
+## 2. Texte sans accents : alerte G1, validé, plus un ajustement de G5
+- Alerte G1 si une section en français ne contient aucun caractère accentué.
+- **G5 compare sans tenir compte des accents** : texte et liste normalisés avant la comparaison. Ce n'est pas une modification de la liste gelée (aucun terme ajouté ni retiré), c'est une correction générique du comparateur. Note-le explicitement au § 5, avec sa cause (la conclusion du 27/10).
+- Pas de changement de prompt.
 
-Contrôle de l'horloge (`chronyc makestep` si l'écart dépasse 5 s) avant de lancer : bonne trouvaille, garde-le systématique.
+## 3. Seconde relance après 120 s : validée, avec un plafond global
+Avec 2 relances par appel, le pire cas dépasse le quota du jour. Ajoute un **budget** : une relance n'est tentée que si le nombre total d'appels de chat de l'exécution reste ≤ 18. Au-delà, la section est signalée G1 sans relance. Note le budget dans runs.jsonl.
 
-## 3. Pour la critique des résultats
-Le lien inventé AHA → Apple à 4 sorties sur 4, y compris dans les brouillons arrêtés : c'est un défaut systématique du rédacteur, à présenter comme tel. Garde `brouillons_arretes_20261027.json` comme matière qualitative, hors métriques.
+## 4. Baseline d'aujourd'hui = baseline officielle : validé
+C'est défendable : la baseline n'utilise ni le RAG ni les garde-fous, donc elle ne dépend pas du pipeline. Note dans `pipeline.md` qu'elle a été produite le 27/10, avec le même modèle et les mêmes règles, et un délai de 1 200 s.
 
-Rapport dans `echanges/rapport.md` à la fin.
+## 5. L'exécution d'aujourd'hui garde de la valeur
+Garde-la comme **exécution 1 (non officielle, défauts techniques)**. Elle répond en partie à la limite « une seule exécution » : par exemple le lien AHA → Apple/FDA, qui revient à chaque exécution. La comparaison avec le relecteur se fait sur **celle-ci**, puisque la liste de référence est prête. On ne la refait pas sur l'exécution de demain, faute de temps.
+
+## 6. Demain
+- Code et teste les points 1 à 3 ce soir, par simulation, puis gel.
+- Demain : **lance à 8 h pile** (remise à zéro du quota, charge plus faible), après le contrôle de l'horloge. Exécution finale : 9 sections, conclusion, relecteur (10 appels, plus les relances dans la limite du budget). Ensuite `eval/evaluer.py`, export, commit, rapport.

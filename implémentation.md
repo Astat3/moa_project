@@ -248,6 +248,31 @@ Trace écrite de la construction du pipeline. Elle sert de matière première po
   - G5 signale 5 paragraphes, chacun avec un vrai défaut. Il fait aussi une fausse alerte (« sans lien prouve ») et manque « demontre », écrit sans accent ;
   - G4 n'a repéré que la corruption de l'encodage.
 
+**Correctifs du 27/10 avant le gel** (consignes de 10 h 45, tous testés par simulation, sans appel de chat) :
+- **Décodage** :
+  - un caractère NUL suivi de 2 chiffres hexadécimaux est remplacé par le caractère correspondant, juste après `JSON.parse` et avant G1 à G5 ;
+  - G1 signale tout NUL restant ;
+  - le même décodage s'applique à la réponse du relecteur ;
+  - la baseline du 27/10 ne présente pas le défaut, donc rien à changer dans `eval/evaluer.py`.
+- **G1** : alerte quand une section rédigée (200 caractères au moins hors marqueur) ne contient aucun caractère accentué.
+- **G5** : la comparaison ignore les accents (`normalize('NFD')`, marques retirées), et les lignes `TERMES` et `NEGATION` sont inchangées. 34 cas d'essai passent.
+  - Sur l'exécution 1, G5 voit maintenant « demontre » (A30).
+  - Il signale aussi « demontrent » dans « les résultats démontrent une spécificité de 92,3 % » : probable fausse alerte.
+- **Relances** :
+  - jusqu'à 2, après 60 s puis 120 s, avec un budget de 18 appels de chat par exécution ;
+  - compteurs de l'exécution dans `$execution.customData`, testé en CLI au préalable ;
+  - **les 120 s sont faites de deux attentes de 60 s** : le code du nœud *Wait* (lignes 506 à 518) met l'exécution en attente dans la base au-delà de 65 s, ce qui casserait la CLI ;
+  - 40 nœuds au total.
+- **Simulation** :
+  - contexte : 3 décodages et un NUL restant signalé ;
+  - enjeux FDA : 503, 503, puis 200 (3 tentatives) ;
+  - technique : sans accents, d'où une alerte G1 et G5 sur « demontre » ;
+  - éthique : 503 trois fois ;
+  - conclusion et relecteur : relance refusée faute de budget (budget de test : 9) ;
+  - `runs.jsonl` : 10 appels, tentatives, refus et 3 décodages.
+- **Baseline officielle** : `20261027-102233`. **Exécution 1, non officielle** : `20261027-093507`, support de la comparaison avec le relecteur.
+- **Gel** le 27/10 au soir.
+
 ## Étape 5 — Garde-fous (WF20)
 - G1 structure · G2 citations ∈ chunks récupérés · G3 fidélité (juge Claude Haiku) · G4 chiffres présents dans la source
 - Régénération si échec, 2 itérations au maximum
@@ -346,3 +371,4 @@ Protocole :
 | 2026-10-27 | Consignes de 9 h 30 : **seuil de la règle d'arrêt porté à 420 s** (essai et exécution finale) ; l'essai devient une **exécution complète candidate** (9 sections dont la conclusion, relecteur, puis baseline : 11 appels). Paramètres réglés sur les 9 sections | Latence de 4 à 5 min observée le 27/10 (34 s le 21/10, même prompt) : le seuil de 180 s arrêtait des appels réussis | Seuil relevé, l'arrêt sur échec après relance est conservé ; contrôle d'horloge systématique avant chaque lancement | — |
 | 2026-10-27 | Exécution complète candidate, lancement de 9 h 26 : **arrêt `delai` à 422 s** (seuil de 420 s). Premier appel (contexte) : 503 en 16 s, puis relance réussie en 406 s. La mesure additionne les deux tentatives, sans l'attente de relance : la relance seule serait passée. Délai de la baseline porté à 1 200 s (décision d'Adam, débit d'environ 10 à 18 tokens/s). Nouvel essai lancé dans l'heure, avec la baseline enchaînée | API très lente et instable (503 au premier essai, 2 fois sur 3 ce matin) ; 5 appels de chat consommés à 9 h 34 | Réessai prévu par la règle ; le quota de demain reste intact pour le filet de sécurité ; question sur la mesure (inclure ou non l'essai échoué) posée à Adam | — |
 | 2026-10-27 | Exécution complète candidate `20261027-093507` (47 min, 14 appels) et baseline `20261027-102233` (9 sections sur 9, 22 références) ; liste de défauts de référence écrite sans ouvrir la relecture (30 de fond + 4 de forme + 2 invisibles depuis les extraits) | 2 sections en échec G1 (503 après relance) ; caractères nuls dans « enjeux FDA » (`\u0000e9` renvoyé par Gemini) ; conclusion sans accents ; quota du jour épuisé | Exécution non éligible comme officielle (critère technique) ; correctifs proposés à Adam (réparation de l'encodage, détection de l'absence d'accents, seconde relance, réutilisation de la baseline) ; validation de la liste par le groupe avant l'appariement | — |
+| 2026-10-27 | Correctifs avant le gel : décodage des caractères NUL, alertes G1 (NUL restant, texte sans accents), G5 insensible aux accents (liste inchangée), jusqu'à 2 relances (60 s puis 2 × 60 s) avec un budget de 18 appels ; baseline du 27/10 officielle ; **gel** | Un *Wait* de plus de 65 s met l'exécution en attente dans la base et casserait la CLI ; besoin d'un compteur d'appels sur toute l'exécution | Deux attentes de 60 s ; `$execution.customData`, testé en CLI ; tous les chemins testés par simulation | à faire : capture de `10-argumentaire` gelé |
