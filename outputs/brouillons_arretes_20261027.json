@@ -1,0 +1,121 @@
+{
+  "source": "Extrait par Claude Code de la sortie de `n8n execute` des deux essais arrêtés le 27/10 (règle d'arrêt) : sections rédigées mais non écrites par le workflow.",
+  "note": "run_id 20261026-214455 faussé par l'horloge de la VM (exécution réelle du 27/10 à 9 h 05) ; durée réelle du premier appel ≈ 308 s (41 145 s affichées, saut d'horloge de 40 837 s).",
+  "essais": [
+    {
+      "run_id": "20261026-214455",
+      "section": "technique",
+      "tentatives": 2,
+      "duree_appel_s_reelle": 308,
+      "chunks_recuperes": [
+        "D12-cbb338ee",
+        "D12-d46aea5b",
+        "D09-6db02069",
+        "D09-393736c2",
+        "D07-c40316f9",
+        "D06-8dcda495",
+        "D06-172c7316",
+        "D07-8c402bbb"
+      ],
+      "paragraphes": [
+        {
+          "texte": "L'analyse de la morphologie d'onde issue de la photopléthysmographie (PPG) suscite un intérêt grandissant pour comprendre la formation de la pression artérielle. L'état physiologique des vaisseaux sanguins périphériques, en particulier le vieillissement, la rigidité et la compliance, se reflète partiellement dans les signaux périphériques. L'examen de la forme d'onde PPG, modulée par la propulsion et la circulation sanguine, permet ainsi d'évaluer l'état vasculaire. Différents paramètres extraits directement du signal sont exploités dans la littérature, parmi lesquels la largeur de pulsation, l'indice d'augmentation, l'indice de rigidité des grandes artères ou encore le temps de crête.",
+          "citations": [
+            "D09-393736c2"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Pour reconstruire la pression artérielle à partir de ces signaux PPG, plusieurs approches algorithmiques ont été documentées. Des techniques d'apprentissage automatique et de régression linéaire ont permis de prédire la pression avec une erreur inférieure à 8 mmHg, bien que sur une cohorte restreinte de trois sujets. En intégrant des caractéristiques temporelles, fréquentielles et d'entropie du signal PPG dans des réseaux de neurones, d'autres travaux ont obtenu des erreurs de ±9,82 mmHg pour la pression systolique et de ±3,88 mmHg pour la pression diastolique, avec des coefficients de corrélation de Pearson de 0,68 et 0,74. Les réseaux neuronaux convolutifs pré-entraînés comme GoogLeNet ont également démontré des performances comparables ou légèrement supérieures pour la stratification de l'hypertension.",
+          "citations": [
+            "D09-6db02069"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« démontré »)"
+          ]
+        },
+        {
+          "texte": "Des réserves sont néanmoins formulées par les sociétés savantes, notamment l'American Heart Association, concernant la fiabilité des dispositifs sans brassard. Les appareils basés sur des calibrations démographiques (âge, sexe, indice de masse corporelle, race) ou sans brassard direct peuvent ne refléter que des variations de pression plutôt que des valeurs absolues en millimètres de mercure. De surcroît, les standards de validation existants, à l'exemple de la norme IEEE, utilisent l'auscultation manuelle de référence et effectuent des comparaisons statiques immédiatement après étalonnage. Ces conditions ne reproduisent pas l'usage ambulatoire réel des semaines suivantes et la variabilité cycle à cycle peut induire des conclusions erronées sur la précision intrinsèque.",
+          "citations": [
+            "D12-cbb338ee",
+            "D12-d46aea5b"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Pour répondre à ces enjeux de validation, la fonctionnalité d'Apple a fait l'objet d'une étude clinique décentralisée incluant 2 229 participants adultes sans diagnostic préalable, représentatifs de la population visée. Parmi eux, 1 863 ont fourni des données exploitables sur une période de 30 jours, face à un tensiomètre de domicile autorisé par la FDA pris comme référence selon les définitions de l'American Heart Association. L'algorithme a satisfait ses critères d'évaluation principaux avec une spécificité globale de 92,3 % (IC à 95 % [90,6, 93,7]) et de 95,3 % chez les personnes normotendues (IC à 95 % [93,7, 96,5]). Sa sensibilité globale s'établit à 41,2 % (IC à 95 % [37,2, 45,3]) et s'élève à 53,7 % (IC à 95 % [47,7, 59,7]) pour l'hypertension de stade 2.",
+          "citations": [
+            "D06-172c7316",
+            "D06-8dcda495",
+            "D07-8c402bbb",
+            "D07-c40316f9"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-cbb338ee",
+        "D12-d46aea5b"
+      ]
+    },
+    {
+      "run_id": "20261027-091303",
+      "section": "technique",
+      "tentatives": 1,
+      "duree_appel_s_reelle": 241,
+      "chunks_recuperes": [
+        "D12-cbb338ee",
+        "D12-d46aea5b",
+        "D09-6db02069",
+        "D09-393736c2",
+        "D07-c40316f9",
+        "D06-8dcda495",
+        "D06-172c7316",
+        "D07-8c402bbb"
+      ],
+      "paragraphes": [
+        {
+          "texte": "L'analyse du signal de photopléthysmographie (PPG) repose sur des mécanismes physiologiques bien documentés pour appréhender la dynamique tensionnelle. Les propriétés fonctionnelles des vaisseaux sanguins périphériques, notamment la rigidité, la compliance et le vieillissement vasculaire, influencent directement la morphologie de l'onde PPG. L'extraction de paramètres spécifiques, tels que la largeur d'onde, le temps de crête, l'indice d'augmentation ou l'indice de rigidité des grandes artères, offre une évaluation quantitative de l'état artériel. De plus, les modèles d'apprentissage automatique et de régression intégrant ces composantes morphologiques et fréquentielles permettent d'estimer les niveaux tensionnels avec une corrélation de Pearson atteignant 0,68 pour la pression artérielle systolique et 0,74 pour la pression diastolique dans les publications de référence.",
+          "citations": [
+            "D09-393736c2",
+            "D09-6db02069"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves légitimes ont été émises par l'American Heart Association concernant la fiabilité des technologies sans brassard. Les sociétés savantes constatent que certains dispositifs estiment principalement des variations relatives de pression plutôt qu'une valeur absolue en millimètres de mercure, en s'appuyant sur des calibrations par brassard ou sur des variables démographiques telles que l'âge, le sexe ou l'indice de masse corporelle. En outre, les standards d'évaluation actuels, à l'image de la norme IEEE qui utilise l'auscultation manuelle, testent fréquemment les appareils en conditions statiques immédiatement après étalonnage, ce qui ne reflète pas les conditions réelles d'usage ambulatoire sur plusieurs semaines.",
+          "citations": [
+            "D12-cbb338ee",
+            "D12-d46aea5b"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Pour pallier ces limites méthodologiques, le protocole de validation clinique de la notification d'Apple a été mené de manière décentralisée auprès de 2 229 participants adultes sans diagnostic préalable d'hypertension. L'étude a comparé les alertes à un tensiomètre de référence à domicile validé par la FDA sur une durée de 30 jours, garantissant une évaluation en conditions réelles et sur le long terme plutôt qu'un test statique immédiat. L'hypertension était définie selon les recommandations de l'American Heart Association par une pression systolique moyenne d'au moins 130 mmHg ou une pression diastolique moyenne d'au moins 80 mmHg, et 1 863 participants ont fourni au moins 15 jours de données exploitables.",
+          "citations": [
+            "D06-172c7316",
+            "D07-8c402bbb",
+            "D07-c40316f9"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« garantissant »)"
+          ]
+        },
+        {
+          "texte": "Les données de cette étude pivot confirment des performances opérationnelles adaptées au dépistage passif. Le dispositif a présenté une spécificité globale de 92,3 % (IC à 95 % [90,6, 93,7]), atteignant 95,3 % (IC à 95 % [93,7, 96,5]) chez les participants normotendus, ce qui garantit une limitation stricte des alertes intempestives. La sensibilité globale s'est établie à 41,2 % (IC à 95 % [37,2, 45,3]) et s'est élevée à 53,7 % (IC à 95 % [47,7, 59,7]) pour l'hypertension de stade 2, forme plus sévère nécessitant une prise en charge médicale prioritaire. Ces résultats justifient la robustesse technique requise pour l'autorisation de ce logiciel d'identification du risque hypertensif.",
+          "citations": [
+            "D06-8dcda495",
+            "D07-c40316f9"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« garantit »)"
+          ]
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-cbb338ee",
+        "D12-d46aea5b"
+      ]
+    }
+  ]
+}
