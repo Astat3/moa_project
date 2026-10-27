@@ -1,70 +1,60 @@
-# Rapport — 27/10/2026, 10 h 35 · après le commit 3e96bd8
-Rapport de Claude Code sur les consignes de 9 h 30 (exécution complète candidate).
+# Rapport — 27/10/2026, 10 h 50 · après le commit 8bde9d6
+Rapport de Claude Code sur les consignes de 10 h 45 (correctifs avant le gel).
 
 ## En bref
-- **L'exécution complète est allée au bout**, mais **elle ne remplit pas le critère « sans défaut technique »**. Elle ne peut donc pas devenir l'exécution officielle : l'exécution finale de demain reste nécessaire. Trois défauts :
-  - deux sections en échec G1 ;
-  - un encodage corrompu dans une section ;
-  - une conclusion entièrement écrite sans accents.
-- La baseline est complète.
-- **Le quota du jour est épuisé** : 20 appels de chat sur 20.
-- **Ma liste de défauts de référence est prête**, écrite **sans ouvrir la relecture** : `outputs/defauts_reference_20261027-093507.md`. **À faire par un membre du groupe** : la valider ligne par ligne (confirmé ou rejeté), sans regarder `relecture_20261027-093507.json`. Ensuite seulement, je fais l'appariement (« X défauts confirmés repérés sur Y »).
-- **4 choix à valider** pour l'exécution finale de demain (dernière section).
+- Les points 1 à 3 sont **codés et testés par simulation, sans aucun appel de chat**. Le point 4 (baseline) et le point 5 (exécution 1) sont consignés. **Le pipeline est gelé** au commit `8bde9d6`.
+- **Point d'attention** : les 120 s d'attente avant la 3e tentative sont faites de **deux attentes de 60 s**. Le code du nœud *Wait* de n8n (lignes 506 à 518) met l'exécution en attente dans la base au-delà de 65 s, ce qui casserait une exécution lancée en CLI. La durée totale est bien de 120 s.
+- **Demain, 28/10 à 8 h pile, avec ton feu vert** : contrôle de l'horloge, puis exécution finale. Baseline : celle du 27/10.
+- **En attente du groupe** : valider `outputs/defauts_reference_20261027-093507.md`, sans ouvrir la relecture, avant l'appariement sur l'exécution 1.
 
-## Exécutions
-| Exécution | Durée | Appels de chat | Résultat |
-|---|---|---|---|
-| 9 h 26, `20261027-092605` | 8 min | 2 | arrêt `delai` à 422 s : 503, puis relance réussie en 406 s. La mesure inclut le premier essai (16 s) |
-| 9 h 35, `20261027-093507` | **47 min** | 14 (10 appels + 4 relances) | `termine` : 9 sections, conclusion, relecteur |
-| 10 h 22, baseline `20261027-102233` | 5 min | 1 | 9 sections sur 9, 27 paragraphes, 22 références |
+## 1. Décodage de l'encodage
+**Où** : juste après `JSON.parse` de la réponse de Gemini, **avant** G1 à G5. G4 et G5 travaillent donc sur le texte réparé.
 
-Avec les 3 appels de ce matin, cela fait **20 appels sur 20**.
+**Ce qui est fait** :
+- Un caractère NUL suivi de 2 chiffres hexadécimaux est remplacé par le caractère correspondant (`\u0000e9` → « é »).
+- Le motif est strict : **tout autre NUL est laissé tel quel et signalé par G1**.
+- Le nombre de remplacements va dans `verif` et `runs.jsonl`. Le même décodage s'applique à la réponse du relecteur.
 
-**Latence** : de 142 à 494 s par appel réussi, contre 34 s le 21/10. **503** : 6 tentatives sur 16 pour l'argumentaire.
+**Présentation dans `pipeline.md`** : c'est un *décodage*, pas une correction de contenu. Il rétablit le texte voulu par le modèle et ne contredit donc pas le principe « les garde-fous signalent sans corriger ».
 
-## Défauts techniques (exécution non éligible comme officielle)
-1. **Éthique et parcours de soins** : 503 aux deux tentatives, sections vides, signalées par G1. C'est le comportement prévu, mais il manque deux sections imposées.
-2. **Encodage dans « enjeux FDA »** : Gemini a renvoyé `\u0000e9` au lieu de « é » dans son JSON, alors qu'il a terminé normalement (`finishReason: STOP`).
-   - Cela fait 91 caractères nuls, et un texte lisible mais corrompu (« fonctionnalit e9 »).
-   - **G4 l'a repéré** : les « nombres » absents qu'il signale (7, 0, 8, 9, 4) viennent des codes `e7`, `e0`, `e8`, `e9`, `f4`.
-   - Le défaut vient du modèle, pas de notre code (vérifié sur la réponse brute).
-3. **Conclusion entièrement sans accents** (« fonctionnalite », « avancee »). C'est une sortie du modèle. Une conséquence : G5 ne voit plus « demontre ».
+**Baseline du 27/10** : aucun caractère NUL et des accents dans les 9 sections. `eval/evaluer.py` n'a donc pas besoin de la réparer.
 
-## Liste de défauts de référence (en attente de validation)
-- **A. 30 défauts de fond**, dont 11 de gravité haute :
-  - 9 affirmations non soutenues par les chunks cités, dont une déformation : « asymptomatique chez près de la moitié » pour « about half remain **unaware** » ;
-  - 4 liens inventés ;
-  - 16 sur-affirmations ;
-  - 1 contre-argument mal traité.
-- **B. 4 défauts de structure et de forme** : les deux sections vides, l'encodage, les accents, et la redondance des chiffres de l'étude d'Apple dans 4 sections.
-- **C. 2 cas invisibles depuis les extraits**, comptés à part : « code produit QXO », deux fois.
-- **Défaut systématique confirmé** : le lien inventé entre l'AHA et Apple ou la FDA apparaît **4 fois dans cette exécution** (A3, A9, A18, A25), et dans toutes les sorties depuis le 21/10.
-- **G5** (résultat sur l'exécution évaluée, pas sur les sorties qui ont servi à le construire) :
-  - 5 paragraphes signalés, chacun avec un vrai défaut ;
-  - 1 fausse alerte : « sans lien prouve » ;
-  - 1 défaut manqué à cause des accents : « demontre » ;
-  - beaucoup de sur-affirmations hors de sa liste ne sont pas vues (« avancée majeure », « drastiquement », « strict »).
+## 2. Texte sans accents et G5
+- **G1** signale une section rédigée (200 caractères au moins hors marqueur) qui ne contient aucun caractère accentué.
+- **G5** compare désormais **sans tenir compte des accents**, en normalisant le texte et la liste. Les lignes de la liste gelée (`TERMES`, `NEGATION`) sont inchangées, au caractère près. C'est noté au § 5, avec sa cause : la conclusion du 27/10.
+- Les 34 cas d'essai passent. Sur l'exécution 1, G5 voit maintenant « demontre » (A30).
+- Il ajoute aussi une **fausse alerte probable** : « les résultats démontrent une spécificité de 92,3 % » (conclusion § 3), qui est un simple compte rendu. Je l'ai notée au § 5.
+- Pas de changement de prompt.
 
-## Choix à valider pour l'exécution finale de demain (28/10 après 8 h)
-1. **Encodage corrompu (`\u0000xx`)** :
-   - **a. Réparation déterministe dans les garde-fous (recommandé).** La séquence nul + 2 chiffres hexadécimaux devient le caractère correspondant (`\u0000e9` → « é »). Le nombre de caractères réparés est noté dans `verif`, avec une alerte G1. C'est une correction d'encodage, pas de contenu.
-   - b. Détection seule (alerte G1), sans réparation.
-   - c. Rien.
-2. **Texte sans accents** :
-   - **a. Détection seule (recommandé)** : alerte G1 si un paragraphe de plus de 200 caractères ne contient aucune lettre accentuée. Le prompt ne change pas, conformément à la règle « `redacteur_v1` jusqu'au bout ».
-   - b. Ajouter « écris avec les accents » au prompt (`redacteur_v2`). Mais c'est une modification du prompt la veille du gel.
-   - c. Rien : le défaut est accepté comme une limite.
-3. **503 persistants (2 sections perdues sur 10 aujourd'hui)** :
-   - a. Garder une seule relance. Probabilité d'au moins une section perdue demain : environ 75 %, au taux de 503 d'aujourd'hui (37 % des tentatives).
-   - **b. Seconde relance après 120 s, sur 429 ou 5xx seulement (recommandé, avec le point 4).** Environ 15 appels attendus pour l'argumentaire. La probabilité d'au moins une section perdue tombe à environ 40 %.
-   - Le pire cas dépasse le quota. La règle d'arrêt sur le premier appel limite ce risque.
-4. **Baseline** :
-   - **a. Garder celle d'aujourd'hui (`20261027-102233`) comme baseline officielle (recommandé).** Même modèle, même prompt, 9 sections sur 9. Cela libère un appel pour les relances. Elle ne dépend pas de l'argumentaire.
-   - b. La refaire demain, avec 1 appel de plus.
+## 3. Relances avec budget
+- Jusqu'à **2 relances** par appel, après 60 s puis 120 s, sur HTTP 429 ou 5xx seulement. Un délai dépassé n'est toujours pas relancé.
+- **Budget** : une relance n'est tentée que si le total des appels de chat de l'exécution reste ≤ 18. Ce budget est réglé dans le nœud Paramètres. Au-delà, l'échec est signalé par G1, avec la mention « budget atteint ».
+- `runs.jsonl` contient le budget, les relances refusées et les tentatives par section.
+- Le mécanisme s'applique aux sections, à la conclusion et au relecteur. Les compteurs de l'exécution sont gardés dans `$execution.customData` ; j'ai d'abord vérifié qu'il fonctionne en CLI.
+- La règle d'arrêt déduit désormais les attentes de relance : 60 s pour 2 tentatives, 180 s pour 3.
 
-Si tu valides 1a, 2a et 3b, je les code et je les teste ce soir par simulation (aucun appel de chat) avant le gel.
+**Simulation** (budget de test de 9, attentes ramenées à 1 s) :
 
-## Prochaines étapes
-1. **Groupe** : valider `outputs/defauts_reference_20261027-093507.md`, sans ouvrir la relecture.
-2. **Moi** : appariement avec `relecture_20261027-093507.json`, puis « X défauts confirmés repérés sur Y » et le tri humain des problèmes ajoutés par le relecteur. Cette comparaison reste valable même si l'exécution n'est pas officielle : elle porte sur la capacité du relecteur.
-3. **Demain après 8 h, avec ton feu vert** : contrôle de l'horloge, exécution finale, puis `eval/evaluer.py`, gel, export et rapport.
+| Section | Scénario | Obtenu |
+|---|---|---|
+| contexte | accents corrompus, plus un NUL non décodable | 3 caractères décodés ; G1 « caractère NUL non décodable » |
+| enjeux_fda | 503, 503, puis 200 | 3 tentatives, section rédigée ; seconde attente exécutée |
+| technique | texte sans accents avec « demontre » | G1 « sans aucun caractère accentué » ; G5 « demontre » |
+| ethique | 503 trois fois | G1 après 3 tentatives |
+| conclusion | 503 | relance refusée (budget atteint), G1 avec mention du budget |
+| relecteur | 503 | relance refusée (budget), erreur consignée dans `relecture` |
+
+`runs.jsonl` : 10 appels de chat, tentatives `{1, 3, 1, 3, 1, relecteur 1}`, relances refusées `[conclusion, relecteur]`, 3 décodages. Les sorties de test ont été supprimées et le vrai workflow réinstallé (40 nœuds, budget 18, 9 sections, seuil de 420 s).
+
+## 4 et 5. Baseline et exécution 1
+- **Baseline officielle : `baseline_20261027-102233`**, notée dans `pipeline.md` : même modèle, mêmes règles, délai de 1 200 s, produite le 27/10.
+- **Exécution 1 (non officielle) : `20261027-093507`**, gardée avec ses défauts techniques. Elle sert à la comparaison avec le relecteur, et à montrer que le lien inventé AHA → Apple/FDA revient d'une exécution à l'autre.
+
+## Demain, 28/10 à 8 h pile (avec ton feu vert)
+1. Contrôle de l'horloge (`chronyc makestep` si l'écart dépasse 5 s).
+2. `10-argumentaire` : 9 sections dont la conclusion, puis le relecteur, soit 10 appels plus les relances, dans la limite de 18. À la vitesse du 27/10, compter entre 50 min et 1 h 15.
+3. `eval/evaluer.py metriques <run> 20261027-102233`. J'attendrai pour l'évaluation humaine : elle se fait en deux copies, une par évaluateur.
+4. Export, commit, rapport ici, avec la liste de ce qui reste à faire au groupe.
+
+## En attente du groupe
+- Valider la liste de défauts de référence de l'exécution 1 (colonne « Validation »), sans ouvrir la relecture. Ensuite seulement, je ferai l'appariement : « X défauts confirmés repérés sur Y ».
