@@ -1,60 +1,57 @@
-# Rapport — 27/10/2026, 10 h 50 · après le commit 8bde9d6
-Rapport de Claude Code sur les consignes de 10 h 45 (correctifs avant le gel).
+# Rapport — 27/10/2026, 14 h 40 · après le commit 4d8eaaa
+Rapport de Claude Code : validation de la liste de défauts, puis appariement avec le relecteur (exécution 1, `20261027-093507`).
 
 ## En bref
-- Les points 1 à 3 sont **codés et testés par simulation, sans aucun appel de chat**. Le point 4 (baseline) et le point 5 (exécution 1) sont consignés. **Le pipeline est gelé** au commit `8bde9d6`.
-- **Point d'attention** : les 120 s d'attente avant la 3e tentative sont faites de **deux attentes de 60 s**. Le code du nœud *Wait* de n8n (lignes 506 à 518) met l'exécution en attente dans la base au-delà de 65 s, ce qui casserait une exécution lancée en CLI. La durée totale est bien de 120 s.
-- **Demain, 28/10 à 8 h pile, avec ton feu vert** : contrôle de l'horloge, puis exécution finale. Baseline : celle du 27/10.
-- **En attente du groupe** : valider `outputs/defauts_reference_20261027-093507.md`, sans ouvrir la relecture, avant l'appariement sur l'exécution 1.
+- La liste validée et la limite du § 5 sont commitées (`72c28e2`). L'appariement est fait (`4d8eaaa`), et son détail ajouté en fin de `outputs/defauts_reference_20261027-093507.md`.
+- **Résultat : le relecteur repère 1 défaut confirmé sur 19** :
+  - il trouve B1 (les sections vides) ;
+  - il ne trouve **aucun des 15 défauts de fond**.
+- Son seul problème de fond porte sur **A9, que tu as rejeté**. Il faut le trier (question 1).
+- Une affirmation du § 5 de `pipeline.md` n'est plus cohérente avec la validation (question 2). Je n'ai rien corrigé.
 
-## 1. Décodage de l'encodage
-**Où** : juste après `JSON.parse` de la réponse de Gemini, **avant** G1 à G5. G4 et G5 travaillent donc sur le texte réparé.
+## 1. Appariement
+Le relecteur a fait 1 appel en 1 tentative, sans erreur, et signale **3 problèmes**. La règle est celle de `pipeline.md` § 3 : même passage, même nature, défauts confirmés seulement.
 
-**Ce qui est fait** :
-- Un caractère NUL suivi de 2 chiffres hexadécimaux est remplacé par le caractère correspondant (`\u0000e9` → « é »).
-- Le motif est strict : **tout autre NUL est laissé tel quel et signalé par G1**.
-- Le nombre de remplacements va dans `verif` et `runs.jsonl`. Le même décodage s'applique à la réponse du relecteur.
+| Problème du relecteur | Gravité | Défaut | Validation | Résultat |
+|---|---|---|---|---|
+| ethique : section absente (critère 1) | basse | B1 | confirmé | repéré |
+| parcours_soins : section absente (critère 1) | basse | B1 | confirmé | repéré (même défaut) |
+| technique : « Pour répondre à ces exigences méthodologiques… », lien anachronique AHA (2026) → étude d'Apple (2025) (critères 4 et 5) | haute | A9 | **rejeté** | non compté |
 
-**Présentation dans `pipeline.md`** : c'est un *décodage*, pas une correction de contenu. Il rétablit le texte voulu par le modèle et ne contredit donc pas le principe « les garde-fous signalent sans corriger ».
+- **Défauts de fond : 0 sur 15.** Aucun des 6 défauts de gravité haute n'est repéré, ni aucun des 2 liens inventés confirmés (A3, A25).
+- **Structure et forme : 1 sur 4.** B2 (encodage) et B3 (sans accents) ne relèvent d'aucun critère de la grille. Sur les défauts couverts par la grille, le score est de 1 sur 17.
+- **Pour le rapport** : « Le relecteur a repéré 1 des 19 défauts confirmés, et aucun des 15 défauts de fond. » Une seule exécution : pas de valeur statistique.
+- **Biais possibles** :
+  - le relecteur a reçu les 91 caractères NUL de enjeux_fda et la conclusion sans accents ;
+  - il appartient à la même famille de modèles que le rédacteur.
 
-**Baseline du 27/10** : aucun caractère NUL et des accents dans les 9 sections. `eval/evaluer.py` n'a donc pas besoin de la réparer.
+## 2. Questions
 
-## 2. Texte sans accents et G5
-- **G1** signale une section rédigée (200 caractères au moins hors marqueur) qui ne contient aucun caractère accentué.
-- **G5** compare désormais **sans tenir compte des accents**, en normalisant le texte et la liste. Les lignes de la liste gelée (`TERMES`, `NEGATION`) sont inchangées, au caractère près. C'est noté au § 5, avec sa cause : la conclusion du 27/10.
-- Les 34 cas d'essai passent. Sur l'exécution 1, G5 voit maintenant « demontre » (A30).
-- Il ajoute aussi une **fausse alerte probable** : « les résultats démontrent une spécificité de 92,3 % » (conclusion § 3), qui est un simple compte rendu. Je l'ai notée au § 5.
-- Pas de changement de prompt.
+### Q1. Tri du problème ajouté par le relecteur (A9)
+Le relecteur signale exactement le passage de A9, avec la même nature. Tu avais rejeté A9 sans connaître sa sortie. Le protocole demande qu'un humain trie ce problème : vrai défaut ou fausse alerte.
+- **(a) Recommandé.** Tu tries ce problème maintenant, et le rapport le présente comme un jugement fait **après** avoir vu la sortie. La validation à l'aveugle reste inchangée, donc le score reste 1 sur 19.
+  - Si tu le juges vrai défaut, le rapport dit : « le relecteur a ajouté 1 vrai défaut, absent de la liste confirmée ». La contradiction avec le rejet de A9 est alors à écrire telle quelle, comme effet de la validation indulgente déjà déclarée.
+- (b) Tu modifies la validation de A9. Je le déconseille : la validation ne serait plus aveugle, et le score passerait à 2 sur 20.
 
-## 3. Relances avec budget
-- Jusqu'à **2 relances** par appel, après 60 s puis 120 s, sur HTTP 429 ou 5xx seulement. Un délai dépassé n'est toujours pas relancé.
-- **Budget** : une relance n'est tentée que si le total des appels de chat de l'exécution reste ≤ 18. Ce budget est réglé dans le nœud Paramètres. Au-delà, l'échec est signalé par G1, avec la mention « budget atteint ».
-- `runs.jsonl` contient le budget, les relances refusées et les tentatives par section.
-- Le mécanisme s'applique aux sections, à la conclusion et au relecteur. Les compteurs de l'exécution sont gardés dans `$execution.customData` ; j'ai d'abord vérifié qu'il fonctionne en CLI.
-- La règle d'arrêt déduit désormais les attentes de relance : 60 s pour 2 tentatives, 180 s pour 3.
+### Q2. Le « défaut systématique » du § 5
+La ligne « Pas de contrôle automatique des liens entre sources » de `pipeline.md` § 5 parle d'un lien inventé AHA → Apple ou FDA qui revient « dans 4 sorties sur 4 ». Elle s'appuie sur mes seules observations : technique du 21/10, réglementaire du 26/10, et les deux brouillons arrêtés du 27/10. Aucune n'a été validée par le groupe.
 
-**Simulation** (budget de test de 9, attentes ramenées à 1 s) :
+Dans l'exécution 1, la validation donne :
+- **A25 confirmé** : c'est bien un lien AHA → Apple ;
+- A3 confirmé, mais c'est une autre variante (livre blanc d'Apple → FDA) ;
+- **A9 et A18 rejetés**. A9 est justement la forme « pour répondre à ces exigences », la même que celle des brouillons.
 
-| Section | Scénario | Obtenu |
-|---|---|---|
-| contexte | accents corrompus, plus un NUL non décodable | 3 caractères décodés ; G1 « caractère NUL non décodable » |
-| enjeux_fda | 503, 503, puis 200 | 3 tentatives, section rédigée ; seconde attente exécutée |
-| technique | texte sans accents avec « demontre » | G1 « sans aucun caractère accentué » ; G5 « demontre » |
-| ethique | 503 trois fois | G1 après 3 tentatives |
-| conclusion | 503 | relance refusée (budget atteint), G1 avec mention du budget |
-| relecteur | 503 | relance refusée (budget), erreur consignée dans `relecture` |
+Options :
+- **(a) Recommandé.** Je reformule la ligne : « observé par Claude dans 4 sorties sur 4, non validé par le groupe ; dans l'exécution 1, après validation : A25 confirmé, A9 et A18 rejetés ». Même chose pour la ligne « Exécution 1 » du § 5 et pour la synthèse de la liste de défauts, déjà marquée « avant validation ».
+- (b) Un membre du groupe valide les 4 passages des sorties précédentes, soit 4 phrases. Cela demande environ 10 min. Ce ne serait plus tout à fait à l'aveugle pour la forme de A9.
+- (c) Je ne change rien. Je le déconseille : le rapport présenterait comme systématique un défaut dont l'instance type a été rejetée.
 
-`runs.jsonl` : 10 appels de chat, tentatives `{1, 3, 1, 3, 1, relecteur 1}`, relances refusées `[conclusion, relecteur]`, 3 décodages. Les sorties de test ont été supprimées et le vrai workflow réinstallé (40 nœuds, budget 18, 9 sections, seuil de 420 s).
+## 3. Ce qui n'a pas été fait
+- **Pas d'export n8n** : aucun workflow n'a été modifié, et le pipeline reste gelé.
+- **Aucun appel de chat.**
 
-## 4 et 5. Baseline et exécution 1
-- **Baseline officielle : `baseline_20261027-102233`**, notée dans `pipeline.md` : même modèle, mêmes règles, délai de 1 200 s, produite le 27/10.
-- **Exécution 1 (non officielle) : `20261027-093507`**, gardée avec ses défauts techniques. Elle sert à la comparaison avec le relecteur, et à montrer que le lien inventé AHA → Apple/FDA revient d'une exécution à l'autre.
-
-## Demain, 28/10 à 8 h pile (avec ton feu vert)
-1. Contrôle de l'horloge (`chronyc makestep` si l'écart dépasse 5 s).
-2. `10-argumentaire` : 9 sections dont la conclusion, puis le relecteur, soit 10 appels plus les relances, dans la limite de 18. À la vitesse du 27/10, compter entre 50 min et 1 h 15.
-3. `eval/evaluer.py metriques <run> 20261027-102233`. J'attendrai pour l'évaluation humaine : elle se fait en deux copies, une par évaluateur.
-4. Export, commit, rapport ici, avec la liste de ce qui reste à faire au groupe.
-
-## En attente du groupe
-- Valider la liste de défauts de référence de l'exécution 1 (colonne « Validation »), sans ouvrir la relecture. Ensuite seulement, je ferai l'appariement : « X défauts confirmés repérés sur Y ».
+## Demain, 28/10 à 8 h pile (sans changement, avec ton feu vert)
+1. Contrôle de l'horloge.
+2. Exécution finale de `10-argumentaire` : 10 appels, plus les relances dans la limite de 18.
+3. `eval/evaluer.py metriques <run> 20261027-102233`.
+4. Export, commit, rapport.
