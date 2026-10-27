@@ -75,7 +75,7 @@ Liste établie par Claude (Claude Code) le 27/10/2026, **avant toute ouverture d
 
 ## Synthèse (avant validation)
 - **Y proposé** : 30 défauts de fond et 4 de structure et de forme. Parmi les défauts de fond, 11 sont de gravité haute (A1, A3, A7, A9, A14, A18, A21, A22, A25, A26, A29), dont les 4 liens inventés. S'y ajoutent 2 défauts invisibles depuis les extraits.
-- **Le lien inventé entre l'AHA et Apple ou la FDA** (type 5) apparaît 4 fois dans cette exécution : A3 (variante Apple → FDA), A9, A18 et A25. Avec les brouillons arrêtés, il est présent dans **toutes les sorties** depuis le 21/10.
+- **Le lien inventé entre l'AHA et Apple ou la FDA** (type 5) apparaît 4 fois dans cette exécution : A3 (variante Apple → FDA), A9, A18 et A25. Avec les brouillons arrêtés, il est présent dans **toutes les sorties** depuis le 21/10. *Après validation : A3 et A25 confirmés, A9 et A18 rejetés ; « toutes les sorties » repose sur les observations de Claude, non validées par le groupe.*
 - **Ce que voient les garde-fous** :
   - G5 signale 5 paragraphes, et chacun contient un défaut de la liste (A13, A20, A24, A27, A28). Dans le paragraphe de A24, il signale aussi « prouve » dans « sans lien prouve », une **fausse alerte** : c'est une formule prudente, et sa négation (« sans lien ») échappe à la règle des formes niées ;
   - G5 ne voit pas « demontre » (A30), à cause de l'absence d'accents ;
