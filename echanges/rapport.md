@@ -1,48 +1,70 @@
-# Rapport — 27/10/2026, 9 h 18 · après le commit 4dd38f8
-Rapport de Claude Code sur le point 3 des consignes (essai du 27/10).
+# Rapport — 27/10/2026, 10 h 35 · après le commit 3e96bd8
+Rapport de Claude Code sur les consignes de 9 h 30 (exécution complète candidate).
 
 ## En bref
-- **La règle d'arrêt s'est déclenchée deux fois**, à chaque fois parce que le premier appel était trop lent. Il n'y a donc **aucune sortie**, et la comparaison avec le relecteur n'a pas pu se faire.
-- La règle a joué son rôle : chaque arrêt a coûté 1 ou 2 appels au lieu de 5 à 10, et a laissé une ligne `statut: arrete` dans `runs.jsonl`.
-- **Quota du jour** : 3 appels de chat consommés sur 20, dont un 503.
-- **Incident découvert : l'horloge de la VM Podman.** Il faut la contrôler avant chaque exécution, et surtout avant l'exécution finale de demain matin.
-- **Décision à prendre : le seuil de la règle d'arrêt** (section « Choix à valider »).
+- **L'exécution complète est allée au bout**, mais **elle ne remplit pas le critère « sans défaut technique »**. Elle ne peut donc pas devenir l'exécution officielle : l'exécution finale de demain reste nécessaire. Trois défauts :
+  - deux sections en échec G1 ;
+  - un encodage corrompu dans une section ;
+  - une conclusion entièrement écrite sans accents.
+- La baseline est complète.
+- **Le quota du jour est épuisé** : 20 appels de chat sur 20.
+- **Ma liste de défauts de référence est prête**, écrite **sans ouvrir la relecture** : `outputs/defauts_reference_20261027-093507.md`. **À faire par un membre du groupe** : la valider ligne par ligne (confirmé ou rejeté), sans regarder `relecture_20261027-093507.json`. Ensuite seulement, je fais l'appariement (« X défauts confirmés repérés sur Y »).
+- **4 choix à valider** pour l'exécution finale de demain (dernière section).
 
-## Les deux essais
-
-| Essai | Premier appel (technique) | Durée réelle | Résultat |
+## Exécutions
+| Exécution | Durée | Appels de chat | Résultat |
 |---|---|---|---|
-| 1 (9 h 05) | 503, puis relance réussie | **≈ 308 s** (41 145 s affichées, voir ci-dessous) | arrêt `delai`, 2 appels |
-| 2 (9 h 13), relance dans l'heure | réussi du premier coup | **241 s** | arrêt `delai`, 1 appel |
+| 9 h 26, `20261027-092605` | 8 min | 2 | arrêt `delai` à 422 s : 503, puis relance réussie en 406 s. La mesure inclut le premier essai (16 s) |
+| 9 h 35, `20261027-093507` | **47 min** | 14 (10 appels + 4 relances) | `termine` : 9 sections, conclusion, relecteur |
+| 10 h 22, baseline `20261027-102233` | 5 min | 1 | 9 sections sur 9, 27 paragraphes, 22 références |
 
-- **L'API est lente** : avec le même prompt (2 783 tokens en entrée, environ 4 300 en sortie et en réflexion), le premier appel avait pris 34 s le 21/10. Aujourd'hui il prend de 241 à 308 s, soit environ 8 fois plus lent. Le 26/10 au soir, il y avait déjà eu des 503 et un appel de 6 min 22 s : la lenteur dure depuis au moins 13 h.
-- Après les deux arrêts, je n'ai pas relancé une troisième fois. La règle prévoit une relance dans l'heure, ce qui a été fait. Relancer encore, ou changer le seuil de 180 s validé, demande ton accord.
+Avec les 3 appels de ce matin, cela fait **20 appels sur 20**.
 
-## Incident : horloge de la VM Podman
-- **Constat** :
-  - l'essai 1 affichait 41 145 s et un `run_id` daté du 26/10 à 21 h 44, alors qu'il a tourné le 27/10 de 9 h 05 à 9 h 11 ;
-  - le journal de `chronyd` dans la VM indique « System clock wrong by 40836.9 seconds », puis « stepped » à 9 h 09 min 59 s ;
-  - l'horloge de la VM s'est figée pendant la veille du Mac (11 h 20 de retard), puis a été recalée en plein appel.
-- **Conséquence** : la durée et le `run_id` de l'essai 1 sont faux, mais l'arrêt était justifié (≈ 308 s, au-dessus du seuil). La ligne de `runs.jsonl` est laissée telle quelle et documentée dans `implémentation.md`.
-- **Correctif de procédure**, dans `pipeline.md` § 4 et `CLAUDE.md` § 6 : avant chaque exécution, je mesure l'écart d'horloge entre l'hôte et le conteneur. S'il dépasse 5 s, je lance `podman machine ssh 'sudo chronyc makestep'` (testé : « 200 OK »). Pour l'essai 2, l'écart était de 0 s. **C'est indispensable demain matin**, après une nuit de veille.
+**Latence** : de 142 à 494 s par appel réussi, contre 34 s le 21/10. **503** : 6 tentatives sur 16 pour l'argumentaire.
 
-## Ce qu'apprennent quand même les deux sections rédigées
-Les sections « technique » ont été rédigées, mais pas écrites par le workflow. Je les ai extraites dans `outputs/brouillons_arretes_20261027.json` :
-- **Les 8 mêmes chunks que le 21/10** : la récupération est déterministe, seule la rédaction varie.
-- **Le lien inventé entre l'AHA et Apple revient dans les deux** : « Pour répondre à ces enjeux de validation, la fonctionnalité d'Apple a fait l'objet d'une étude… » et « Pour pallier ces limites méthodologiques, le protocole de validation clinique… ». Il est donc présent dans **4 sorties sur 4** (21/10, 26/10, 27/10 deux fois). La ligne correspondante du § 5 de `pipeline.md` est mise à jour.
-- « Sur le long terme » revient aussi, pour une étude de 30 jours.
-- G5 signale « démontré », « garantissant » et « garantit ».
+## Défauts techniques (exécution non éligible comme officielle)
+1. **Éthique et parcours de soins** : 503 aux deux tentatives, sections vides, signalées par G1. C'est le comportement prévu, mais il manque deux sections imposées.
+2. **Encodage dans « enjeux FDA »** : Gemini a renvoyé `\u0000e9` au lieu de « é » dans son JSON, alors qu'il a terminé normalement (`finishReason: STOP`).
+   - Cela fait 91 caractères nuls, et un texte lisible mais corrompu (« fonctionnalit e9 »).
+   - **G4 l'a repéré** : les « nombres » absents qu'il signale (7, 0, 8, 9, 4) viennent des codes `e7`, `e0`, `e8`, `e9`, `f4`.
+   - Le défaut vient du modèle, pas de notre code (vérifié sur la réponse brute).
+3. **Conclusion entièrement sans accents** (« fonctionnalite », « avancee »). C'est une sortie du modèle. Une conséquence : G5 ne voit plus « demontre ».
 
-Ce ne sont pas des sorties officielles : je les cite comme matière pour la critique (variabilité, défaut systématique), pas comme résultats.
+## Liste de défauts de référence (en attente de validation)
+- **A. 30 défauts de fond**, dont 11 de gravité haute :
+  - 9 affirmations non soutenues par les chunks cités, dont une déformation : « asymptomatique chez près de la moitié » pour « about half remain **unaware** » ;
+  - 4 liens inventés ;
+  - 16 sur-affirmations ;
+  - 1 contre-argument mal traité.
+- **B. 4 défauts de structure et de forme** : les deux sections vides, l'encodage, les accents, et la redondance des chiffres de l'étude d'Apple dans 4 sections.
+- **C. 2 cas invisibles depuis les extraits**, comptés à part : « code produit QXO », deux fois.
+- **Défaut systématique confirmé** : le lien inventé entre l'AHA et Apple ou la FDA apparaît **4 fois dans cette exécution** (A3, A9, A18, A25), et dans toutes les sorties depuis le 21/10.
+- **G5** (résultat sur l'exécution évaluée, pas sur les sorties qui ont servi à le construire) :
+  - 5 paragraphes signalés, chacun avec un vrai défaut ;
+  - 1 fausse alerte : « sans lien prouve » ;
+  - 1 défaut manqué à cause des accents : « demontre » ;
+  - beaucoup de sur-affirmations hors de sa liste ne sont pas vues (« avancée majeure », « drastiquement », « strict »).
 
-## Choix à valider : que faire de la règle d'arrêt ?
-La règle doit éviter de dépenser le quota sur une API défaillante. Or un appel lent mais réussi ne gaspille pas de quota : il prend seulement du temps. Ce sont les 503 qui gaspillent des appels.
+## Choix à valider pour l'exécution finale de demain (28/10 après 8 h)
+1. **Encodage corrompu (`\u0000xx`)** :
+   - **a. Réparation déterministe dans les garde-fous (recommandé).** La séquence nul + 2 chiffres hexadécimaux devient le caractère correspondant (`\u0000e9` → « é »). Le nombre de caractères réparés est noté dans `verif`, avec une alerte G1. C'est une correction d'encodage, pas de contenu.
+   - b. Détection seule (alerte G1), sans réparation.
+   - c. Rien.
+2. **Texte sans accents** :
+   - **a. Détection seule (recommandé)** : alerte G1 si un paragraphe de plus de 200 caractères ne contient aucune lettre accentuée. Le prompt ne change pas, conformément à la règle « `redacteur_v1` jusqu'au bout ».
+   - b. Ajouter « écris avec les accents » au prompt (`redacteur_v2`). Mais c'est une modification du prompt la veille du gel.
+   - c. Rien : le défaut est accepté comme une limite.
+3. **503 persistants (2 sections perdues sur 10 aujourd'hui)** :
+   - a. Garder une seule relance. Probabilité d'au moins une section perdue demain : environ 75 %, au taux de 503 d'aujourd'hui (37 % des tentatives).
+   - **b. Seconde relance après 120 s, sur 429 ou 5xx seulement (recommandé, avec le point 4).** Environ 15 appels attendus pour l'argumentaire. La probabilité d'au moins une section perdue tombe à environ 40 %.
+   - Le pire cas dépasse le quota. La règle d'arrêt sur le premier appel limite ce risque.
+4. **Baseline** :
+   - **a. Garder celle d'aujourd'hui (`20261027-102233`) comme baseline officielle (recommandé).** Même modèle, même prompt, 9 sections sur 9. Cela libère un appel pour les relances. Elle ne dépend pas de l'argumentaire.
+   - b. La refaire demain, avec 1 appel de plus.
 
-- **A. Relever le seuil à 420 s (7 min) et relancer l'essai aujourd'hui (recommandé).**
-  - On garde l'arrêt en cas d'échec après relance. Les appels réussis observés ont duré 241, 305 et 382 s.
-  - Durée estimée de l'essai : 25 à 35 min (5 appels de 4 à 6 min, plus les pauses). Quota : 3 + 5 à 10 = 13 au plus sur 20.
-  - Le même seuil servirait pour l'exécution finale de demain, qui durerait environ 1 h pour 11 appels.
-- **B. Garder 180 s et réessayer plus tard** (en début d'après-midi ou ce soir). La lenteur dure depuis au moins 13 h, et chaque essai arrêté coûte 1 ou 2 appels. Si l'API reste lente, on n'aura pas d'essai avant l'exécution finale.
-- **C. Supprimer le critère de durée** et ne garder que l'arrêt sur échec. Le délai de 600 s par appel reste la seule borne. C'est plus simple, mais on ne sait plus quand l'API est anormalement lente.
+Si tu valides 1a, 2a et 3b, je les code et je les teste ce soir par simulation (aucun appel de chat) avant le gel.
 
-Avec A ou C, je relance l'essai dès ton accord, toujours après le contrôle d'horloge. Puis j'applique le protocole de comparaison : ma liste de défauts sans ouvrir la relecture, la validation par le groupe ce soir, et l'appariement.
+## Prochaines étapes
+1. **Groupe** : valider `outputs/defauts_reference_20261027-093507.md`, sans ouvrir la relecture.
+2. **Moi** : appariement avec `relecture_20261027-093507.json`, puis « X défauts confirmés repérés sur Y » et le tri humain des problèmes ajoutés par le relecteur. Cette comparaison reste valable même si l'exécution n'est pas officielle : elle porte sur la capacité du relecteur.
+3. **Demain après 8 h, avec ton feu vert** : contrôle de l'horloge, exécution finale, puis `eval/evaluer.py`, gel, export et rapport.
