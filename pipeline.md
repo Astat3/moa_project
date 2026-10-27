@@ -143,6 +143,7 @@ Un seul appel Gemini, même modèle, même consigne, même structure, position P
 Mise en œuvre (26/10/2026) :
 - **Chaîne** : Paramètres → lecture de `sections.json` et `baseline_v1.md` → Prompt → HTTP `generateContent` → même relance unique que le pipeline (429 ou 5xx, *Wait* 60 s) → Assemblage → fichiers.
 - **Paramètres** : modèle, et sections à générer. Par défaut les 9 sections, à aligner sur l'exécution de `10-argumentaire` comparée.
+- **Délai de 1 200 s** par appel (décision du 27/10), contre 600 s pour le rédacteur. La baseline rédige les 9 sections en un seul appel, soit 10 000 à 15 000 tokens avec la réflexion, et le débit observé le 27/10 était d'environ 18 tokens/s.
 - **Mode JSON avec schéma**, comme le rédacteur : `sections` → `paragraphes` `{texte, references: [n]}`, plus une liste `references` `{numero, reference}`.
 - **Prompt** : il reprend les règles de `redacteur_v1` qui ne dépendent pas du corpus (chiffres exacts, `[INFORMATION NON DISPONIBLE]`, contre-arguments, pas de formulation absolue, 3 à 6 paragraphes de 60 à 150 mots). Il interdit d'inventer des références, comme `redacteur_v1` interdit d'inventer des `chunk_id`.
 - **Sorties** :

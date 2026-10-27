@@ -91,7 +91,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $json.schema } }) }}",
         "options": {
-          "timeout": 600000,
+          "timeout": 1200000,
           "response": {
             "response": {
               "fullResponse": true,
@@ -175,7 +175,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ contents: [{ role: 'user', parts: [{ text: $('Prompt de la baseline').first().json.prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: $('Prompt de la baseline').first().json.schema } }) }}",
         "options": {
-          "timeout": 600000,
+          "timeout": 1200000,
           "response": {
             "response": {
               "fullResponse": true,
@@ -350,9 +350,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "03fca956-d4e3-4226-ad18-dcac81c8cec6",
+  "versionId": "4a91b07d-153f-46be-a850-8fa4f2a0f13b",
   "activeVersionId": null,
-  "versionCounter": 2,
+  "versionCounter": 3,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],
