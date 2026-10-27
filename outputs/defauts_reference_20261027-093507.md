@@ -80,3 +80,22 @@ Liste établie par Claude (Claude Code) le 27/10/2026, **avant toute ouverture d
   - G5 signale 5 paragraphes, et chacun contient un défaut de la liste (A13, A20, A24, A27, A28). Dans le paragraphe de A24, il signale aussi « prouve » dans « sans lien prouve », une **fausse alerte** : c'est une formule prudente, et sa négation (« sans lien ») échappe à la règle des formes niées ;
   - G5 ne voit pas « demontre » (A30), à cause de l'absence d'accents ;
   - G4 ne signale que la corruption de B2.
+
+## Appariement avec le relecteur (27/10/2026, après la validation)
+- `relecture_20261027-093507.json` a été ouvert **après** la validation humaine. Le relecteur (1 appel, 1 tentative, sans erreur) signale **3 problèmes** : 1 de gravité haute, 2 de gravité basse.
+- Règle (`pipeline.md` § 3) : un défaut confirmé est repéré si le relecteur cite le même passage avec un problème de même nature. **Seuls les défauts confirmés comptent.**
+
+| Problème signalé par le relecteur | Gravité | Défaut de la liste | Validation | Résultat |
+|---|---|---|---|---|
+| ethique : section absente, « appel Gemini en échec » (critère 1) | basse | B1 | confirmé | repéré |
+| parcours_soins : même problème (critère 1) | basse | B1 | confirmé | repéré (même défaut) |
+| technique : « Pour répondre à ces exigences méthodologiques, l'évaluation clinique pivotale […] » ; lien de cause à effet anachronique et non soutenu entre l'AHA (2026) et l'étude d'Apple (2025) (critères 4 et 5) | haute | A9 (même passage, même nature) | **rejeté** | non compté ; problème ajouté, à trier |
+
+**Résultat : 1 défaut confirmé repéré sur 19** (B1).
+- **Défauts de fond : 0 sur 15**, dont 0 sur les 6 de gravité haute (A1, A3, A14, A22, A25, A29). Par type : 0 sur 8 sur-affirmations, 0 sur 4 affirmations non soutenues, 0 sur 2 liens inventés (A3, A25), 0 sur 1 contre-argument non traité.
+- **Structure et forme : 1 sur 4.** B2 (encodage) et B3 (texte sans accents) n'entrent dans aucun critère de la grille. Sur les seuls défauts couverts par la grille : 1 sur 17.
+- **Problème ajouté par le relecteur, à trier par un humain** : celui de technique § 3. Il porte sur le passage de A9, avec la même nature (lien inventé, chronologie), alors que le validateur a rejeté A9 sans connaître la sortie du relecteur.
+- **Biais possibles** :
+  - le texte reçu par le relecteur contenait les 91 caractères NUL de enjeux_fda (B2) et une conclusion sans accents (B3) ;
+  - le relecteur appartient à la même famille de modèles que le rédacteur ;
+  - une seule exécution : pas de valeur statistique.
