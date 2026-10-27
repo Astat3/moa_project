@@ -88,7 +88,7 @@ Un paragraphe en défaut est **conservé et marqué `⚠`** dans l'argumentaire 
 
 **Règle d'arrêt** (consignes du 26/10/2026, option A) : c'est la seule exception au principe « signaler sans arrêter ». Elle est réglée dans le nœud Paramètres :
 - `arret_premier_appel` vaut `true` pour l'essai du 27/10 et pour l'exécution finale ;
-- `seuil_premier_appel_s` vaut 180 s.
+- `seuil_premier_appel_s` vaut **420 s** depuis le 27/10 (180 s au départ). Le 27/10, la latence du premier appel était de 4 à 5 min, contre 34 s le 21/10 pour le même prompt. Or un appel lent mais réussi ne coûte que du temps : seul l'échec après relance gaspille le quota.
 
 Fonctionnement :
 - La règle ne porte **que sur le premier appel** de l'exécution. Elle est vérifiée par le nœud des garde-fous, à sa première exécution.
@@ -207,7 +207,7 @@ Sortie : `outputs/metriques.csv`
 | | **Pipeline** | **≈ 6,5 h** |
 
 **Prochaine exécution, le 27/10 après 8 h, avec l'accord du groupe** : technique, éthique, réglementaire et conclusion (4 appels), puis le relecteur (1 appel). Cela fait 5 appels de chat, 10 au plus avec les relances, et 11 requêtes d'embeddings. Les paramètres sont déjà réglés dans `10-argumentaire`.
-- **Règle d'arrêt** : si le premier appel dépasse 3 minutes, ou renvoie un 503 malgré la relance, on arrête et on réessaie dans l'heure. Elle est appliquée automatiquement par le workflow (section 2, WF10 C), avec une ligne `statut: arrete` dans `runs.jsonl`.
+- **Règle d'arrêt** : si le premier appel dépasse 7 minutes (420 s, 3 minutes jusqu'au 27/10), ou renvoie un 503 malgré la relance, on arrête et on réessaie dans l'heure. Elle est appliquée automatiquement par le workflow (section 2, WF10 C), avec une ligne `statut: arrete` dans `runs.jsonl`.
 - **Avant chaque exécution, contrôler l'horloge de la VM Podman** :
   - mesurer l'écart entre l'hôte et le conteneur n8n (`date +%s` des deux côtés) ;
   - s'il dépasse 5 s, forcer le recalage : `podman machine ssh 'sudo chronyc makestep'`.

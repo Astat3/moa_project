@@ -220,7 +220,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "parameters": {
-        "jsCode": "// Paramètres de l'exécution, à modifier ici.\n// Quota de gemini-3.8-flash au plan gratuit : 5 appels par minute, 20 par jour (remise à zéro à minuit, heure du Pacifique).\n// Une exécution complète fait 10 appels de chat (8 sections, conclusion, relecteur), 20 au plus avec les relances\n// (une seule relance par appel, sur 429 ou 5xx) : pour déboguer, lister 1 ou 2 sections.\n// Pas d'exécution complète sans l'accord du groupe (pipeline.md, section 1).\n// Identifiants (prompts/sections.json) : contexte, enjeux_fda, technique, ethique, social_economique,\n// reglementaire, parcours_soins, autres, conclusion (rédigée après les autres, à partir des sections générées).\n// Règle d'arrêt : si le premier appel de l'exécution échoue (après la relance éventuelle) ou dure plus que le seuil,\n// une ligne « arrete » est écrite dans runs.jsonl et l'exécution s'arrête. Les appels suivants ne sont jamais arrêtés.\nreturn [{ json: {\n  modele: 'gemini-3.8-flash',\n  arret_premier_appel: true,\n  seuil_premier_appel_s: 180,\n  sections: ['technique', 'ethique', 'reglementaire', 'conclusion'],\n} }];"
+        "jsCode": "// Paramètres de l'exécution, à modifier ici.\n// Quota de gemini-3.8-flash au plan gratuit : 5 appels par minute, 20 par jour (remise à zéro à minuit, heure du Pacifique).\n// Une exécution complète fait 10 appels de chat (8 sections, conclusion, relecteur), 20 au plus avec les relances\n// (une seule relance par appel, sur 429 ou 5xx) : pour déboguer, lister 1 ou 2 sections.\n// Pas d'exécution complète sans l'accord du groupe (pipeline.md, section 1).\n// Identifiants (prompts/sections.json) : contexte, enjeux_fda, technique, ethique, social_economique,\n// reglementaire, parcours_soins, autres, conclusion (rédigée après les autres, à partir des sections générées).\n// Règle d'arrêt : si le premier appel de l'exécution échoue (après la relance éventuelle) ou dure plus que le seuil,\n// une ligne « arrete » est écrite dans runs.jsonl et l'exécution s'arrête. Les appels suivants ne sont jamais arrêtés.\nreturn [{ json: {\n  modele: 'gemini-3.8-flash',\n  arret_premier_appel: true,\n  seuil_premier_appel_s: 420, // 180 s au départ ; 420 s depuis le 27/10 (latence de 4 à 5 min observée)\n  sections: ['contexte', 'enjeux_fda', 'technique', 'ethique', 'social_economique', 'reglementaire', 'parcours_soins', 'autres', 'conclusion'],\n} }];"
       },
       "position": [
         220,
@@ -1093,9 +1093,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "ab1e90f8-8e0e-408e-86f1-0c6995259a71",
+  "versionId": "074dd100-0112-4015-b8c4-c605d0dfc712",
   "activeVersionId": null,
-  "versionCounter": 3,
+  "versionCounter": 4,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

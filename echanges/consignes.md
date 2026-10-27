@@ -1,16 +1,19 @@
-# Consignes — 26/10/2026, 21 h 15 · après le commit 9dfb7fb
-Revue du rapport de 21 h 07. **À exécuter seulement après la validation explicite d'Adam.**
+# Consignes — 27/10/2026, 9 h 30 · après le commit 02882a0
+Revue du rapport de ce matin. **À exécuter seulement après la validation explicite d'Adam.**
 
-## 1. Choix validés
-- **Baseline** : les 4 choix sont validés. L'interdiction d'inventer des références rend la comparaison plus équitable, et le résultat plus fort si la baseline en invente quand même. Dans le rapport, il faudra préciser que la baseline a reçu **les mêmes règles** que le rédacteur, sauf celles qui dépendent du corpus.
-- **Évaluation** : les 4 choix sont validés : une phrase par affirmation, deux fichiers séparés, définition de `PARTIEL`, texte des chunks dans verif. Ajoute au § 5 la limite « affirmation jugée par rapport aux chunks de son paragraphe, et non de sa phrase : une phrase peut être jugée soutenue grâce à un chunk cité pour une autre phrase ».
+## 1. Seuil : option A (420 s)
+Tu as raison, mon seuil de 180 s était trop serré : un appel lent mais réussi ne coûte que du temps. On garde l'arrêt sur échec après relance, et le seuil passe à **420 s** pour l'essai et pour l'exécution finale. Note le changement dans `pipeline.md` et `implémentation.md`, avec la raison (latence de 4 à 5 min observée le 27/10, contre 34 s le 21/10).
 
-## 2. Règle d'arrêt : option A, avec trois ajustements
-1. **Paramétrable** dans le nœud Paramètres : `arret_premier_appel` (oui/non) et `seuil_premier_appel_s` (180). Activée pour l'essai de demain et pour l'exécution finale.
-2. **Traçabilité** : en cas d'arrêt, écris quand même une ligne dans `runs.jsonl`, avec le statut `arrete`, la raison (délai ou échec après relance), la durée et le nombre d'appels consommés. Un arrêt ne doit pas être invisible.
-3. La règle ne porte **que sur le premier appel**. Ensuite, un appel lent mais réussi continue normalement : on ne veut pas perdre l'exécution finale à la 6e section pour une lenteur passagère.
+## 2. Changement de plan : l'essai d'aujourd'hui devient une exécution candidate
+L'API est instable et l'échéance est demain après-midi. Pour ne pas tout miser sur demain matin :
+- **Lance aujourd'hui l'exécution complète** : toutes les sections, conclusion, relecteur, puis baseline (11 appels ; 3 déjà consommés, donc 14 sur 20, avec 6 de marge pour les relances).
+- Si elle va au bout sans défaut technique (pas de section en échec G1, fichiers complets) **et** qu'Adam valide, **elle devient l'exécution officielle** : gel, `eval/evaluer.py`, export et commit. Demain matin ne sert alors que de filet de sécurité.
+- Si elle révèle un bug à corriger, on corrige, puis on refait l'exécution finale demain après 8 h, comme prévu.
+- Dans les deux cas, applique ensuite le protocole de comparaison avec le relecteur (ta liste de défauts **avant** d'ouvrir la relecture).
 
-Teste-la par simulation ce soir ou demain avant 8 h, sans appel de chat.
+Contrôle de l'horloge (`chronyc makestep` si l'écart dépasse 5 s) avant de lancer : bonne trouvaille, garde-le systématique.
 
-## 3. Demain, 27/10 après 8 h
-Le plan de ton rapport est validé tel quel (points 1 à 5), dès qu'Adam donne le feu vert.
+## 3. Pour la critique des résultats
+Le lien inventé AHA → Apple à 4 sorties sur 4, y compris dans les brouillons arrêtés : c'est un défaut systématique du rédacteur, à présenter comme tel. Garde `brouillons_arretes_20261027.json` comme matière qualitative, hors métriques.
+
+Rapport dans `echanges/rapport.md` à la fin.
