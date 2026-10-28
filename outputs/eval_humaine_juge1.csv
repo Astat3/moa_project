@@ -36,7 +36,7 @@ pressure is associated with many chronic disease conditions, and is a major sour
 outpatient care as well as general health monitoring, there is great interest in being able to accurately and frequently measure BP
 outside of a clinical setting, using mobile or wearable devices. One possible solution is photoplethysmography (PPG), which is most
 commonly used in pulse oximetry in clinical settings for measuring oxygen saturation. PPG technology is becoming more readily
-available, inexpensive, convenient, and easily integrated into portable devices. Recent advances include the development of";;
+available, inexpensive, convenient, and easily integrated into portable devices. Recent advances include the development of";PARTIEL;
 2;contexte;Ces dispositifs sans brassard visent à surmonter les contraintes des appareils traditionnels en offrant un confort accru, un suivi passif continu et une plus grande accessibilité.;D09-3411d37f, D09-eea30d87, D12-813ed773;"[D09-3411d37f · p. 1]
 REVIEW ARTICLE 
 OPEN
@@ -93,7 +93,7 @@ clinical outcomes. Many devices that have received Food and Drug Administration 
 510(k) clearance are being used in clinical and home settings despite inappropriate testing
 with traditional cuff-based protocols and questionable claims of equivalence to existing
 (eg, cuffed) devices.
-Accordingly, the 2025 American Heart Association/American College";;
+Accordingly, the 2025 American Heart Association/American College";SOUTENU;
 3;technique;La forme d'onde PPG reflète l'état des vaisseaux sanguins périphériques, en particulier la rigidité, la compliance et le vieillissement vasculaire, par le biais de paramètres tels que la largeur d'impulsion, le temps de crête, l'indice de rigidité des grandes artères ou l'indice d'augmentation.;D09-393736c2, D09-6db02069;"[D09-393736c2 · p. 6]
 continuous BP estimation. In the body of literature related to
 pulse morphology and pulse wave analysis, there is increasing
@@ -130,7 +130,7 @@ A recent PPG-based machine-learning study,
 which used the
 GoogLeNet pretrained convolutional neural network, provided
 similar or slightly better accuracy for hypertension stratification,
-compared with the traditional feature extraction approach over";;
+compared with the traditional feature extraction approach over";SOUTENU;
 4;technique;La sensibilité globale s'est établie à 41,2 % (IC à 95 % [37,2, 45,3]) et a atteint 53,7 % (IC à 95 % [47,7, 59,7]) pour l'hypertension de stade 2.;D06-172c7316, D06-8dcda495, D07-8c402bbb, D07-c40316f9;"[D06-172c7316 · p. 6]
 diagnosis and can also reassure users who receive a notification but do not
 have hypertension.
@@ -193,7 +193,7 @@ respectively.
 • 
 The sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the
 specificity for normotensive was 95.3% (95% CI [93.7, 96.5]).
-•";;
+•";SOUTENU;"Harmonisé le 28/10 pour cohérence avec les définitions (proposé par Claude, validé par Adam) ; jugement initial : PARTIEL ; raison : chiffres et IC identiques à D06 et D07"
 5;ethique;Par exemple, le sous-groupe asiatique était plus jeune (âge moyen de 43,0 ans contre 50,9 ans) et affichait un indice de masse corporelle moyen inférieur (27,7 contre 30,9), mais ses caractéristiques de performance après ajustement se sont révélées équivalentes à celles des non-asiatiques.;D06-224b2b98, D06-fd4b1853, D07-46a0bba2, D09-61b72d6b;"[D06-224b2b98 · p. 2]
 (PPG), which measures blood volume changes through the skin and supports a
 wide range of Apple Watch features. The algorithm was developed using a large
@@ -316,7 +316,7 @@ record the volume of blood in the sensor coverage area to form a
 PPG signal. Indeed, the sensor coverage area includes both veins
 and arteries, and numerous capillaries. Thus, the PPG signal is a
 complex mixture of the blood flow in veins and arteries of the
-cardiovascular circulatory system. A raw PPG signal generally";;
+cardiovascular circulatory system. A raw PPG signal generally";PARTIEL;"Harmonisé le 28/10 pour cohérence avec les définitions (proposé par Claude, validé par Adam) ; jugement initial : NON_SOUTENU ; raison : D06 dit « on par with » mot pour mot ; D07 (RR 1,42 [0,86-2,35]) nuance sans contredire : différence non significative ≠ équivalence"
 6;social_economique;En autorisant une collecte passive tout au long de la journée dans des produits accessibles à un large public, ces outils contribuent à surmonter les obstacles contemporains liés au manque d'accès aux soins de santé traditionnels.;D12-62520587, D12-5aedfb38, D06-a3309247;"[D12-62520587 · p. 9]
 travel long distances to receive basic health screenings, making it easier for residents of rural
 areas, or areas with shortages of health care professionals, to monitor their out-of-office BP
@@ -362,7 +362,7 @@ hypertension, which may otherwise be missed for years. With so many
 people already using Apple Watch for fitness, connectivity, safety, and
 other health applications, this feature could improve diagnosis rates, health
 management, quality of life, and longevity for those with hypertension.
-Conclusion";;
+Conclusion";PARTIEL;"Harmonisé le 28/10 pour cohérence avec les définitions (proposé par Claude, validé par Adam) ; jugement initial : NON_SOUTENU ; raison : phrase présente dans D12, mais passée du futur au présent et sans la réserve « major limitations must be addressed » : plus fort que la source"
 7;social_economique;Sur le plan social, l'Apple Watch bénéficie déjà d'une large diffusion auprès d'utilisateurs qui l'emploient pour la connectivité, l'activité physique et diverses applications de santé.;D06-a7001751, D06-a3309247, D09-396688b9;"[D06-a7001751 · p. 2]
 Hypertension Notification Feature on Apple Watch | September 2025 2
 Overview
@@ -410,7 +410,7 @@ commercial wearable products. Soon, wearable BP products will
 also likely be an acceptable form of health monitoring utilized by
 most people, and their precision, wear, ease of use, and other
 characteristics will continue to improve significantly.
-FUTURE DIRECTIONS";;
+FUTURE DIRECTIONS";PARTIEL;
 8;parcours_soins;Pour autant, il est clairement établi que l'absence de notification ne signifie aucunement une absence d'hypertension, encadrant ainsi le rôle du dispositif comme une aide à la détection sans se substituer à une évaluation clinique.;D06-a3309247, D07-f33f49f6;"[D06-a3309247 · p. 11]
 Hypertension Notification Feature on Apple Watch | September 2025 11
 Apple Watch offers many features focused on health and wellbeing. The
@@ -430,7 +430,7 @@ does not indicate the absence of hypertension.
 5. Comparison with the Predicate Device
 HTNF and the predicate device (Viz HCM, DEN230003) have the same intended use,
 technological characteristics, and principles of operation, and the difference in indications
-does not represent a new intended use. Both the subject and predicate devices are software-only mobile medical applications intended to identify a single condition based on non-invasive";;
+does not represent a new intended use. Both the subject and predicate devices are software-only mobile medical applications intended to identify a single condition based on non-invasive";PARTIEL;"Harmonisé le 28/10 pour cohérence avec les définitions (proposé par Claude, validé par Adam) ; jugement initial : NON_SOUTENU ; raison : 1re moitié soutenue par D07-f33f49f6 (renforcée : « clairement établi », « aucunement ») ; 2de moitié absente des extraits cités (même règle que A1, A7, A21)"
 9;parcours_soins;De surcroît, les volumes considérables de données générés dans des contextes non traditionnels doivent encore être reliés à des critères d'évaluation cliniques concrets.;D12-21570bef, D12-1bc128f5;"[D12-21570bef · p. 12]
 (ie, at rest), device position tests (ie, in at least 1 other position), treatment tests (ie, 1–4
 weeks after initiating a new antihypertensive therapy), awake/asleep tests (eg, using ABPM
@@ -452,7 +452,7 @@ be resolved to ensure results are actionable. The extensive volume of data these
 generate, especially in settings not traditionally used for BP monitoring, must be linked to
 meaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be
 addressed (Table 2). Until these issues are resolved, using these devices to guide treatment
-could lead to inappropriate care and may pose safety risks to patients.";;
+could lead to inappropriate care and may pose safety risks to patients.";PARTIEL;
 10;autres;L’hypertension artérielle constitue un enjeu sanitaire mondial majeur qui concerne plus de 1,3 milliard d’adultes.;D06-75f56bef, D06-a3309247;"[D06-75f56bef · p. 3]
 Hypertension Notification Feature on Apple Watch | September 2025 3
 Introduction
@@ -483,7 +483,7 @@ hypertension, which may otherwise be missed for years. With so many
 people already using Apple Watch for fitness, connectivity, safety, and
 other health applications, this feature could improve diagnosis rates, health
 management, quality of life, and longevity for those with hypertension.
-Conclusion";;
+Conclusion";PARTIEL;
 11;autres;Les recommandations 2025 de l’American Heart Association et de l’American College of Cardiology déconseillent ainsi leur emploi pour le diagnostic ou la prise en charge de l’hypertension tant qu’une plus grande précision n’est pas démontrée.;D12-557c6126, D12-4794f2ff, D07-f709ac64, D06-a3309247;"[D12-557c6126 · p. 5]
 (eg, cuffed) devices.
 Accordingly, the 2025 American Heart Association/American College
@@ -541,7 +541,7 @@ hypertension, which may otherwise be missed for years. With so many
 people already using Apple Watch for fitness, connectivity, safety, and
 other health applications, this feature could improve diagnosis rates, health
 management, quality of life, and longevity for those with hypertension.
-Conclusion";;
+Conclusion";SOUTENU;
 12;autres;Sur le plan technologique, le recours aux signaux de photopléthysmographie pour évaluer la pression artérielle offre des perspectives prometteuses pour une surveillance quasi continue.;D09-3104b1e4, D09-9f5b7b12, D07-f709ac64, D06-a3309247;"[D09-3104b1e4 · p. 8]
 most people, and their precision, wear, ease of use, and other
 characteristics will continue to improve significantly.
@@ -610,7 +610,7 @@ hypertension, which may otherwise be missed for years. With so many
 people already using Apple Watch for fitness, connectivity, safety, and
 other health applications, this feature could improve diagnosis rates, health
 management, quality of life, and longevity for those with hypertension.
-Conclusion";;
+Conclusion";PARTIEL;
 13;autres;En combinant un modèle d’apprentissage automatique sur la montre et une analyse algorithmique sur iPhone ou iPad, la détection opportuniste au poignet permet d'identifier des signes qui pourraient être manqués pendant des années, améliorant potentiellement le taux de diagnostic et la longévité des personnes hypertendues.;D09-3104b1e4, D09-9f5b7b12, D07-f709ac64, D06-a3309247;"[D09-3104b1e4 · p. 8]
 most people, and their precision, wear, ease of use, and other
 characteristics will continue to improve significantly.
@@ -679,7 +679,7 @@ hypertension, which may otherwise be missed for years. With so many
 people already using Apple Watch for fitness, connectivity, safety, and
 other health applications, this feature could improve diagnosis rates, health
 management, quality of life, and longevity for those with hypertension.
-Conclusion";;
+Conclusion";SOUTENU;
 14;conclusion;En exploitant passivement des données photopléthysmographiques recueillies au poignet après au moins 30 jours de port, cet outil en vente libre destiné aux adultes de 22 ans et plus sans diagnostic préalable permet de signaler des profils évocateurs d'élévation chronique de la pression artérielle, favorisant une démarche précoce qui peut améliorer la prise en charge clinique et le pronostic des patients.;D06-75f56bef, D06-a3309247, D07-b23884cb, D07-e5fd860e;"[D06-75f56bef · p. 3]
 Hypertension Notification Feature on Apple Watch | September 2025 3
 Introduction
@@ -762,7 +762,7 @@ suggestive of hypertension and
 provides a notification to the user.
 The feature is intended for over-the-counter (OTC) use by adults
 age 22 and over who have not
-been previously diagnosed with";;
+been previously diagnosed with";PARTIEL;
 15;conclusion;Des réserves substantielles sont légitimement soulevées au sein de la communauté cardiologique, les recommandations 2025 de l'American Heart Association et de l'American College of Cardiology déconseillant l'emploi des dispositifs sans brassard pour le diagnostic ou la prise en charge de l'hypertension en raison d'un manque de validation sur les critères cliniques et du danger de soins inappropriés si ces outils servaient à ajuster un traitement.;D12-557c6126, D12-1bc128f5, D12-4794f2ff, D07-b23884cb, D07-e5fd860e;"[D12-557c6126 · p. 5]
 (eg, cuffed) devices.
 Accordingly, the 2025 American Heart Association/American College
@@ -849,4 +849,4 @@ suggestive of hypertension and
 provides a notification to the user.
 The feature is intended for over-the-counter (OTC) use by adults
 age 22 and over who have not
-been previously diagnosed with";;
+been previously diagnosed with";PARTIEL;

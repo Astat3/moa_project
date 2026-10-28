@@ -189,6 +189,20 @@ Sortie : `outputs/metriques.csv`
 - **2 membres du groupe** les jugent indépendamment : `SOUTENU`, `PARTIEL` ou `NON_SOUTENU` ;
 - le script calcule le **kappa de Cohen**. Compter environ 45 min.
 
+**Résultat de l'évaluation humaine** (`20261028-095239`, juge 1, 28/10/2026, après harmonisation) : **5 SOUTENU (33 %), 10 PARTIEL (67 %), 0 NON_SOUTENU** sur 15. Avant harmonisation : 4 SOUTENU, 8 PARTIEL, 3 NON_SOUTENU (4 jugements changés ; valeurs initiales dans la colonne `commentaire`).
+
+| Section | Affirmations | SOUTENU | PARTIEL | NON_SOUTENU |
+|---|---|---|---|---|
+| contexte | 2 | 1 | 1 | 0 |
+| technique | 2 | 2 | 0 | 0 |
+| ethique | 1 | 0 | 1 | 0 |
+| social_economique | 2 | 0 | 2 | 0 |
+| parcours_soins | 2 | 0 | 2 | 0 |
+| autres | 4 | 2 | 2 | 0 |
+| conclusion | 2 | 0 | 2 | 0 |
+| enjeux_fda, reglementaire | 0 (aucune tirée) | — | — | — |
+| **Total** | **15** | **5** | **10** | **0** |
+
 **Mise en œuvre** (26/10/2026, bibliothèque standard de Python seulement) :
 - **Métriques** : `python3 eval/evaluer.py metriques <run_id pipeline> [<run_id baseline>]`.
   - Lit `verif_`, `relecture_`, `baseline_` et `runs.jsonl`, puis écrit `metriques.csv`.
@@ -206,12 +220,14 @@ Sortie : `outputs/metriques.csv`
 - **Testé** sur les sorties du 21/10 et du 26/10 et sur une exécution simulée (pipeline et baseline). Le kappa a été vérifié sur un exemple calculé à la main (κ = 0,516).
 
 **G5 n'est évalué que sur l'exécution finale.** Sa liste de termes a été construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties. Son score sur ces sorties (« 6 paragraphes sur 9, sans faux positif ») ne mesure donc pas sa performance : c'est du surajustement. **La liste est gelée depuis le 26/10.**
+- **Résultat sur l'exécution finale** (jugement d'Adam, 28/10/2026, après harmonisation ; `outputs/g5_jugements_20261028-095239.md`) : **6 vraies alertes sur 8** (5 sur 8 avant harmonisation). Les 2 fausses alertes : une négation éloignée du terme (« n'a pas encore été corrélé à des résultats cliniques démontrés ») et le vocabulaire réglementaire du 510(k) (« a démontré son équivalence substantielle »). Le rappel (sur-affirmations non signalées) n'est pas mesuré.
 
 **Relecteur contre liste de défauts de référence** (pour le rapport : « X défauts confirmés repérés par le relecteur sur Y » ; protocole corrigé le 26/10) :
 1. Claude relit les nouvelles sorties **avant** d'ouvrir `relecture_<run_id>.json`. Il écrit sa liste de défauts dans `outputs/defauts_reference_<run_id>.md`, avec pour chaque défaut l'affirmation, le chunk cité, le défaut et son type dans la grille. Il part des défauts déjà relevés (technique le 21/10, réglementaire le 26/10), à revérifier sur le nouveau texte.
 2. **Un membre du groupe valide chaque défaut** (confirmé ou rejeté), sans avoir vu la sortie du relecteur.
 3. Ensuite seulement, l'appariement. Un défaut confirmé est « repéré » si le relecteur cite le même passage avec un problème de même nature. Résultat : **X défauts confirmés repérés sur Y**. Les problèmes que le relecteur ajoute sont triés **par un humain** en vrais défauts et fausses alertes.
 - Le cas QXO/SFR est compté à part : il est invisible depuis les extraits.
+- **Résultat (exécution 1)** : **1 défaut confirmé repéré sur 21** (B1), **0 sur 17 défauts de fond**, après l'harmonisation du 28/10 (A7 et A21 confirmés) ; 1 sur 19 et 0 sur 15 avant. Détail : `outputs/defauts_reference_20261027-093507.md`.
 - À écrire dans le rapport : la liste de référence a été produite avec l'aide d'un LLM (Claude), puis validée par le groupe. Sans cette validation, la comparaison ne mesurerait que l'accord entre deux LLM, pas la détection de défauts réels. Une seule exécution : pas de valeur statistique.
 
 ## 4. Ordre de construction
@@ -268,7 +284,7 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Juge LLM indépendant de fidélité (G3, autre famille de modèle) | Fidélité contrôlée seulement par G4 (chiffres) et par 15 affirmations notées à la main. **Pas de juge de fidélité : les ajouts non sourcés et les liens inventés entre sources ne sont repérés que par le relecteur et l'évaluation humaine** | Juge d'une autre famille de modèle (biais d'auto-préférence de LLM-as-a-judge) ; métriques RAGAS / FActScore |
 | Relances limitées : 2 au plus par appel (60 s puis 120 s), budget de 18 appels par exécution, aucune relance après un délai dépassé | En cas de saturation durable de l'API, une section peut rester vide, signalée par G1. Le 27/10, 2 sections sur 10 étaient vides avec une seule relance | Relances espacées sur plusieurs minutes, ou offre payante (quota plus large) |
 | Pas de contrôle de l'encodage ni de la langue des sorties | Le 27/10, Gemini a renvoyé `\u0000e9` au lieu de « é » dans une section (91 caractères corrompus, repérés seulement par G4), et une conclusion entièrement sans accents. G5 ne voit plus les mots sans accent (« demontre ») | **Fait le 27/10** : décodage des séquences NUL + 2 chiffres hexadécimaux avant les garde-fous, alerte G1 pour les textes sans accents, G5 insensible aux accents. Restent : pas de correction des textes sans accents (aucun changement de prompt), et un contrôle de la langue limité aux accents |
-| Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Le contexte est ignoré. Faux positifs possibles (« un argument solide »). Sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
+| Détection des formulations absolues (G5) par une liste de mots, avec une négation simple (« pas », « non », « ne », « jamais »…) | Le contexte est ignoré. Faux positifs : 2 alertes sur 8 sur l'exécution finale (une négation éloignée du terme ; le vocabulaire du 510(k), « a démontré son équivalence substantielle »). Sur-affirmations sans mot de la liste non repérées (« atteste », « répond à ces exigences ») | Repérage par le relecteur, ou classifieur de sur-affirmations |
 | **G5 compare sans tenir compte des accents depuis le 27/10.** Cause : la conclusion du 27/10, écrite sans accents, échappait à « démontre ». C'est une correction générique du comparateur : aucun terme ajouté ni retiré | Une fausse alerte nouvelle est possible : « les résultats démontrent une spécificité de 92,3 % » (conclusion du 27/10, § 3) est un simple compte rendu | — |
 | Liste de G5 construite à partir des défauts du 21/10 et du 26/10, puis testée sur ces mêmes sorties | **Surajustement** : « 6 paragraphes sur 9, sans faux positif » ne mesure pas la performance de G5. Seuls ses résultats sur l'exécution finale comptent, et la liste est gelée depuis le 26/10 | Construire la liste sur un jeu de développement, puis l'évaluer sur un jeu de test distinct, annoté à la main |
 | Liste de défauts de référence écrite par un LLM (Claude), pour évaluer le relecteur | Sans validation humaine, on ne mesurerait que l'accord entre deux LLM. Chaque défaut est donc validé par un membre du groupe avant l'appariement ; l'échantillon reste petit (une exécution) | Annotation indépendante par deux cliniciens, avant toute sortie du relecteur |
@@ -280,7 +296,8 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Une seule exécution | Variabilité des sorties non mesurée | 3 à 5 exécutions, stabilité des citations et des conclusions |
 | `task_type` des embeddings Gemini non utilisé, pas de MMR | Retrieval perfectible (compensé par plusieurs requêtes et un plafond par document) | Appel direct de l'API avec `RETRIEVAL_QUERY` / `RETRIEVAL_DOCUMENT`, reranking |
 | Évaluation humaine sur 15 affirmations, **par un seul juge** (décision du 28/10 : pas de second évaluateur, donc **pas de kappa**) | Faible puissance statistique ; jugement non répliqué : l'accord entre évaluateurs, donc la fiabilité du jugement, n'est pas mesuré | Deux juges indépendants avec kappa, échantillon plus large, évaluateurs externes (cliniciens) |
-| Validation humaine de la liste de défauts de référence (27/10) faite par un seul membre du groupe, avec un jugement **volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) | Liste confirmée = **borne basse** des défauts réels (15 défauts de fond confirmés sur 30 proposés) ; le rappel du relecteur est mesuré sur les défauts les plus nets ; pas d'accord inter-évaluateurs sur cette liste | Deux validateurs indépendants avec kappa, grille de décision écrite à l'avance pour les cas limites |
+| Validation humaine de la liste de défauts de référence (27/10) faite par un seul membre du groupe, avec un jugement **volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) | Liste confirmée = **borne basse** des défauts réels (17 défauts de fond confirmés sur 30 proposés après l'harmonisation du 28/10, 15 à l'aveugle) ; le rappel du relecteur est mesuré sur les défauts les plus nets ; pas d'accord inter-évaluateurs sur cette liste | Deux validateurs indépendants avec kappa, grille de décision écrite à l'avance pour les cas limites |
+| Jugements humains harmonisés le 28/10 pour supprimer des incohérences : 4 jugements sur 15 de l'évaluation humaine, 3 alertes G5 sur 8, 2 défauts de référence (A7, A21) | Jugements humains harmonisés a posteriori sur proposition d'une IA (Claude), selon des règles fixées à l'avance, valeurs initiales tracées : indépendance du jugement réduite | Deux juges indépendants ; désaccords tranchés entre humains (consensus ou arbitre), sans proposition d'une IA |
 | Affirmation (une phrase) jugée par rapport aux chunks de **son paragraphe**, et non de sa phrase : les citations sont données par paragraphe | Une phrase peut être jugée soutenue grâce à un chunk cité pour une autre phrase du paragraphe, ce qui surestime la fidélité | Citations par phrase dans le schéma du rédacteur, ou décomposition en faits atomiques (FActScore) |
 | Modèle Pro non utilisé : `gemini-3.1-pro` est fermé au plan gratuit (quota à 0, test du 21/10/2026) | Rédaction et relecture par un modèle Flash (`gemini-3.8-flash`) | Modèle Pro (offre payante), à comparer sur les mêmes sections |
 | API externe (Gemini) pour le LLM et les embeddings | Envoi du texte du corpus (publications, pas de données patients) à un fournisseur hors UE | Modèle local (Ollama) ou fournisseur européen sous contrat |

@@ -31,9 +31,10 @@ Corpus (4 PDF + meta.json)
 | 30/09 → 17/10 | Ingestion et recherche | 1er test : 2 chunks sur 5 étaient de la **bibliographie** → nettoyage avant découpage. Top 5 venant d'un seul document → **plusieurs requêtes + plafond par document + requête « contre » forcée** |
 | 21/10 | **Plan v2 minimale** + 1re section rédigée | Le délai impose de simplifier : corpus figé à 4 documents, juge de fidélité (G3) supprimé, pas de correction automatique. Tout ce qui est retiré est listé comme limite. 1re section : **0 alerte des garde-fous, mais 4 distorsions** relevées en relisant (« tout est vert ≠ tout est juste ») |
 | 26/10 | Relecteur, G5, relances, baseline, script d'évaluation | Relecteur qui **reçoit les sources** (option A). G5 contre les formulations absolues. Relance explicite sur les erreurs 503. Baseline avec **les mêmes règles** que le rédacteur |
-| 27/10 | Exécution complète candidate + validation humaine + comparaison avec le relecteur | API très lente (4 à 5 min par appel au lieu de 34 s) et instable (503) → 2 sections vides, caractères corrompus. Liste de défauts écrite par Claude, **validée par un membre du groupe** à l'aveugle, puis comparée au relecteur : **1 défaut repéré sur 19** |
+| 27/10 | Exécution complète candidate + validation humaine + comparaison avec le relecteur | API très lente (4 à 5 min par appel au lieu de 34 s) et instable (503) → 2 sections vides, caractères corrompus. Liste de défauts écrite par Claude, **validée par un membre du groupe** à l'aveugle, puis comparée au relecteur : **1 défaut repéré sur 19** (1 sur 21 après l'harmonisation du 28/10) |
 | 27/10 | Correctifs, puis **gel** du pipeline | Décodage des caractères corrompus, alertes « texte sans accents », G5 insensible aux accents, 2 relances avec un budget d'appels |
 | 28/10 | Exécution finale officielle (`20261028-095239`) | Horloge de la VM en retard de 13 h 26 après la veille du Mac : resynchronisée avant le lancement. 59 min, 11 appels (1 relance après un 503), **9 sections sur 9**, aucun caractère corrompu. **Relecteur en échec** : délai de 600 s dépassé, donc pas de relance (règle fixée le 26/10) |
+| 28/10 | Évaluation humaine, jugement des alertes G5, harmonisation des jugements | 15 affirmations : **5 SOUTENU, 10 PARTIEL, 0 NON_SOUTENU** ; G5 : **6 vraies alertes sur 8** ; A7 et A21 confirmés → relecteur **1 sur 21**. Jugements harmonisés après coup sur proposition d'une IA (valeurs initiales tracées) : limite déclarée |
 
 ---
 
@@ -58,10 +59,11 @@ Corpus (4 PDF + meta.json)
 ## 4. Les résultats (exécution 1 du 27/10 ; exécution finale du 28/10)
 - **Exécution 1** (`20261027-093507`, non officielle) : 47 min, 14 appels (dont 4 relances). 2 sections vides (erreurs 503), une section aux accents corrompus, une conclusion sans accents.
 - **Baseline officielle** (`20261027-102233`) : 9 sections sur 9, 22 références. ⏳ Vérification de chaque référence (existe ? correcte ?).
-- **Liste de défauts de référence** : 30 défauts de fond proposés par Claude, **15 confirmés** par le groupe (validation indulgente, voir les limites), 4 défauts de forme sur 4.
-- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19**, **0 sur 15 défauts de fond**. Son seul problème de fond porte sur un passage (A9) que le validateur avait rejeté à l'aveugle ; trié après sa sortie : **fausse alerte** (position finale, 28/10). Score officiel : 1 sur 19.
+- **Liste de défauts de référence** : 30 défauts de fond proposés par Claude, **17 confirmés** par le groupe, dont 8 de gravité haute (15 à l'aveugle le 27/10, puis A7 et A21 à l'harmonisation du 28/10 ; validation indulgente, voir les limites), 4 défauts de forme sur 4.
+- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 21**, **0 sur 17 défauts de fond** (1 sur 19 et 0 sur 15 avant l'harmonisation). Son seul problème de fond porte sur un passage (A9) que le validateur avait rejeté à l'aveugle ; trié après sa sortie : **fausse alerte** (position finale, 28/10). Score officiel : 1 sur 21 depuis l'harmonisation du 28/10.
 - **Exécution finale** (`20261028-095239`, officielle) : 59 min, 11 appels de chat (dont 1 relance). **9 sections sur 9**, 34 paragraphes, dont 3 `[INFORMATION NON DISPONIBLE]` (HIPAA, marquage CE / MDR, RGPD : absents du corpus). Les 31 autres citent tous au moins un extrait.
   - **Garde-fous** : 8 paragraphes signalés sur 34 (G5 : 8, G4 : 1 ; G1 et G2 : 0). Aucun caractère corrompu.
+  - **G5 jugé** (`outputs/g5_jugements_20261028-095239.md`) : **6 vraies alertes sur 8** (5 avant harmonisation). Fausses alertes : une négation éloignée du terme (« n'a pas encore été corrélé à des résultats cliniques démontrés ») et le vocabulaire du 510(k) (« a démontré son équivalence substantielle »). Le rappel n'est pas mesuré.
   - **Relecteur en échec** : l'appel a dépassé le délai de 600 s (la conclusion avait déjà pris 586 s). Un délai dépassé n'est pas relancé (règle fixée le 26/10). Le relecteur n'est donc évalué que sur l'exécution 1.
 - **Pipeline contre baseline** (`outputs/metriques.csv`) :
 
@@ -75,13 +77,26 @@ Corpus (4 PDF + meta.json)
   | Appels de chat, durée | 11 appels, 59 min | 1 appel, 5 min |
 
 - **Contraste `[INFORMATION NON DISPONIBLE]` : pipeline 3, baseline 0.** Le pipeline déclare 3 manques (HIPAA, marquage CE / MDR, RGPD : absents du corpus). La baseline a la même règle dans son prompt, mais ne l'emploie jamais : elle traite ces trois points de mémoire, avec des références ⏳ à vérifier.
-- ⏳ Évaluation humaine de 15 affirmations par un seul juge (pas de kappa : décision du 28/10, notée en limite).
+- **Évaluation humaine** (exécution finale, 15 affirmations tirées au hasard, un seul juge, pas de kappa) : **5 SOUTENU (33 %), 10 PARTIEL (67 %), 0 NON_SOUTENU**, après harmonisation (avant : 4, 8 et 3). Une affirmation sur trois seulement est entièrement soutenue par ses extraits ; les autres le sont en partie, ou sont formulées plus fort que la source.
+
+  | Section | SOUTENU | PARTIEL | NON_SOUTENU |
+  |---|---|---|---|
+  | contexte (2) | 1 | 1 | 0 |
+  | technique (2) | 2 | 0 | 0 |
+  | ethique (1) | 0 | 1 | 0 |
+  | social_economique (2) | 0 | 2 | 0 |
+  | parcours_soins (2) | 0 | 2 | 0 |
+  | autres (4) | 2 | 2 | 0 |
+  | conclusion (2) | 0 | 2 | 0 |
+  | **Total (15)** | **5** | **10** | **0** |
+
+  Aucune affirmation tirée dans enjeux_fda ni reglementaire. Les sections ethique, social_economique, parcours_soins et conclusion n'ont que des PARTIEL (7 sur 7).
 
 ---
 
 ## 5. Exemples concrets à montrer (un par message clé)
 1. **« Tout est vert ≠ tout est juste »** (21/10) : 0 alerte des garde-fous, mais 4 distorsions à la relecture (une étude présentée comme générale, une réserve « only three subjects » omise, « suivi sur le long terme » pour 30 jours). Relecture faite par Claude, non validée par le groupe : à présenter comme tel.
-2. **L'IA qui relit l'IA ne voit presque rien** : 1 défaut repéré sur 19, 0 défaut de fond, malgré l'accès aux sources. Hypothèses : même famille de modèle que le rédacteur, texte en partie corrompu.
+2. **L'IA qui relit l'IA ne voit presque rien** : 1 défaut repéré sur 21, 0 défaut de fond sur 17, malgré l'accès aux sources. Hypothèses : même famille de modèle que le rédacteur, texte en partie corrompu.
 3. **Lien inventé entre sources** (A25, conclusion de l'exécution 1, confirmé à l'aveugle) : « les critiques pointant les limites de performance […] ou l'inadequation des protocoles de laboratoire ne s'appliquent pas aux donnees probantes fournies pour cette notification » (texte écrit sans accents par le modèle). Aucun extrait n'établit que les critiques de l'AHA ne s'appliquent pas, et l'étude d'Apple évalue une classification sur 30 jours, pas le suivi des variations de pression. Observé par Claude dans toutes les sorties ; validation humaine : A3 et A25 confirmés (A3 : variante livre blanc d'Apple → FDA), A9 et A18 rejetés à l'aveugle ; le problème du relecteur sur A9, trié après sa sortie, est classé fausse alerte. Les garde-fous ne le détectent pas, et le relecteur ne repère ni A3 ni A25.
 4. **La sur-affirmation** : « could improve » (Apple) devient « démontre son potentiel » ; « partially expressed » devient « permet de capter » ; une sensibilité de 41 % devient « garantit un ciblage pertinent ».
 5. **Fidélité ≠ exactitude** (code produit QXO / SFR) : ⚠ **à vérifier avant de l'utiliser.** C1 et C2 ont été rejetés à la validation, et le chunk de D07 contient les deux codes (colonnes du tableau mélangées à l'extraction). Ouvrir le PDF D07, p. 8, et la correction administrative citée dans `corpus.md`.
@@ -98,12 +113,13 @@ Corpus (4 PDF + meta.json)
 **Contrôle qualité**
 - Pas de juge de fidélité (G3 retiré faute de temps) : ajouts non sourcés et liens inventés repérés seulement par le relecteur et l'humain, et le relecteur n'en repère aucun parmi les défauts confirmés.
 - Relecteur de la même famille de modèle que le rédacteur (risque de complaisance).
-- G5 = une liste de mots : il ignore le contexte, a des faux positifs, et a été **construit sur les sorties qu'il a ensuite évaluées** (surajustement ; liste gelée le 26/10).
+- G5 = une liste de mots : il ignore le contexte, a des faux positifs (2 alertes sur 8 sur l'exécution finale), et a été **construit sur les sorties qu'il a ensuite évaluées** (surajustement ; liste gelée le 26/10).
 - Les garde-fous signalent sans corriger : l'argumentaire final contient ses défauts, marqués ⚠.
 
 **Évaluation**
 - **Validation de la liste de défauts faite par un seul membre, avec un jugement volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) → la liste confirmée est une borne basse des défauts réels.
 - Liste de référence d'abord écrite par un LLM.
+- **Jugements humains harmonisés a posteriori sur proposition d'une IA (Claude)**, selon des règles fixées à l'avance, valeurs initiales tracées : indépendance du jugement réduite (4 jugements sur 15, 3 alertes G5 sur 8, 2 défauts de référence).
 - Une seule exécution officielle : variabilité non mesurée. Évaluation humaine sur 15 affirmations seulement, par un seul juge : pas de kappa, la fiabilité du jugement n'est pas mesurée.
 - Une phrase est jugée par rapport aux chunks de son paragraphe, ce qui surestime la fidélité.
 
@@ -122,7 +138,7 @@ Corpus (4 PDF + meta.json)
 | Comment avez-vous choisi la taille des chunks ? | 1 000 caractères : citation précise, contrôle des chiffres plus strict. Non optimisé par une mesure (limite). |
 | Pourquoi les garde-fous ne corrigent-ils pas ? | Simplicité et transparence : on montre les défauts au lieu de les masquer. La correction automatique est une piste v2. |
 | Pourquoi le relecteur échoue-t-il ? | Même modèle que le rédacteur, texte en partie corrompu, une seule exécution. C'est un résultat en soi : un contrôle par IA ne remplace pas la relecture humaine. Sur l'exécution finale, il n'a même pas abouti : délai de 10 min dépassé (API saturée), sans relance, et l'échec est compté comme un résultat. |
-| Comment savez-vous que vos défauts de référence sont justes ? | Écrits par un LLM, puis validés un par un par un membre du groupe, à l'aveugle (sans voir le relecteur). Validation indulgente, assumée comme limite. |
+| Comment savez-vous que vos défauts de référence sont justes ? | Écrits par un LLM, puis validés un par un par un membre du groupe, à l'aveugle (sans voir le relecteur). Validation indulgente, assumée comme limite. Deux rejets (A7, A21) ont ensuite été changés en « confirmé » pour appliquer la même règle qu'à A1, sur proposition d'une IA : valeurs initiales tracées, indépendance réduite. |
 | Et le RGPD avec une API américaine ? | Aucune donnée patient ; conditions EEE de l'API Gemini ; le reste tourne en local. Une version clinique demanderait un modèle local ou un fournisseur européen sous contrat. |
 | Pourquoi avoir changé de fournisseur ? | Contrainte d'accès (offre gratuite de Mistral sans clé API), avec un impact assumé sur l'argument RGPD. |
 | Différence entre une autorisation 510(k) et une « validation » ? | 510(k) = autorisation par équivalence substantielle à un dispositif existant (ici le prédicat Viz HCM), pas une approbation. Le rédacteur emploie parfois « validé » à tort. |
@@ -134,15 +150,16 @@ Corpus (4 PDF + meta.json)
 - Corpus : 4 documents, **187 chunks** (D06 22, D07 47, D09 59, D12 59).
 - Étude d'Apple (D06, D07) : 2 229 inclus, 1 863 analysables ; sensibilité **41,2 %** (53,7 % au stade 2) ; spécificité **92,3 %** (95,3 % chez les normotendus) ; 30 jours de port.
 - Quotas gratuits : **20 appels de chat par jour**, 5 par minute.
-- Exécution 1 : 47 min, 14 appels ; défauts : **15 de fond confirmés sur 30** ; relecteur : **1 sur 19**.
+- Exécution 1 : 47 min, 14 appels ; défauts : **17 de fond confirmés sur 30** (8 de gravité haute) ; relecteur : **1 sur 21** (0 sur 17 de fond).
 - Exécution finale : 59 min, 11 appels ; 9 sections sur 9 ; 34 paragraphes, dont 8 signalés et 3 `[INFORMATION NON DISPONIBLE]` ; relecteur en échec (délai de 600 s). Baseline : 22 références, 1 appel, 5 min.
-- ⏳ Résultats de l'évaluation humaine (1 juge, sans kappa).
+- Évaluation humaine (1 juge, sans kappa, après harmonisation) : **5 SOUTENU, 10 PARTIEL, 0 NON_SOUTENU** sur 15. G5 : **6 vraies alertes sur 8**.
 
 ---
 
 ## 9. Reste à faire pour l'oral
 - Exécution finale et métriques : faites le 28/10.
-- ⏳ Évaluation humaine (1 juge : `outputs/eval_humaine_juge1.csv` ; pas de kappa), vérification des références de la baseline (`outputs/references_baseline.csv`).
+- Évaluation humaine et jugement des alertes G5 : faits le 28/10 (jugements harmonisés, valeurs initiales tracées).
+- ⏳ Vérification des références de la baseline (`outputs/references_baseline.csv`).
 - ⏳ Vérifier le cas QXO / SFR dans le PDF D07 (p. 8) avant de s'en servir.
 - ⏳ Captures : `00-ingestion`, `10-argumentaire`, `50-baseline`.
 - ⏳ Point de vue du groupe sur la conclusion de l'IA.
