@@ -99,3 +99,8 @@ Liste établie par Claude (Claude Code) le 27/10/2026, **avant toute ouverture d
   - le texte reçu par le relecteur contenait les 91 caractères NUL de enjeux_fda (B2) et une conclusion sans accents (B3) ;
   - le relecteur appartient à la même famille de modèles que le rédacteur ;
   - une seule exécution : pas de valeur statistique.
+
+### Tri du problème ajouté par le relecteur (28/10/2026)
+- **Problème du relecteur sur technique § 3 (passage de A9, lien anachronique AHA 2026 → étude d'Apple 2025)** : classé **vrai défaut** par Adam le 28/10/2026, **après avoir vu la sortie du relecteur**.
+- Ce classement ne modifie pas la validation à l'aveugle (A9 reste « rejeté » dans le tableau) ni le **score officiel : 1 défaut confirmé repéré sur 19**.
+- Bilan des problèmes ajoutés par le relecteur : 1 sur 1 jugé vrai défaut. La contradiction avec le rejet de A9 à l'aveugle illustre la **validation indulgente** déclarée en limite (`pipeline.md` § 5) : sur ce cas, le relecteur a vu un défaut que le validateur humain avait écarté.
