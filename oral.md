@@ -59,7 +59,7 @@ Corpus (4 PDF + meta.json)
 - **Exécution 1** (`20261027-093507`, non officielle) : 47 min, 14 appels (dont 4 relances). 2 sections vides (erreurs 503), une section aux accents corrompus, une conclusion sans accents.
 - **Baseline officielle** (`20261027-102233`) : 9 sections sur 9, 22 références. ⏳ Vérification de chaque référence (existe ? correcte ?).
 - **Liste de défauts de référence** : 30 défauts de fond proposés par Claude, **15 confirmés** par le groupe (validation indulgente, voir les limites), 4 défauts de forme sur 4.
-- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19**, **0 sur 15 défauts de fond**. Son seul problème de fond porte sur un passage (A9) que le validateur avait rejeté à l'aveugle ; **classé vrai défaut a posteriori** (28/10). Le score officiel reste 1 sur 19, mais sur ce cas c'est le relecteur qui a vu juste.
+- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19**, **0 sur 15 défauts de fond**. Son seul problème de fond porte sur un passage (A9) que le validateur avait rejeté à l'aveugle ; trié après sa sortie : **fausse alerte** (position finale, 28/10). Score officiel : 1 sur 19.
 - **Exécution finale** (`20261028-095239`, officielle) : 59 min, 11 appels de chat (dont 1 relance). **9 sections sur 9**, 34 paragraphes, dont 3 `[INFORMATION NON DISPONIBLE]` (HIPAA, marquage CE / MDR, RGPD : absents du corpus). Les 31 autres citent tous au moins un extrait.
   - **Garde-fous** : 8 paragraphes signalés sur 34 (G5 : 8, G4 : 1 ; G1 et G2 : 0). Aucun caractère corrompu.
   - **Relecteur en échec** : l'appel a dépassé le délai de 600 s (la conclusion avait déjà pris 586 s). Un délai dépassé n'est pas relancé (règle fixée le 26/10). Le relecteur n'est donc évalué que sur l'exécution 1.
@@ -74,6 +74,7 @@ Corpus (4 PDF + meta.json)
   | Paragraphes signalés ⚠ | 8 / 34 | sans objet (pas de garde-fous) |
   | Appels de chat, durée | 11 appels, 59 min | 1 appel, 5 min |
 
+- **Contraste `[INFORMATION NON DISPONIBLE]` : pipeline 3, baseline 0.** Le pipeline déclare 3 manques (HIPAA, marquage CE / MDR, RGPD : absents du corpus). La baseline a la même règle dans son prompt, mais ne l'emploie jamais : elle traite ces trois points de mémoire, avec des références ⏳ à vérifier.
 - ⏳ Évaluation humaine de 15 affirmations par 2 juges (kappa).
 
 ---
@@ -81,7 +82,7 @@ Corpus (4 PDF + meta.json)
 ## 5. Exemples concrets à montrer (un par message clé)
 1. **« Tout est vert ≠ tout est juste »** (21/10) : 0 alerte des garde-fous, mais 4 distorsions à la relecture (une étude présentée comme générale, une réserve « only three subjects » omise, « suivi sur le long terme » pour 30 jours). Relecture faite par Claude, non validée par le groupe : à présenter comme tel.
 2. **L'IA qui relit l'IA ne voit presque rien** : 1 défaut repéré sur 19, 0 défaut de fond, malgré l'accès aux sources. Hypothèses : même famille de modèle que le rédacteur, texte en partie corrompu.
-3. **Lien inventé entre sources** : « Pour répondre à ces exigences méthodologiques [de l'AHA], l'étude d'Apple s'est déroulée… », alors que la déclaration de l'AHA (mise en ligne en déc. 2025) est **postérieure** à l'autorisation (sept. 2025). Observé par Claude dans toutes les sorties ; validation humaine : A3 et A25 confirmés, A9 et A18 rejetés à l'aveugle, puis A9 reclassé vrai défaut après la sortie du relecteur. Les garde-fous ne le détectent pas ; le relecteur l'a repéré une fois (A9), mais pas en A3 ni en A25.
+3. **Lien inventé entre sources** : « Pour répondre à ces exigences méthodologiques [de l'AHA], l'étude d'Apple s'est déroulée… », alors que la déclaration de l'AHA (mise en ligne en déc. 2025) est **postérieure** à l'autorisation (sept. 2025). Observé par Claude dans toutes les sorties ; validation humaine : A3 et A25 confirmés (A3 : variante livre blanc d'Apple → FDA), A9 et A18 rejetés à l'aveugle ; le problème du relecteur sur A9, trié après sa sortie, est classé fausse alerte. Les garde-fous ne le détectent pas, et le relecteur ne repère ni A3 ni A25.
 4. **La sur-affirmation** : « could improve » (Apple) devient « démontre son potentiel » ; « partially expressed » devient « permet de capter » ; une sensibilité de 41 % devient « garantit un ciblage pertinent ».
 5. **Fidélité ≠ exactitude** (code produit QXO / SFR) : ⚠ **à vérifier avant de l'utiliser.** C1 et C2 ont été rejetés à la validation, et le chunk de D07 contient les deux codes (colonnes du tableau mélangées à l'extraction). Ouvrir le PDF D07, p. 8, et la correction administrative citée dans `corpus.md`.
 6. **Un problème d'infrastructure, pas de contenu** : Gemini a renvoyé « \u0000e9 » au lieu de « é » ; repéré par G4 (qui y voyait des nombres), puis réparé par un décodage avant les garde-fous.
@@ -95,7 +96,7 @@ Corpus (4 PDF + meta.json)
 - Une partie des chiffres épidémiologiques vient du livre blanc d'Apple (source intéressée), faute de source OMS dans le corpus.
 
 **Contrôle qualité**
-- Pas de juge de fidélité (G3 retiré faute de temps) : ajouts non sourcés et liens inventés repérés seulement par le relecteur et l'humain, et le relecteur n'en repère qu'un (A9, sur les liens inventés).
+- Pas de juge de fidélité (G3 retiré faute de temps) : ajouts non sourcés et liens inventés repérés seulement par le relecteur et l'humain, et le relecteur n'en repère aucun parmi les défauts confirmés.
 - Relecteur de la même famille de modèle que le rédacteur (risque de complaisance).
 - G5 = une liste de mots : il ignore le contexte, a des faux positifs, et a été **construit sur les sorties qu'il a ensuite évaluées** (surajustement ; liste gelée le 26/10).
 - Les garde-fous signalent sans corriger : l'argumentaire final contient ses défauts, marqués ⚠.
@@ -107,7 +108,7 @@ Corpus (4 PDF + meta.json)
 - Une phrase est jugée par rapport aux chunks de son paragraphe, ce qui surestime la fidélité.
 
 **Modèle et infrastructure**
-- Offre gratuite : 20 appels par jour, latence très variable (34 s le 21/10, de 2 à 8 min le 27/10), erreurs 503 → sections vides possibles.
+- Offre gratuite : 20 appels par jour, latence très variable (34 s le 21/10, de 2 à 8 min le 27/10 ; le 28/10, de 23 s à 10 min, relecteur au-delà de 10 min), erreurs 503 → sections vides possibles.
 - Modèle Flash seulement (Pro fermé à l'offre gratuite).
 - API américaine : le texte du corpus (publications, aucune donnée patient) part chez Google. Pour les utilisateurs de l'EEE, les conditions de l'offre payante s'appliquent aussi au quota gratuit (pas d'entraînement sur les requêtes).
 
@@ -120,7 +121,7 @@ Corpus (4 PDF + meta.json)
 | Pourquoi Qdrant ? | Persistance, filtre par métadonnées (requête « contre » forcée), local, intégré à n8n. Pas un choix de performance : 187 chunks. |
 | Comment avez-vous choisi la taille des chunks ? | 1 000 caractères : citation précise, contrôle des chiffres plus strict. Non optimisé par une mesure (limite). |
 | Pourquoi les garde-fous ne corrigent-ils pas ? | Simplicité et transparence : on montre les défauts au lieu de les masquer. La correction automatique est une piste v2. |
-| Pourquoi le relecteur échoue-t-il ? | Même modèle que le rédacteur, texte en partie corrompu, une seule exécution. C'est un résultat en soi : un contrôle par IA ne remplace pas la relecture humaine. |
+| Pourquoi le relecteur échoue-t-il ? | Même modèle que le rédacteur, texte en partie corrompu, une seule exécution. C'est un résultat en soi : un contrôle par IA ne remplace pas la relecture humaine. Sur l'exécution finale, il n'a même pas abouti : délai de 10 min dépassé (API saturée), sans relance, et l'échec est compté comme un résultat. |
 | Comment savez-vous que vos défauts de référence sont justes ? | Écrits par un LLM, puis validés un par un par un membre du groupe, à l'aveugle (sans voir le relecteur). Validation indulgente, assumée comme limite. |
 | Et le RGPD avec une API américaine ? | Aucune donnée patient ; conditions EEE de l'API Gemini ; le reste tourne en local. Une version clinique demanderait un modèle local ou un fournisseur européen sous contrat. |
 | Pourquoi avoir changé de fournisseur ? | Contrainte d'accès (offre gratuite de Mistral sans clé API), avec un impact assumé sur l'argument RGPD. |
