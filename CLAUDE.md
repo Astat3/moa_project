@@ -68,7 +68,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
    → conclusion → assemblage : Markdown + bibliographie générée par le code depuis meta.json
    → relecteur Gemini : liste de problèmes, sans correction
       │
- 50-baseline (Gemini seul, sans RAG)  ──►  eval/evaluer.py : métriques pipeline vs baseline + évaluation humaine (kappa)
+ 50-baseline (Gemini seul, sans RAG)  ──►  eval/evaluer.py : métriques pipeline vs baseline + évaluation humaine (1 juge, sans kappa)
       │
  Pandoc → PDF (hors n8n)
 ```
@@ -131,6 +131,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 2026-10-27 | **Correctifs avant le gel**, testés par simulation :<br>• décodage des caractères NUL + 2 chiffres hexadécimaux, avant les garde-fous (ce n'est pas une correction de contenu) ;<br>• G1 signale tout NUL restant et les sections sans accents ;<br>• G5 compare sans tenir compte des accents (liste inchangée) ;<br>• jusqu'à 2 relances (60 s, puis 120 s obtenues par 2 × 60 s, car un *Wait* de plus de 65 s casserait la CLI), avec un budget de 18 appels de chat par exécution ;<br>• baseline officielle `20261027-102233` ;<br>• exécution `20261027-093507` = exécution 1, non officielle, support de la comparaison avec le relecteur | Consignes de 10 h 45 : API saturée (503), réponse JSON corrompue, conclusion sans accents |
 | 2026-10-27 | **Gel** du pipeline : plus aucune modification des prompts, de G5 ni des workflows | Exécution finale le 28/10 à 8 h |
 | 2026-10-28 | **Exécution finale `20261028-095239` gardée sans relecteur** (délai de 600 s dépassé) : l'échec est compté comme un résultat, le relecteur reste évalué sur l'exécution 1 (1/19). Problème du relecteur sur A9 : fausse alerte (position finale) | Faire au plus simple ; quota et gel interdisent de relancer |
+| 2026-10-28 | **Implémentation arrêtée**, pipeline gelé (commit `8bde9d6`) ; **évaluation humaine par un seul juge** (`eval_humaine_juge1.csv`), **pas de kappa** ; noté en limite (`pipeline.md` § 5) | Faute de temps ; faire au plus simple |
 | 2026-10-26 | **Échéance : pipeline prêt le 28/10 après-midi.** Essai le 27/10, exécution finale officielle le 28/10, puis gel des prompts, de G5 et des workflows | Le rapport et l'oral viennent ensuite |
 
 ## 6. Questions ouvertes / à trancher
@@ -182,7 +183,7 @@ Exemples de pipeline possibles (au choix, non cumulatifs) :
 | 3. Ingestion (WF00) | ✅ lots de 6 pages + nettoyage (bibliographie, appels, césures) + `chunk_id` (SHA-1, index) ; 187 chunks ; retrieval validé le 17/10 (5/5 pertinents, plus de bibliographie). L'appel de l'étape `chunk_id` en fin de boucle sera vérifié à la prochaine ingestion complète |
 | 4. Workflow `10-argumentaire` (rédaction + G1/G2/G4/G5 + assemblage + relecteur) | 🟡 étape 1 faite le 21/10 : section « technique » de bout en bout, 34 s, 0 paragraphe signalé. **Étape 2a (26/10)** : boucle sur les sections (*Wait* 15 s), conclusion après la boucle, paramètre des sections, G5, délai de 600 s. Essai éthique + réglementaire + conclusion : réglementaire rédigé, éthique et conclusion en 503 (API saturée, signalés par G1). **Étape 3 prête (26/10 au soir, non exécutée)** : relecteur option A, relance unique sur 429/5xx, G5 élargi ; tous les chemins testés avec un rédacteur et un relecteur simulés. Reste : exécution du 27/10 avec accord, puis comparaison avec la relecture humaine ; exécution complète seulement avec accord. **28/10 : exécution finale `20261028-095239`, 9 sections sur 9 ; relecteur en échec (délai)** |
 | 5. Baseline (`50-baseline`) | 🟡 prête le 26/10 (prompt `baseline_v1.md`, mode JSON, relance unique), testée avec un appel simulé. **Baseline officielle : `20261027-102233`** (27/10, 9 sections, 22 références) |
-| 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | 🟡 script prêt le 26/10 (métriques, 15 affirmations dans `eval_humaine_juge1/2.csv`, `references_baseline.csv`, kappa vérifié à la main), testé sur les sorties du 21/10 et du 26/10. Métriques sur la sortie finale faites le 28/10. Reste : évaluation humaine (2 membres), vérification des références de la baseline |
+| 6. Évaluation (`eval/evaluer.py` + évaluation humaine) | 🟡 script prêt le 26/10 (métriques, 15 affirmations dans `eval_humaine_juge1/2.csv`, `references_baseline.csv`, kappa vérifié à la main), testé sur les sorties du 21/10 et du 26/10. Métriques sur la sortie finale faites le 28/10. Reste : évaluation humaine (**1 juge, sans kappa**, décision du 28/10), vérification des références de la baseline |
 | 7. Rapport écrit | ⚪ |
 | 8. Oral | ⚪ |
 

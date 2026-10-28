@@ -19,7 +19,7 @@ Corpus (4 PDF + meta.json)
         → garde-fous G1 G2 G4 G5 (signalent ⚠, ne corrigent pas)
      → conclusion → assemblage (bibliographie générée par le code) → relecteur Gemini (liste de problèmes)
   → 50-baseline : même modèle, mêmes règles, sans corpus
-  → eval/evaluer.py : métriques + évaluation humaine (2 juges, kappa)
+  → eval/evaluer.py : métriques + évaluation humaine (1 juge, pas de kappa)
 ```
 
 ---
@@ -75,7 +75,7 @@ Corpus (4 PDF + meta.json)
   | Appels de chat, durée | 11 appels, 59 min | 1 appel, 5 min |
 
 - **Contraste `[INFORMATION NON DISPONIBLE]` : pipeline 3, baseline 0.** Le pipeline déclare 3 manques (HIPAA, marquage CE / MDR, RGPD : absents du corpus). La baseline a la même règle dans son prompt, mais ne l'emploie jamais : elle traite ces trois points de mémoire, avec des références ⏳ à vérifier.
-- ⏳ Évaluation humaine de 15 affirmations par 2 juges (kappa).
+- ⏳ Évaluation humaine de 15 affirmations par un seul juge (pas de kappa : décision du 28/10, notée en limite).
 
 ---
 
@@ -104,7 +104,7 @@ Corpus (4 PDF + meta.json)
 **Évaluation**
 - **Validation de la liste de défauts faite par un seul membre, avec un jugement volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) → la liste confirmée est une borne basse des défauts réels.
 - Liste de référence d'abord écrite par un LLM.
-- Une seule exécution officielle : variabilité non mesurée. Évaluation humaine sur 15 affirmations seulement.
+- Une seule exécution officielle : variabilité non mesurée. Évaluation humaine sur 15 affirmations seulement, par un seul juge : pas de kappa, la fiabilité du jugement n'est pas mesurée.
 - Une phrase est jugée par rapport aux chunks de son paragraphe, ce qui surestime la fidélité.
 
 **Modèle et infrastructure**
@@ -136,13 +136,13 @@ Corpus (4 PDF + meta.json)
 - Quotas gratuits : **20 appels de chat par jour**, 5 par minute.
 - Exécution 1 : 47 min, 14 appels ; défauts : **15 de fond confirmés sur 30** ; relecteur : **1 sur 19**.
 - Exécution finale : 59 min, 11 appels ; 9 sections sur 9 ; 34 paragraphes, dont 8 signalés et 3 `[INFORMATION NON DISPONIBLE]` ; relecteur en échec (délai de 600 s). Baseline : 22 références, 1 appel, 5 min.
-- ⏳ Kappa.
+- ⏳ Résultats de l'évaluation humaine (1 juge, sans kappa).
 
 ---
 
 ## 9. Reste à faire pour l'oral
 - Exécution finale et métriques : faites le 28/10.
-- ⏳ Évaluation humaine (2 juges, kappa : `outputs/eval_humaine_juge1.csv` et `juge2.csv`), vérification des références de la baseline (`outputs/references_baseline.csv`).
+- ⏳ Évaluation humaine (1 juge : `outputs/eval_humaine_juge1.csv` ; pas de kappa), vérification des références de la baseline (`outputs/references_baseline.csv`).
 - ⏳ Vérifier le cas QXO / SFR dans le PDF D07 (p. 8) avant de s'en servir.
 - ⏳ Captures : `00-ingestion`, `10-argumentaire`, `50-baseline`.
 - ⏳ Point de vue du groupe sur la conclusion de l'IA.

@@ -184,7 +184,7 @@ Sortie : `outputs/metriques.csv`
 | Problèmes relevés par le relecteur, par gravité | | non applicable | auto |
 | Nombre d'appels, durée | | | auto |
 
-**Évaluation humaine** :
+**Évaluation humaine** (décision du 28/10/2026 : **un seul juge**, fichier `eval_humaine_juge1.csv` ; **pas de kappa**, faute d'un second évaluateur ; la commande `kappa` reste disponible pour une v2) :
 - le script tire au hasard **15 affirmations** du pipeline et produit `outputs/eval_humaine.csv` (affirmation, chunk cité, texte du chunk) ;
 - **2 membres du groupe** les jugent indépendamment : `SOUTENU`, `PARTIEL` ou `NON_SOUTENU` ;
 - le script calcule le **kappa de Cohen**. Compter environ 45 min.
@@ -258,6 +258,8 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 ## 5. Limites et pistes pour une v2
 À reprendre dans la partie « Critique des résultats » du rapport. **Toute simplification décidée en cours de route doit être ajoutée ici.**
 
+**Implémentation arrêtée le 28/10/2026**, après l'exécution finale officielle `20261028-095239` : le pipeline reste gelé (commit `8bde9d6`). Tout ce qui n'a pas été réalisé figure dans ce tableau ; aucun correctif n'est apporté après cette date.
+
 | Non fait en v1 | Conséquence (limite) | Piste v2 |
 |---|---|---|
 | Recherche bibliographique automatisée (équations générées par LLM, PubMed / Europe PMC, screening des abstracts) | Revue ciblée manuelle, non exhaustive, avec un biais de sélection possible | Workflow de recherche PubMed + screening par double LLM, avec arbitre (exemple « multi-agents » de la consigne) + diagramme PRISMA |
@@ -277,7 +279,7 @@ Après chaque étape : `n8n/exporter.sh`, commit, et une ligne dans le journal d
 | Relecteur en un seul appel sur tout l'argumentaire (environ 15 000 tokens d'entrée), délai de 600 s, pas de relance sur délai | Exécution finale sans relecture : délai dépassé le 28/10 (API gratuite saturée) | Un appel par section, ou offre payante |
 | Une seule exécution | Variabilité des sorties non mesurée | 3 à 5 exécutions, stabilité des citations et des conclusions |
 | `task_type` des embeddings Gemini non utilisé, pas de MMR | Retrieval perfectible (compensé par plusieurs requêtes et un plafond par document) | Appel direct de l'API avec `RETRIEVAL_QUERY` / `RETRIEVAL_DOCUMENT`, reranking |
-| Évaluation humaine sur 15 affirmations | Faible puissance statistique | Échantillon plus large, évaluateurs externes (cliniciens) |
+| Évaluation humaine sur 15 affirmations, **par un seul juge** (décision du 28/10 : pas de second évaluateur, donc **pas de kappa**) | Faible puissance statistique ; jugement non répliqué : l'accord entre évaluateurs, donc la fiabilité du jugement, n'est pas mesuré | Deux juges indépendants avec kappa, échantillon plus large, évaluateurs externes (cliniciens) |
 | Validation humaine de la liste de défauts de référence (27/10) faite par un seul membre du groupe, avec un jugement **volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) | Liste confirmée = **borne basse** des défauts réels (15 défauts de fond confirmés sur 30 proposés) ; le rappel du relecteur est mesuré sur les défauts les plus nets ; pas d'accord inter-évaluateurs sur cette liste | Deux validateurs indépendants avec kappa, grille de décision écrite à l'avance pour les cas limites |
 | Affirmation (une phrase) jugée par rapport aux chunks de **son paragraphe**, et non de sa phrase : les citations sont données par paragraphe | Une phrase peut être jugée soutenue grâce à un chunk cité pour une autre phrase du paragraphe, ce qui surestime la fidélité | Citations par phrase dans le schéma du rédacteur, ou décomposition en faits atomiques (FActScore) |
 | Modèle Pro non utilisé : `gemini-3.1-pro` est fermé au plan gratuit (quota à 0, test du 21/10/2026) | Rédaction et relecture par un modèle Flash (`gemini-3.8-flash`) | Modèle Pro (offre payante), à comparer sur les mêmes sections |
