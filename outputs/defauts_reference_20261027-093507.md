@@ -91,7 +91,7 @@ Liste établie par Claude (Claude Code) le 27/10/2026, **avant toute ouverture d
 | parcours_soins : même problème (critère 1) | basse | B1 | confirmé | repéré (même défaut) |
 | technique : « Pour répondre à ces exigences méthodologiques, l'évaluation clinique pivotale […] » ; lien de cause à effet anachronique et non soutenu entre l'AHA (2026) et l'étude d'Apple (2025) (critères 4 et 5) | haute | A9 (même passage, même nature) | **rejeté** | non compté ; problème ajouté, trié : fausse alerte (position finale, 28/10) |
 
-**Résultat : 1 défaut confirmé repéré sur 19** (B1).
+**Résultat : 1 défaut confirmé repéré sur 19** (B1). *Recalculé le 28/10 après l'harmonisation (A7 et A21 confirmés) : **1 sur 21**, 0 sur 17 sur le fond ; voir « Harmonisation de la validation » plus bas.*
 - **Défauts de fond : 0 sur 15**, dont 0 sur les 6 de gravité haute (A1, A3, A14, A22, A25, A29). Par type : 0 sur 8 sur-affirmations, 0 sur 4 affirmations non soutenues, 0 sur 2 liens inventés (A3, A25), 0 sur 1 contre-argument non traité.
 - **Structure et forme : 1 sur 4.** B2 (encodage) et B3 (texte sans accents) n'entrent dans aucun critère de la grille. Sur les seuls défauts couverts par la grille : 1 sur 17.
 - **Problème ajouté par le relecteur, à trier par un humain** : celui de technique § 3. Il porte sur le passage de A9, avec la même nature (lien inventé, chronologie), alors que le validateur a rejeté A9 sans connaître la sortie du relecteur. Premier tri par Adam, le 27/10 : fausse alerte (réponse à une question de Claude, sans raison donnée) ; remplacé le 28/10 par « vrai défaut » (voir ci-dessous) ; **position finale d'Adam, le 28/10 : « fausse alerte », car il faut faire au plus simple.** Le score officiel reste 1 sur 19.
@@ -110,6 +110,6 @@ Liste établie par Claude (Claude Code) le 27/10/2026, **avant toute ouverture d
 Proposée par Claude (chat), **validée par Adam**, pour supprimer une incohérence de la validation à l'aveugle :
 - **A1, A7 et A21** décrivent le même défaut (affirmation vraie, mais absente des chunks **cités** : l'usage prévu figure dans D07-b23884cb, non cité). A1 avait été confirmé, A7 et A21 rejetés. Règle appliquée aux trois : **on juge par rapport aux chunks cités** → A7 et A21 passent à **confirmé**.
 - Nouveaux totaux : **17 défauts de fond confirmés sur 30** (au lieu de 15), dont **8 de gravité haute** (A1, A3, A7, A14, A21, A22, A25, A29) ; 4 de forme sur 4 ; **21 défauts confirmés au total**.
-- **Appariement recalculé** : le relecteur ne repère ni A7 ni A21 → **1 défaut confirmé repéré sur 21** (au lieu de 1 sur 19), **0 sur 17** défauts de fond. Le problème ajouté sur A9 reste classé vrai défaut a posteriori, hors score.
+- **Appariement recalculé** : le relecteur ne repère ni A7 ni A21 → **1 défaut confirmé repéré sur 21** (au lieu de 1 sur 19), **0 sur 17** défauts de fond. Le problème ajouté sur A9 reste classé **fausse alerte** (position finale d'Adam, voir plus haut), hors score.
 - Les jugements initiaux restent visibles dans le tableau.
 

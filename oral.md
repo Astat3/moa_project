@@ -119,7 +119,7 @@ Corpus (4 PDF + meta.json)
 **Évaluation**
 - **Validation de la liste de défauts faite par un seul membre, avec un jugement volontairement indulgent** sur les cas limites, faute de temps (objectif : un pipeline fonctionnel, pas parfait) → la liste confirmée est une borne basse des défauts réels.
 - Liste de référence d'abord écrite par un LLM.
-- **Jugements humains harmonisés a posteriori sur proposition d'une IA (Claude)**, selon des règles fixées à l'avance, valeurs initiales tracées : indépendance du jugement réduite (4 jugements sur 15, 3 alertes G5 sur 8, 2 défauts de référence).
+- **Jugements humains harmonisés a posteriori sur proposition d'une IA (Claude)**, selon des règles fixées à l'avance, valeurs initiales tracées : indépendance du jugement réduite (4 jugements sur 15, 3 alertes G5 sur 8, 2 défauts de référence). Constat : les 5 changements proposés par Claude (chat) vont tous dans le sens des propositions initiales de Claude Code (G5 : accord de 3/8 à 6/8 ; A7 et A21) : l’harmonisation par une IA rapproche les jugements humains de ceux d’une IA.
 - Une seule exécution officielle : variabilité non mesurée. Évaluation humaine sur 15 affirmations seulement, par un seul juge : pas de kappa, la fiabilité du jugement n'est pas mesurée.
 - Une phrase est jugée par rapport aux chunks de son paragraphe, ce qui surestime la fidélité.
 
