@@ -33,7 +33,7 @@ Corpus (4 PDF + meta.json)
 | 26/10 | Relecteur, G5, relances, baseline, script d'évaluation | Relecteur qui **reçoit les sources** (option A). G5 contre les formulations absolues. Relance explicite sur les erreurs 503. Baseline avec **les mêmes règles** que le rédacteur |
 | 27/10 | Exécution complète candidate + validation humaine + comparaison avec le relecteur | API très lente (4 à 5 min par appel au lieu de 34 s) et instable (503) → 2 sections vides, caractères corrompus. Liste de défauts écrite par Claude, **validée par un membre du groupe** à l'aveugle, puis comparée au relecteur : **1 défaut repéré sur 19** |
 | 27/10 | Correctifs, puis **gel** du pipeline | Décodage des caractères corrompus, alertes « texte sans accents », G5 insensible aux accents, 2 relances avec un budget d'appels |
-| 28/10 | ⏳ Exécution finale officielle | ⏳ |
+| 28/10 | Exécution finale officielle (`20261028-095239`) | Horloge de la VM en retard de 13 h 26 après la veille du Mac : resynchronisée avant le lancement. 59 min, 11 appels (1 relance après un 503), **9 sections sur 9**, aucun caractère corrompu. **Relecteur en échec** : délai de 600 s dépassé, donc pas de relance (règle fixée le 26/10) |
 
 ---
 
@@ -55,12 +55,26 @@ Corpus (4 PDF + meta.json)
 
 ---
 
-## 4. Les résultats (exécution 1 du 27/10 ; exécution finale ⏳)
+## 4. Les résultats (exécution 1 du 27/10 ; exécution finale du 28/10)
 - **Exécution 1** (`20261027-093507`, non officielle) : 47 min, 14 appels (dont 4 relances). 2 sections vides (erreurs 503), une section aux accents corrompus, une conclusion sans accents.
 - **Baseline officielle** (`20261027-102233`) : 9 sections sur 9, 22 références. ⏳ Vérification de chaque référence (existe ? correcte ?).
 - **Liste de défauts de référence** : 30 défauts de fond proposés par Claude, **15 confirmés** par le groupe (validation indulgente, voir les limites), 4 défauts de forme sur 4.
 - **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19**, **0 sur 15 défauts de fond**. Son seul problème de fond porte sur un passage (A9) que le validateur avait rejeté à l'aveugle ; **classé vrai défaut a posteriori** (28/10). Le score officiel reste 1 sur 19, mais sur ce cas c'est le relecteur qui a vu juste.
-- ⏳ Exécution finale : métriques pipeline vs baseline (`outputs/metriques.csv`), évaluation humaine de 15 affirmations par 2 juges (kappa).
+- **Exécution finale** (`20261028-095239`, officielle) : 59 min, 11 appels de chat (dont 1 relance). **9 sections sur 9**, 34 paragraphes, dont 3 `[INFORMATION NON DISPONIBLE]` (HIPAA, marquage CE / MDR, RGPD : absents du corpus). Les 31 autres citent tous au moins un extrait.
+  - **Garde-fous** : 8 paragraphes signalés sur 34 (G5 : 8, G4 : 1 ; G1 et G2 : 0). Aucun caractère corrompu.
+  - **Relecteur en échec** : l'appel a dépassé le délai de 600 s (la conclusion avait déjà pris 586 s). Un délai dépassé n'est pas relancé (règle fixée le 26/10). Le relecteur n'est donc évalué que sur l'exécution 1.
+- **Pipeline contre baseline** (`outputs/metriques.csv`) :
+
+  | Métrique | Pipeline (28/10) | Baseline (27/10) |
+  |---|---|---|
+  | Sections imposées présentes | 9 / 9 | 9 / 9 |
+  | Références | 4 documents, exactes par construction | 22 références écrites par le LLM, ⏳ à vérifier une par une |
+  | Paragraphes avec au moins une citation | 31 / 31 | 27 / 27 |
+  | `[INFORMATION NON DISPONIBLE]` | 3 / 34 | 0 / 27 (même règle dans son prompt, jamais employée) |
+  | Paragraphes signalés ⚠ | 8 / 34 | sans objet (pas de garde-fous) |
+  | Appels de chat, durée | 11 appels, 59 min | 1 appel, 5 min |
+
+- ⏳ Évaluation humaine de 15 affirmations par 2 juges (kappa).
 
 ---
 
@@ -120,12 +134,14 @@ Corpus (4 PDF + meta.json)
 - Étude d'Apple (D06, D07) : 2 229 inclus, 1 863 analysables ; sensibilité **41,2 %** (53,7 % au stade 2) ; spécificité **92,3 %** (95,3 % chez les normotendus) ; 30 jours de port.
 - Quotas gratuits : **20 appels de chat par jour**, 5 par minute.
 - Exécution 1 : 47 min, 14 appels ; défauts : **15 de fond confirmés sur 30** ; relecteur : **1 sur 19**.
-- ⏳ Exécution finale, métriques, kappa.
+- Exécution finale : 59 min, 11 appels ; 9 sections sur 9 ; 34 paragraphes, dont 8 signalés et 3 `[INFORMATION NON DISPONIBLE]` ; relecteur en échec (délai de 600 s). Baseline : 22 références, 1 appel, 5 min.
+- ⏳ Kappa.
 
 ---
 
 ## 9. Reste à faire pour l'oral
-- ⏳ Exécution finale (28/10), métriques, évaluation humaine (2 juges, kappa), vérification des références de la baseline.
+- Exécution finale et métriques : faites le 28/10.
+- ⏳ Évaluation humaine (2 juges, kappa : `outputs/eval_humaine_juge1.csv` et `juge2.csv`), vérification des références de la baseline (`outputs/references_baseline.csv`).
 - ⏳ Vérifier le cas QXO / SFR dans le PDF D07 (p. 8) avant de s'en servir.
 - ⏳ Captures : `00-ingestion`, `10-argumentaire`, `50-baseline`.
 - ⏳ Point de vue du groupe sur la conclusion de l'IA.
