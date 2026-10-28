@@ -1,0 +1,8 @@
+﻿Métrique (pipeline 20261028-095239, baseline 20261027-102233);Pipeline;Baseline;Mode
+Sections imposées présentes;"9 / 9 (demandées : 9 ; en échec G1 : 0)";9 / 9 (demandées : 9);auto
+Références existantes et correctes;100 % par construction (4 document(s) cité(s), bibliographie générée depuis meta.json);"22 référence(s) listée(s), à vérifier une par une (references_baseline.csv) ; renvois sans référence listée : 0 ; références jamais citées : 0";manuel (baseline)
+Paragraphes avec au moins une citation;31 / 31 paragraphes hors [INFORMATION NON DISPONIBLE];27 / 27 paragraphes hors [INFORMATION NON DISPONIBLE];auto
+Paragraphes signalés ⚠ (G2 / G4 / G5);8 / 34 (G2 : 0, G4 : 1, G5 : 8);non applicable (pas de garde-fous);auto
+Paragraphes [INFORMATION NON DISPONIBLE];3 / 34;0 / 27;auto
+Problèmes relevés par le relecteur, par gravité;échec : appel Gemini en échec après 1 tentative(s) (The connection was aborted, perhaps the server is offline);non applicable;auto
+Nombre d'appels, durée;11 appel(s) de chat (dont 1 relance(s)), 28 requête(s) d'embeddings, 3554 s;1 appel(s) de chat (dont 0 relance(s)), 0 requête(s) d'embeddings, 293 s;auto

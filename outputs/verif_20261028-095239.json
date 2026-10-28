@@ -1,0 +1,1735 @@
+{
+  "run_id": "20261028-095239",
+  "modele": "gemini-3.8-flash",
+  "resume": {
+    "paragraphes": 34,
+    "signales": 8,
+    "g1": 0
+  },
+  "sections": [
+    {
+      "id": "contexte",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 4,
+        "candidats": 40,
+        "retenus": 8,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D06": 2,
+          "D09": 2,
+          "D07": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L'hypertension artérielle constitue un enjeu majeur de santé publique et une source prépondérante de morbidité et de mortalité à l'échelle planétaire, étant associée à de multiples pathologies chroniques. À ce jour, cette affection touche plus de 1,3 milliard d'adultes dans le monde. En l'absence de prise en charge, elle expose à des complications sévères telles que l'infarctus du myocarde, l'accident vasculaire cérébral, l'insuffisance rénale et la perte de vision. Pourtant, malgré les recommandations préconisant un dépistage de routine, environ la moitié des adultes concernés ignorent leur état. L'hypertension demeure en effet asymptomatique pendant des années, et une mesure ponctuelle réalisée en consultation médicale échoue fréquemment à l'identifier, créant une lacune persistante dans le diagnostic précoce.",
+          "citations": [
+            "D06-75f56bef",
+            "D09-3411d37f"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Pour combler ce déficit diagnostique, la mesure de la pression artérielle hors du cadre clinique suscite un intérêt croissant. L'analyse du signal par photopléthysmographie, technique largement employée en oxymétrie de pouls, s'est développée grâce aux capteurs numériques et au traitement du signal. Ces dispositifs sans brassard visent à surmonter les contraintes des appareils traditionnels en offrant un confort accru, un suivi passif continu et une plus grande accessibilité. Néanmoins, cette technologie présente des limites techniques identifiées : la gestion du bruit, la nécessité d'un étalonnage individuel dépendant de la pigmentation cutanée ou de facteurs cliniques, la dérive de calibrage à court terme, ainsi que la difficulté à distinguer la mesure de la pression artérielle absolue de la simple détection de ses variations.",
+          "citations": [
+            "D09-3411d37f",
+            "D09-eea30d87",
+            "D12-813ed773"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "L'intégration de tels outils de dépistage au sein d'objets connectés grand public suscite des réserves justifiées au sein de la communauté cardiologique. Certains travaux soulignent que l'afflux massif de données générées en dehors du suivi conventionnel n'a pas encore été corrélé à des résultats cliniques démontrés. De surcroît, les protocoles de validation traditionnels conçus pour les tensiomètres à brassard sont critiqués lorsqu'ils servent à fonder des équivalences substantielles 510(k). Des obstacles techniques persistent pour garantir des résultats exploitables, auxquels s'ajoutent les enjeux de confidentialité et de consentement. Selon ces analyses, fonder directement des décisions thérapeutiques sur ces dispositifs sans brassard risquerait d'entraîner des soins inappropriés et des risques pour la sécurité des patients.",
+          "citations": [
+            "D12-1bc128f5",
+            "D12-813ed773"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« demontres »)"
+          ]
+        },
+        {
+          "texte": "Toutefois, la fonction de notification autorisée par la FDA ne vise pas à guider un traitement de manière autonome, mais à alerter sur des signaux d'hypertension chronique grâce à des données passives recueillies au poignet après 30 jours de port. Lors de son évaluation clinique face à un tensiomètre domiciliaire de référence, le dispositif a démontré une sensibilité globale de 41,2 % et une spécificité de 92,3 %, s'élevant à 95,3 % chez les personnes normotendues. En servant de filet d'alerte passif pour orienter les utilisateurs vers une consultation médicale sans initier d'intervention hasardeuse, cet outil grand public répond au défi du sous-diagnostic tout en limitant les faux positifs susceptibles d'induire des conduites inappropriées.",
+          "citations": [
+            "D06-75f56bef",
+            "D06-a3309247",
+            "D07-c40316f9",
+            "D12-1bc128f5"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« demontre »)"
+          ]
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-1bc128f5",
+        "D12-813ed773"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-1bc128f5",
+          "doc_id": "D12",
+          "page": 13,
+          "role": "contre",
+          "texte": "contexts of use, and populations. Technical barriers to obtaining reliable BP estimation must\nbe resolved to ensure results are actionable. The extensive volume of data these devices\ngenerate, especially in settings not traditionally used for BP monitoring, must be linked to\nmeaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be\naddressed (Table 2). Until these issues are resolved, using these devices to guide treatment\ncould lead to inappropriate care and may pose safety risks to patients.",
+          "score": 0.7979283,
+          "score_contre": 0.7979283,
+          "requetes": [
+            "Limitations and risks of screening for hypertension with consumer devices"
+          ]
+        },
+        {
+          "chunk_id": "D12-813ed773",
+          "doc_id": "D12",
+          "page": 5,
+          "role": "contre",
+          "texte": "of these devices are designed to address the limitations of conventional arm cuff–based\nBP measurement by increasing comfort, allowing for continuous passive monitoring or\nspot manual checking, facilitating electronic storage of data, and increasing accessibility.\nWith these rapid technologic advances, industry, consumers, and clinicians have struggled\nto keep up with methods of testing device accuracy, understanding the nuances of how\ndifferent devices operate and what they are designed to estimate (BP or change in BP),\nand interpreting the massive influx of BP data, none of which has been correlated with\nclinical outcomes. Many devices that have received Food and Drug Administration (FDA)\n510(k) clearance are being used in clinical and home settings despite inappropriate testing\nwith traditional cuff-based protocols and questionable claims of equivalence to existing\n(eg, cuffed) devices.\nAccordingly, the 2025 American Heart Association/American College",
+          "score": 0.78476024,
+          "score_contre": 0.78476024,
+          "requetes": [
+            "Blood pressure measurement methods (office, home and ambulatory monitoring) and their limitations",
+            "Limitations and risks of screening for hypertension with consumer devices"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.7712599,
+          "score_contre": null,
+          "requetes": [
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D09-3411d37f",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "REVIEW ARTICLE \nOPEN\nThe use of photoplethysmography for assessing hypertension\nMohamed Elgendi \n, Richard Fletcher\n, Yongbo Liang \n, Newton Howard\n, Nigel H. Lovell \n, Derek Abbott \n,\nKenneth Lim \nand Rabab Ward \nThe measurement of blood pressure (BP) is critical to the treatment and management of many medical conditions. High blood\npressure is associated with many chronic disease conditions, and is a major source of mortality and morbidity around the world. For\noutpatient care as well as general health monitoring, there is great interest in being able to accurately and frequently measure BP\noutside of a clinical setting, using mobile or wearable devices. One possible solution is photoplethysmography (PPG), which is most\ncommonly used in pulse oximetry in clinical settings for measuring oxygen saturation. PPG technology is becoming more readily\navailable, inexpensive, convenient, and easily integrated into portable devices. Recent advances include the development of",
+          "score": 0.7693236,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D09-eea30d87",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "anticipated that in the near future, accurate, continuous BP measurements may be available from mobile and wearable devices\ngiven their vast potential.\nnpj Digital Medicine (2019) 2:60 ; https://doi.org/10.1038/s41746-019-0136-7\nINTRODUCTION\nWith the advancement of digital sensors, signal processing,\nmachine-learning algorithms, and improved physiologic models,\npulse waveform analysis using photophlethysmography (PPG) for\nthe assessment of blood pressure (BP) has become more\nfeasible. \nPPG signal measurements is not without its challenges;\nit requires noise elimination, \nmulti-site measurement \n, multi-photodectors development, \nevent detection, \nevent visualiza-tion,\ndifferent models,\nand a thorough global health frame-work. \nSeveral disadvantages are associated with this method,\nincluding the need to conduct an individual calibration for each\nperson, based on skin color and clinical factors, and the drift in\ncalibration over short-time intervals. \nPHOTOPLETHYSMOGRAPHY",
+          "score": 0.76026434,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D06-75f56bef",
+          "doc_id": "D06",
+          "page": 3,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 3\nIntroduction\nHypertension — or high blood pressure — is a critical risk factor for long-term\nhealth outcomes,\naffecting more than 1.3 billion adults worldwide.\nOver time,\nuntreated hypertension can lead to heart attack, stroke, kidney failure, and vision\nloss. It often goes undiagnosed for years because those affected rarely have\nsymptoms, and single in-office blood pressure measurements can frequently\nmiss detecting hypertension. Despite guidelines recommending routine\nhypertension screening, about half of adults around the globe who have\nhypertension remain unaware of it.\nApple Watch helps address this diagnosis gap by passively monitoring for\nsigns of chronic high blood pressure and alerting users who show patterns of\nhypertension — even when they are not actively checking their blood pressure\nor seeing a doctor. All they need to do is onboard the feature and wear their\nApple Watch.",
+          "score": 0.75929797,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D07-c40316f9",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "clinical study. The subjects were enrolled from diverse demographic groups and representative\nof the intended use population with a range of blood pressures categorized as non-hypertensive (normal or elevated) or hypertensive (stage 1 and stage 2) in accordance with\ndefinitions published in the 2017 American Heart Association Guidelines. All subjects were\nasked to wear an Apple Watch for 30 days and measured blood pressure using an FDA-cleared home blood pressure monitor as reference. Of the 2,229 enrolled subjects, 1,863\nprovided at least 15 days of usable data for the primary endpoint analysis.\nThe clinical study results demonstrated that:\n• \nThe feature met all pre-determined primary endpoints. The overall sensitivity and\nspecificity were 41.2% (95% CI [37.2, 45.3]) and 92.3% (95% CI [90.6, 93.7]),\nrespectively.\n• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n•",
+          "score": 0.75569874,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D07-7d0b7435",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n• \nDemographic subgroup analyses were conducted using covariate adjusted analysis to\ncorrect demographic imbalances. The results are presented as risk ratios in Table 2 and\nFigure 1, where point estimates and confidence intervals of the ratio of sensitivities and\nratio of specificities between categories of the demographic subgroups are reported. The\ndemographic subgroup analyses were pre-specified and adjusted for age, sex, BMI, race,\nand Blood Pressure. For each evaluated demographic characteristic, the subcategory\nlisted (or listed first, in Table 1) serves as the numerator of the risk ratio. For example, a",
+          "score": 0.6382441,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enjeux_fda",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 4,
+        "candidats": 39,
+        "retenus": 6,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D06": 2,
+          "D07": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "Dans le domaine des technologies de santé connectée, l'autorisation par la FDA de la fonctionnalité logicielle de notification d'hypertension s'inscrit dans la continuité d'outils d'évaluation cardiaque déjà intégrés à l'Apple Watch, tels que les notifications de rythme irrégulier, l'électrocardiogramme ou le suivi de l'historique de fibrillation auriculaire. Disponible sans ordonnance sur les modèles Series 9 ou ultérieurs ainsi qu'Ultra 2 ou ultérieurs, à l'exception de la gamme SE, cette application mobile médicale exploite les signaux photopléthysmographiques collectés de façon opportuniste au poignet. Prévue pour les adultes âgés de 22 ans et plus sans diagnostic antérieur d'hypertension, elle a pour but d'attirer l'attention sur le risque d'hypertension artérielle chronique sans pour autant formuler directement un diagnostic médical.",
+          "citations": [
+            "D06-a7001751",
+            "D07-b23884cb",
+            "D07-e5fd860e"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "L'enjeu principal de cette autorisation réside dans l'amélioration du repérage précoce d'une pathologie qui peut rester asymptomatique et non détectée pendant plusieurs années. En avertissant les utilisateurs après une durée de port d'au moins 30 jours grâce à une surveillance passive, le dispositif permet de susciter une prise de conscience rapide. Grâce à la diffusion importante de cette montre utilisée pour la connectivité, la forme et la santé, cette fonctionnalité offre l'opportunité d'accroître les taux de diagnostic, d'optimiser la prise en charge clinique et d'améliorer la qualité de vie ainsi que la longévité des patients concernés.",
+          "citations": [
+            "D06-a3309247",
+            "D06-a7001751"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Certaines analyses soulignent toutefois que les dispositifs sans brassard suscitent des interrogations quant à leur précision en vie réelle, les normes internationales récentes ne couvrant pas l'ensemble des usages typiques ni la relation entre le volume massif de mesures et les décisions cliniques. Néanmoins, ces outils possèdent le potentiel reconnu de lever des obstacles majeurs à la mesure tensionnelle en pratique de soins et en recherche. De plus, la FDA a précisé que la notification n'a pas vocation à se substituer aux examens standards, mais qu'elle sert uniquement de point de départ pour motiver une consultation et une évaluation clinique approfondie.",
+          "citations": [
+            "D12-4794f2ff",
+            "D07-b23884cb",
+            "D07-e5fd860e"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves ont également été émises sur les performances limitées de ces technologies pour appréhender les variations tensionnelles dynamiques, notamment lors de l'effort, pendant le sommeil ou lors de l'ajustement de traitements antihypertenseurs, en l'absence de protocoles exhaustifs validés pour toutes les populations. Cependant, l'autorisation réglementaire délimite scrupuleusement l'usage du système : il n'est pas conçu pour le suivi thérapeutique, la surveillance tensionnelle continue ou la grossesse. De plus, l'absence de notification n'exclut pas une hypertension et ne saurait remplacer la démarche diagnostique conventionnelle, garantissant ainsi un positionnement adapté aux exigences médicales.",
+          "citations": [
+            "D12-1e0588da",
+            "D07-b23884cb"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« garantissant »)"
+          ]
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-4794f2ff",
+        "D12-1e0588da"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-1e0588da",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "of cuffless BP devices have demonstrated poor performance (eg, accuracy not significantly\nbetter than that of a baseline model, which estimates BP using only cuff BP for calibration\nor demographic and anthropometric inputs) in tracking exercise-induced BP changes, sleep-time BP changes, antihypertensive treatment–induced BP changes, BP changes associated\nwith activities of daily living, and during 24-hour continuous BP monitoring.\nDespite\nFDA clearance or possibly passing future ISO validation protocols, clinical performance\nmust be considered before these devices can be accepted for clinical decision-making (Table\n2).\nComprehensive protocols to test for accuracy across an array of devices intended for use\nacross a range of conditions and people are lacking. These concerns may not be addressed\nby ISO and IEEE validation procedures alone. Future protocols need to allow manufacturers\nto reliably ensure that devices perform as expected across skin tone, age, activity level, and",
+          "score": 0.8315873,
+          "score_contre": 0.8315873,
+          "requetes": [
+            "Concerns about FDA clearance of cuffless blood pressure devices"
+          ]
+        },
+        {
+          "chunk_id": "D12-4794f2ff",
+          "doc_id": "D12",
+          "page": 4,
+          "role": "contre",
+          "texte": "potential to remove barriers to BP measurement in both research and clinical care. However,\nthere are unanswered questions on whether, how, and in what settings these devices may be\nappropriate for use. Gaps include the need to understand whether the somewhat distinctive and\noften enormous volume of readings obtained by these devices have meaningful relationships\nwith clinical outcomes and are appropriate for determining actionable interventions. Furthermore,\ninternational standards for determining the accuracy of some, but not yet all, of these devices only\nrecently became available and do not provide a full assessment of the typical use of the devices.\nThus, the devices on the market have not yet been adequately vetted for accuracy and efficacy.\nSeveral of these devices, however, have been cleared by the US Food and Drug Administration\nand are being used clinically. Moreover, many patients use cuffless devices for BP self-monitoring,",
+          "score": 0.8294674,
+          "score_contre": 0.8294674,
+          "requetes": [
+            "Concerns about FDA clearance of cuffless blood pressure devices"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.86833036,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)",
+            "Rationale for passive hypertension notifications to detect undiagnosed hypertension in daily life"
+          ]
+        },
+        {
+          "chunk_id": "D06-a7001751",
+          "doc_id": "D06",
+          "page": 2,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 2\nOverview\nApple Watch is a popular wearable device with many features designed to\nempower users to understand and improve their health. Since the launch\nof Apple Watch, heart health has been a foundational part of the watch and\nHealth app experience, which includes heart rate measurements, high and low\nheart rate notifications, irregular rhythm notifications, the ECG app, AFib History,\nand cardio fitness tracking. Each of these features provides powerful insights,\nincluding notifications of abnormalities that may warrant medical attention. The\nHypertension Notification Feature adds to the insights Apple Watch offers and\nspecifically promotes awareness of chronic high blood pressure.\nHypertension Notifications — available on Apple Watch Series 9 or later and\nApple Watch Ultra 2 or later (excluding Apple Watch SE) — helps users\nrecognize if they are at high risk of hypertension. The feature works passively",
+          "score": 0.8600508,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)",
+            "Rationale for passive hypertension notifications to detect undiagnosed hypertension in daily life"
+          ]
+        },
+        {
+          "chunk_id": "D07-b23884cb",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 2 of 12\n3. Device Description\nThe Hypertension Notification Feature (HTNF) is an over-the-counter mobile medical\napplication that is intended to analyze data collected from the PPG sensor of the Apple Watch\n(a general purpose computing platform), over multiple days to surface a notification to users\nwho may have hypertension. The feature is intended for adults who have not been previously\ndiagnosed with hypertension. The feature is not intended for use during pregnancy. The feature\nis not intended to replace traditional methods of diagnosis, to monitor hypertension treatment\neffect, or to be used as a method of blood pressure surveillance.\nAbsence of a notification does not indicate the absence of hypertension. HTNF cannot identify\nevery instance of hypertension. In addition, HTNF will not surface a notification if insufficient\ndata is collected.\nHTNF comprises the following features:\n•",
+          "score": 0.84541947,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)"
+          ]
+        },
+        {
+          "chunk_id": "D07-e5fd860e",
+          "doc_id": "D07",
+          "page": 9,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 4 of 12\nItem\nSubject Device Predicate Device\nHTNF Viz HCM\nsoftware identifies patterns that\nare suggestive of hypertension\nbased on photoplethysmography\n(PPG) data opportunistically\ncollected by Apple Watch. It is\nintended as the basis for further\nevaluation and is not intended to\nprovide a diagnosis of\nhypertension.\nanalyzes recordings of 12-lead ECG\nand identifies patients for further\nHCM follow-up and does not\nreplace the current standard of care\nmethods for diagnosis of HCM.\nIndications for\nUse\nThe Hypertension Notification\nFeature (HTNF) is a software-only\nmobile medical application that\nanalyzes photoplethysmography\n(PPG) data opportunistically\ncollected by Apple Watch to\nidentify patterns that are\nsuggestive of hypertension and\nprovides a notification to the user.\nThe feature is intended for over-the-counter (OTC) use by adults\nage 22 and over who have not\nbeen previously diagnosed with",
+          "score": 0.8309787,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "technique",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 4,
+        "candidats": 51,
+        "retenus": 8,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D09": 2,
+          "D07": 2,
+          "D06": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L'analyse morphologique du signal de photopléthysmographie (PPG) repose sur des bases physiologiques établies. La forme d'onde PPG reflète l'état des vaisseaux sanguins périphériques, en particulier la rigidité, la compliance et le vieillissement vasculaire, par le biais de paramètres tels que la largeur d'impulsion, le temps de crête, l'indice de rigidité des grandes artères ou l'indice d'augmentation. Dans le domaine de la reconstruction de la pression artérielle à partir de ce signal, des modèles d'apprentissage automatique exploitant des caractéristiques temporelles, fréquentielles et entropiques permettent d'estimer les niveaux tensionnels. Des travaux ont ainsi rapporté une erreur de ±9,82 mmHg pour la pression systolique et de ±3,88 mmHg pour la pression diastolique, avec des corrélations de 0,68 et 0,74, tandis que des réseaux de neurones convolutifs offrent une précision comparable ou légèrement supérieure pour la stratification de l'hypertension.",
+          "citations": [
+            "D09-393736c2",
+            "D09-6db02069"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves sont émises par les experts quant à la fiabilité de certains dispositifs sans brassard (cuffless), observant que certains appareils ne communiquent pas une pression absolue en millimètres de mercure mais seulement des variations tensionnelles. De plus, les dispositifs étalonnés sur des variables démographiques (âge, sexe, indice de masse corporelle, race) évaluent les variations par rapport à la moyenne d'une population de référence plutôt que sur un niveau individuel direct. Néanmoins, l'analyse de l'American Heart Association précise ces fonctionnements distincts : loin de prétendre se substituer d'emblée à la mesure clinique conventionnelle, l'exploitation des données démographiques et des signaux continus sert à détecter des tendances et des variations significatives chez l'utilisateur, ce qui justifie leur rôle d'outil de repérage et de notification.",
+          "citations": [
+            "D12-d46aea5b"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Concernant les standards de validation, les sociétés savantes rappellent que l'hétérogénéité des dispositifs sans brassard exige des protocoles adaptés à leur fonctionnement et à leur méthode d'étalonnage. La norme IEEE vise par exemple à tester la précision d'appareils continus et intermittents par rapport à l'auscultation manuelle. Toutefois, l'American Heart Association souligne que comparer des mesures continues à une référence auscultatoire peut mener à des conclusions erronées en raison de la variabilité tensionnelle à chaque cycle cardiaque. De surcroît, les comparaisons effectuées en conditions statiques immédiatement après étalonnage ne reflètent pas les conditions d'usage typiques, notamment lors d'activités ou des semaines après l'étalonnage initial, ce qui milite pour des évaluations rigoureuses en vie réelle.",
+          "citations": [
+            "D12-cbb338ee"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Pour apporter les preuves de fiabilité requises, la fonctionnalité d'Apple a été évaluée dans une étude clinique pivot décentralisée incluant 2 229 participants adultes sans diagnostic préalable d'hypertension, parmi lesquels 1 863 ont fourni des données exploitables sur une période de 30 jours face à un tensiomètre validé par la FDA. Selon les critères des recommandations 2017 de l'American Heart Association (pression systolique moyenne ≥ 130 mmHg ou diastolique ≥ 80 mmHg), la fonctionnalité a atteint une spécificité globale de 92,3 % (IC à 95 % [90,6, 93,7]), s'élevant à 95,3 % (IC à 95 % [93,7, 96,5]) chez les sujets normotendus. La sensibilité globale s'est établie à 41,2 % (IC à 95 % [37,2, 45,3]) et a atteint 53,7 % (IC à 95 % [47,7, 59,7]) pour l'hypertension de stade 2.",
+          "citations": [
+            "D06-172c7316",
+            "D06-8dcda495",
+            "D07-8c402bbb",
+            "D07-c40316f9"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-d46aea5b",
+        "D12-cbb338ee"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-cbb338ee",
+          "doc_id": "D12",
+          "page": 11,
+          "role": "contre",
+          "texte": "a formidable limitation for clinicians hoping to replace conventional BP measurement\napproaches with these devices.\nThe heterogeneity of cuffless BP measurement devices necessitates tailored validation\nprotocols according to their function and calibration.\nFor example, the IEEE standard\nis intended to test the accuracy of both continuous and intermittent cuffless BP devices using\nmanual auscultation as a reference.\nGiven the variability of BP in each cardiac cycle, using\nan auscultatory reference for continuous measurements could lead to incorrect conclusions\nregarding a device’s accuracy. The BP comparisons for these, often ambulatory, devices are\nmade in static conditions immediately after cuff calibration, which does not reflect typical\nuse conditions (eg, during activity; hours, days, or weeks after initial calibration). Induction\nof BP changes ±30 mm Hg is recommended and performed before cuff recalibration;",
+          "score": 0.82324755,
+          "score_contre": 0.8180747,
+          "requetes": [
+            "Validation standards and scientific society statements on cuffless blood pressure devices (ISO 81060, IEEE 1708)",
+            "Accuracy limitations of cuffless blood pressure estimation and calibration problems"
+          ]
+        },
+        {
+          "chunk_id": "D12-d46aea5b",
+          "doc_id": "D12",
+          "page": 6,
+          "role": "contre",
+          "texte": "as absolute BP in millimeters of mercury but is instead only able to communicate BP\nchanges. The “cuff-calibrated” devices may come with an automatic cuff device or may\nrequire the user to purchase a separate cuff device for this purpose (which may or\nmay not include education on measurement technique and adequate validation). Other\ndevices use demographic inputs, such as age, sex, body mass index, and race, which are\nknown to correlate with BP, for calibration. Some cuff-calibrated devices may also use\ndemographic and anthropometric inputs to compute BP. Cuff-calibrated devices estimate BP\nin millimeters of mercury on the basis of the intraindividual BP changes detected relative\nto the cuff BP level at calibration, whereas demographic-calibrated devices measure inter-and intraindividual BP changes relative to the average BP level of individuals from the same\ndemographic population. Therefore, whereas cuffless devices may display a reading that",
+          "score": 0.8099284,
+          "score_contre": 0.8099284,
+          "requetes": [
+            "Accuracy limitations of cuffless blood pressure estimation and calibration problems"
+          ]
+        },
+        {
+          "chunk_id": "D09-6db02069",
+          "doc_id": "D09",
+          "page": 6,
+          "role": "contexte",
+          "texte": "machine-learning and linear regression. \nBy including PPG\nfeatures (not explicitly stated the features used), they were able\nto predict BP with an error less than 8 mmHg. We note that the\npublished study was conducted with only three subjects, and\nlarger published studies are not readily available.\nFollowing a similar approach, in 2018, Radha et al. demonstrated the use of machine-learning neural nets to estimate BP\nusing a variety of PPG signal features, including time-domain,\nfrequency-domain, and entropy-based features. \nThis neural net\napproach was able to achieve an error of ±9.82 mmHg and\n±3.88 mmHg for SBP and DBP, respectively, with Pearson\ncorrelation coefficients of 0.68 and 0.74, respectively.\nA recent PPG-based machine-learning study,\nwhich used the\nGoogLeNet pretrained convolutional neural network, provided\nsimilar or slightly better accuracy for hypertension stratification,\ncompared with the traditional feature extraction approach over",
+          "score": 0.80775636,
+          "score_contre": null,
+          "requetes": [
+            "Photoplethysmography (PPG) signal and estimation of blood pressure from pulse waveform features and machine learning"
+          ]
+        },
+        {
+          "chunk_id": "D09-393736c2",
+          "doc_id": "D09",
+          "page": 6,
+          "role": "contexte",
+          "texte": "continuous BP estimation. In the body of literature related to\npulse morphology and pulse wave analysis, there is increasing\ninterest in using the PPG waveform to understand the formation\nof blood pressure. It is generally accepted that the physiological\nstatus of peripheral blood vessels, such as aging, stiffness, and\ncompliance, can be partially expressed in terms of peripheral\nsignal waveforms. \nAs demonstrated by recent research, analysis\nof the PPG waveform can assist in understanding the underlying\nstatus of peripheral blood vessels under the influence of blood\npropulsion and the blood recycling process. For this reason, many\nparameters extracted directly from waveforms can be used to\naccurately evaluate vascular status. The parameters mentioned\noften in the literature include pulse width, augmentation index,\nlarge artery stiffness index, crest time, etc. As described previously,\nthe waveform’s shape is influenced by the blood circulatory",
+          "score": 0.8076469,
+          "score_contre": null,
+          "requetes": [
+            "Photoplethysmography (PPG) signal and estimation of blood pressure from pulse waveform features and machine learning"
+          ]
+        },
+        {
+          "chunk_id": "D07-c40316f9",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "clinical study. The subjects were enrolled from diverse demographic groups and representative\nof the intended use population with a range of blood pressures categorized as non-hypertensive (normal or elevated) or hypertensive (stage 1 and stage 2) in accordance with\ndefinitions published in the 2017 American Heart Association Guidelines. All subjects were\nasked to wear an Apple Watch for 30 days and measured blood pressure using an FDA-cleared home blood pressure monitor as reference. Of the 2,229 enrolled subjects, 1,863\nprovided at least 15 days of usable data for the primary endpoint analysis.\nThe clinical study results demonstrated that:\n• \nThe feature met all pre-determined primary endpoints. The overall sensitivity and\nspecificity were 41.2% (95% CI [37.2, 45.3]) and 92.3% (95% CI [90.6, 93.7]),\nrespectively.\n• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n•",
+          "score": 0.80297387,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D06-8dcda495",
+          "doc_id": "D06",
+          "page": 8,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 8\nOf the 2229 participants, 1863 met usable data requirements and contributed\nto the primary endpoint analyses. Those not included in the performance\nevaluation lacked sufficient Apple Watch or reference data or had major\nprotocol violations. In the Notification Analysis set, 585 participants exhibited\nhypertension, while 1278 did not.\nThe overall sensitivity of the feature was 41.2% (95% CI [37.2%, 45.3%]), and\nthe overall specificity was 92.3% (95% CI [90.6%, 93.7%]). Importantly, the\nspecificity among those with normal blood pressure was 95.3% (95% CI [93.7%,\n96.5%]). The sensitivity for Stage 2 hypertension, which is more severe and\nrequires more aggressive management, was 53.7% (95% CI [47.7%, 59.7%]).\nSubgroup Results\nDemographic subgroup analyses were conducted using unadjusted and\ncovariate-adjusted point estimates, along with confidence intervals for sensitivity",
+          "score": 0.7932594,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D06-172c7316",
+          "doc_id": "D06",
+          "page": 6,
+          "role": "pour",
+          "texte": "diagnosis and can also reassure users who receive a notification but do not\nhave hypertension.\nClinical Validation\nStudy Design\nTo demonstrate the safety and effectiveness of the Hypertension Notification\nFeature, Apple conducted a pivotal, decentralized clinical study including more\nthan 2000 participants. This study was separate from and incremental to the\nvalidation steps outlined in the “Preclinical Design and Algorithm Testing” section.\nThe validation study recruited adult participants who did not have a preexisting\ndiagnosis of hypertension. Participants were enrolled in two cohorts: all-comers\nwithout known hypertension risk factors and those at risk of hypertension based\non historical blood pressure values and other risk factors.\nThe study’s primary goal was to evaluate the algorithm’s performance in\nidentifying users with hypertension. Performance was determined based\non average blood pressure readings taken twice daily at home over 30 days",
+          "score": 0.79050463,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D07-8c402bbb",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "the Irregular Rhythm Notification Feature (K231173), the Atrial Fibrillation History Feature\n(K213971), and Sleep Apnea Notification Feature (K240929).\n8. Summary of Clinical Performance\nClinical Validation\nA pivotal clinical validation study was conducted to demonstrate the clinical benefits measured\nby subject level sensitivity and specificity in identifying hypertension status in the intended\npopulation and intended use environment.\nThe primary objective of the clinical validation was to examine the performance of HTNF in\ndetecting possible hypertension over a 30-day period. Hypertension is established as average\nsystolic blood pressure ≥ 130 mmHg or diastolic blood pressure ≥ 80 mmHg by America Heart\nAssociation.\nA total of 2,229 subjects without a previous diagnosis of hypertension were enrolled in the\nclinical study. The subjects were enrolled from diverse demographic groups and representative",
+          "score": 0.77102906,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ethique",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 3,
+        "candidats": 44,
+        "retenus": 8,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D09": 2,
+          "D06": 2,
+          "D07": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L'hypertension artérielle constitue une source majeure de mortalité et de morbidité dans le monde, ce qui confère une justification éthique solide à l'amélioration de son repérage hors des contextes cliniques traditionnels. La photopléthysmographie offre à cet égard une solution accessible et pratique pour détecter les variations de volume sanguin à travers la peau. Dans un cadre d'utilisation à domicile, la notification informant l'usager qu'il pourrait présenter une hypertension s'appuie sur une spécificité clinique de 92,3 %, une sensibilité de 41,2 % et une valeur prédictive positive de 70,9 % pour une prévalence de 31,4 %. Ces résultats permettent d'encourager une démarche diagnostique médicale auprès d'individus ignorant potentiellement leur état.",
+          "citations": [
+            "D06-224b2b98",
+            "D07-e875cd40",
+            "D09-3411d37f"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« solide »)"
+          ]
+        },
+        {
+          "texte": "Sur le plan éthique de l'équité, l'un des défis majeurs posés par la photopléthysmographie réside dans la variabilité possible du signal selon la couleur de peau et les facteurs cliniques individuels. Pour éviter l'écueil des biais algorithmiques, le modèle a été développé à partir d'une large cohorte diversifiée d'adultes. Les analyses démographiques en sous-groupes indiquent qu'après ajustement des covariables, aucune différence cliniquement significative ne subsiste selon la race, le sexe ou les phototypes de Fitzpatrick (5/6). Par exemple, le sous-groupe asiatique était plus jeune (âge moyen de 43,0 ans contre 50,9 ans) et affichait un indice de masse corporelle moyen inférieur (27,7 contre 30,9), mais ses caractéristiques de performance après ajustement se sont révélées équivalentes à celles des non-asiatiques.",
+          "citations": [
+            "D06-224b2b98",
+            "D06-fd4b1853",
+            "D07-46a0bba2",
+            "D09-61b72d6b"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves éthiques soulignent néanmoins que la collecte continue de données personnelles de santé impose de résoudre les questions de confidentialité, de consentement des patients et de propriété des données. De plus, utiliser des dispositifs sans brassard pour guider directement un traitement ferait courir des risques de soins inappropriés pour la sécurité des patients. Toutefois, le logiciel autorisé n'a pas pour indication de guider une prise en charge thérapeutique : sa sortie se limite strictement à une notification prévenant l'usager d'une possible hypertension. Cette délimitation nette de l'indication d'usage assure une communication transparente et compréhensible pour les cliniciens et les utilisateurs, minimisant les risques de mauvaise utilisation clinique.",
+          "citations": [
+            "D07-e875cd40",
+            "D12-1bc128f5",
+            "D12-e54005ae"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-1bc128f5",
+        "D12-e54005ae"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-e54005ae",
+          "doc_id": "D12",
+          "page": 19,
+          "role": "contre",
+          "texte": "prognostic capability and actionability of data\nCompare output with standard, established measurements for BP monitoring, including ambulatory BP monitoring and standardized office\nBP assessment with validated devices\nData communication and interpretability\nEnsure device output makes it clear to the end user what data are being communicated (eg, absolute BP, change in BP)\nProvide indications for use that are clear to both clinicians and users\nRequire greater transparency from manufacturers on algorithmic inputs and logic to support independent verification and clinical\ninterpretability\nEthical and regulatory oversight\nAddress data ownership, privacy, and patient consent related to continuous personal health data collection\nEnsure secure data storage, appropriate data sharing protocols, and protection against misuse\nPerson- and system-level considerations\nAddress acceptability and feasibility of use in different patient populations\nDetermine cost-effectiveness",
+          "score": 0.64113736,
+          "score_contre": 0.64113736,
+          "requetes": [
+            "Ethical concerns of consumer health notifications: bias, false reassurance and inappropriate care"
+          ]
+        },
+        {
+          "chunk_id": "D12-1bc128f5",
+          "doc_id": "D12",
+          "page": 13,
+          "role": "contre",
+          "texte": "contexts of use, and populations. Technical barriers to obtaining reliable BP estimation must\nbe resolved to ensure results are actionable. The extensive volume of data these devices\ngenerate, especially in settings not traditionally used for BP monitoring, must be linked to\nmeaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be\naddressed (Table 2). Until these issues are resolved, using these devices to guide treatment\ncould lead to inappropriate care and may pose safety risks to patients.",
+          "score": 0.5970967,
+          "score_contre": 0.5970967,
+          "requetes": [
+            "Ethical concerns of consumer health notifications: bias, false reassurance and inappropriate care"
+          ]
+        },
+        {
+          "chunk_id": "D09-61b72d6b",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "person, based on skin color and clinical factors, and the drift in\ncalibration over short-time intervals. \nPHOTOPLETHYSMOGRAPHY\nFirst explored in the 1930’s, PPG is a method for measuring the\namount of light that is absorbed or reflected by blood vessels in\nliving tissue. Since the amount of optical absorption or reflection\ndepends on the amount of blood that is present in the optical\npath, the PPG signal is responsive to changes in the volume of the\nblood, rather than the pressure of the blood vessels. In other\nwords, PPG detects the change of blood volume by the\nphotoelectric technique, whether transmissive or reflective, to\nrecord the volume of blood in the sensor coverage area to form a\nPPG signal. Indeed, the sensor coverage area includes both veins\nand arteries, and numerous capillaries. Thus, the PPG signal is a\ncomplex mixture of the blood flow in veins and arteries of the\ncardiovascular circulatory system. A raw PPG signal generally",
+          "score": 0.78743964,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D06-fd4b1853",
+          "doc_id": "D06",
+          "page": 9,
+          "role": "pour",
+          "texte": "tone suggested no clinically meaningful difference after covariate adjustment.\nFor example, the Asian subgroup was younger (mean age 43.0 vs. 50.9) and\nhad lower BMI (mean BMI 27.7 vs. 30.9) compared with non-Asian participants.\nAfter covariate adjustment, Asian performance characteristics were on par with\nnon-Asian participants.\nMachine Learning–Based\nPPG Analysis\nSex\n(Female)\n0.5\n1.5\n1.0\nUnadjusted\nCovariate adjusted\nRace\n(White)\nRace\n(Black)\nRace\n(Asian)\nFitzpatrick\n(5/6)\nAge\n(<60)\nBMI\n(<30)\nEthnicity\n(Hisp)\nSensitivity Ratio\nSex\n(Female)\n0.8\nUnadjusted\nCovariate adjusted\nRace\n(White)\nRace\n(Black)\nRace\n(Asian)\nFitzpatrick\n(5/6)\nAge\n(<60)\nBMI\n(<30)\nEthnicity\n(Hisp)\n0.9\n1.0\n1.1\n1.2\nSpecificity Ratio\nFigure 2. Demographic Subgroup Analyses of Sensitivity \nFigure 3. Demographic Subgroup Analyses of Specificity",
+          "score": 0.7465973,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D09-3411d37f",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "REVIEW ARTICLE \nOPEN\nThe use of photoplethysmography for assessing hypertension\nMohamed Elgendi \n, Richard Fletcher\n, Yongbo Liang \n, Newton Howard\n, Nigel H. Lovell \n, Derek Abbott \n,\nKenneth Lim \nand Rabab Ward \nThe measurement of blood pressure (BP) is critical to the treatment and management of many medical conditions. High blood\npressure is associated with many chronic disease conditions, and is a major source of mortality and morbidity around the world. For\noutpatient care as well as general health monitoring, there is great interest in being able to accurately and frequently measure BP\noutside of a clinical setting, using mobile or wearable devices. One possible solution is photoplethysmography (PPG), which is most\ncommonly used in pulse oximetry in clinical settings for measuring oxygen saturation. PPG technology is becoming more readily\navailable, inexpensive, convenient, and easily integrated into portable devices. Recent advances include the development of",
+          "score": 0.74329907,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D06-224b2b98",
+          "doc_id": "D06",
+          "page": 2,
+          "role": "pour",
+          "texte": "(PPG), which measures blood volume changes through the skin and supports a\nwide range of Apple Watch features. The algorithm was developed using a large\ndataset from a diverse group of adults who participated in studies conducted or\nsponsored by Apple. The feature was then validated in a pivotal study to support\nregulatory submissions around the world.",
+          "score": 0.7323046,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D07-46a0bba2",
+          "doc_id": "D07",
+          "page": 13,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 8 of 12\nsensitivity risk ratio of less than 1.0 in the younger age group (<60 years) means this\ngroup has a lower covariate-adjusted sensitivity than the older group (≥60) years. A\nspecificity risk ratio of greater than 1.0 in the younger age group means this group has a\nhigher covariate-adjusted specificity than the older group. Because a risk ratio of 1.0\nindicates equal performance between subcategories, differences were considered\nnonsignificant if the 95% confidence interval included 1.0.\nTable 2. Subgroup Performance - HTNF Clinical Study\nSubgroup \nSensitivity Risk Ratio\n[95% CI]\nSpecificity Risk Ratio\n[95% CI]\nAge (<60 vs. ≥ 60 years) \n0.69\n[0.55, 0.85]\n1.09\n[1.04, 1.15]\nSex (Female vs. Male) \n0.93\n[0.77, 1.12]\n0.97\n[0.93, 1.03]\nRace\nNot White vs. White\n0.87\n[0.69, 1.10]\n1.04\n[1.01, 1.07]\nNot Black vs. Black \n1.20\n[0.93, 1.54]\n0.97\n[0.93, 1.00]\nNot Asian vs. Asian \n1.42\n[0.86, 2.35]\n1.00\n[0.97, 1.04]",
+          "score": 0.66247153,
+          "score_contre": null,
+          "requetes": [
+            "False positive and false negative notifications, anxiety and overdiagnosis from wearable screening"
+          ]
+        },
+        {
+          "chunk_id": "D07-e875cd40",
+          "doc_id": "D07",
+          "page": 10,
+          "role": "contexte",
+          "texte": "machine learning-based algorithm to\nanalyze input signals from a ECG\ndevice and provide an assessment\nfor the presence of HCM.\nAssessments are conducted on\ndemand in clinic or hospital setting,\nsuch that the findings can be\nprovided to health care\nprofessionals for further analysis.\nUse Environment \nAt home use In clinic or hospital use\nDevice\nComponents \nSoftware only Software only\nDevice Input \nPPG data from compatible Apple\nWatch platforms\n12-Lead ECG from compatibles\nECG devices\nDevice Output \nA notification that the user may\nhave hypertension\nIdentified signs associated with\nHCM and ECG analysis results\nClinical\nPerformance \nThe performance was\ndemonstrated to be acceptable\nfor identifying potential\nhypertension within the intended\npopulation.\nSensitivity: 41.2% (95% CI [37.2,\n45.3])\nSpecificity: 92.3% (95% CI [90.6,\n93.7])\nPPV (prevalence of 31.4%):\n70.9% (95% CI [65.7, 75.7])\nSensitivity: 68.4% (95% CI [62.8,\n73.5])\nSpecificity: 99.1% (95% CI [98.7,\n99.4])",
+          "score": 0.6469872,
+          "score_contre": null,
+          "requetes": [
+            "False positive and false negative notifications, anxiety and overdiagnosis from wearable screening"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social_economique",
+      "tentatives": 2,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 3,
+        "candidats": 31,
+        "retenus": 6,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D06": 2,
+          "D09": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L'intégration de la surveillance tensionnelle au sein d'objets du quotidien comme les montres connectées ouvre une opportunité majeure pour la santé publique. Ces technologies facilitent le suivi régulier de la pression artérielle hors cabinet, en particulier pour les résidents des zones rurales ou des régions touchées par une pénurie de professionnels de santé, qui doivent souvent parcourir de longues distances pour obtenir des dépistages de base. En autorisant une collecte passive tout au long de la journée dans des produits accessibles à un large public, ces outils contribuent à surmonter les obstacles contemporains liés au manque d'accès aux soins de santé traditionnels. L'analyse opportune de données saisies au poignet aide ainsi à repérer des signaux qui auraient pu échapper à l'attention médicale durant des années.",
+          "citations": [
+            "D12-62520587",
+            "D12-5aedfb38",
+            "D06-a3309247"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Sur le plan social, l'Apple Watch bénéficie déjà d'une large diffusion auprès d'utilisateurs qui l'emploient pour la connectivité, l'activité physique et diverses applications de santé. L'adjonction de la fonction de notification d'hypertension renforce cette utilisation en sensibilisant spécifiquement les porteurs au risque d'élévation chronique de la pression artérielle. Fonctionnant de façon passive après 30 jours de port, cette notification permet d'avertir les usagers susceptibles de présenter un risque élevé. Dans la mesure où les dispositifs portables représentent une modalité de suivi de plus en plus acceptée et partagée par le grand public, cette intégration peut favoriser une amélioration des taux de diagnostic, de la prise en charge clinique, de la qualité de vie et de la longévité.",
+          "citations": [
+            "D06-a7001751",
+            "D06-a3309247",
+            "D09-396688b9"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves sont toutefois formulées quant au modèle médico-économique des dispositifs sans brassard. Le coût demeure un obstacle majeur pour les populations défavorisées, et l'évaluation du rapport coût-efficacité reste considérée comme spéculative en raison de limites techniques, telles que l'exactitude des mesures, la nécessité de calibrer certains systèmes avec des appareils tiers et le manque de protocoles de validation standardisés. Néanmoins, l'incorporation de cette technologie dans des appareils électroniques polyvalents déjà achetés par les usagers offre une piste concrète pour réduire les coûts individuels. De plus, les progrès notables de la puissance de calcul et des modèles algorithmiques survenus au cours de la dernière décennie renforcent la faisabilité et la pertinence d'une surveillance cardiovasculaire passive et continue.",
+          "citations": [
+            "D12-62520587",
+            "D12-5aedfb38",
+            "D09-396688b9"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-62520587",
+        "D12-5aedfb38"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-62520587",
+          "doc_id": "D12",
+          "page": 9,
+          "role": "contre",
+          "texte": "travel long distances to receive basic health screenings, making it easier for residents of rural\nareas, or areas with shortages of health care professionals, to monitor their out-of-office BP\nregularly.\nCost is a major barrier hindering access to health care and traditional BP monitoring\nmethods for individuals from underresourced populations, many of whom may be uninsured\nor underinsured. Cuffless BP devices could theoretically reduce costs, particularly when\nintegrated into wearable or mobile devices that consumers purchase for multiple uses.\nHowever, because of the limitations of cuffless devices, including the need for calibration\nwith additional purchased devices and insufficient accuracy, cost-effectiveness remains\nspeculative.\nCuffless BP devices offer promise for expanding BP measurement in underresourced\ncommunities, but they rely heavily on technology, including sensors, algorithms, and data",
+          "score": 0.7094262,
+          "score_contre": 0.6750106,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care",
+            "Cost-effectiveness of hypertension screening and healthcare use after wearable notifications",
+            "Wearable devices widening health inequities and increasing unnecessary healthcare use"
+          ]
+        },
+        {
+          "chunk_id": "D12-5aedfb38",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "varied settings, over day(s) to weeks, in products that are affordable and accessible to most\nindividuals, we are entering a new era of health care. Being able to measure BP continuously\nand passively with wearable devices and obtain intermittent BPs throughout the day with\ndevices embedded in everyday items (eg, smartphones, watches) will allow large numbers\nof people to self-monitor their BP, overcoming contemporary barriers to cardiovascular\nhealth promotion, such as lack of access to health care. However, major limitations must be\naddressed before individuals can fully benefit from these new technologies. There is a need\nfor standardized validation protocols that evaluate accuracy across diverse technologies,\nCohen et al. \nPage 12\nHypertension. Author manuscript; available in PMC 2026 July 06.\nAuthor Manuscript\n \nAuthor Manuscript\n \nAuthor Manuscript\n \nAuthor Manuscript",
+          "score": 0.68922126,
+          "score_contre": 0.6729212,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care",
+            "Wearable devices widening health inequities and increasing unnecessary healthcare use"
+          ]
+        },
+        {
+          "chunk_id": "D06-a7001751",
+          "doc_id": "D06",
+          "page": 2,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 2\nOverview\nApple Watch is a popular wearable device with many features designed to\nempower users to understand and improve their health. Since the launch\nof Apple Watch, heart health has been a foundational part of the watch and\nHealth app experience, which includes heart rate measurements, high and low\nheart rate notifications, irregular rhythm notifications, the ECG app, AFib History,\nand cardio fitness tracking. Each of these features provides powerful insights,\nincluding notifications of abnormalities that may warrant medical attention. The\nHypertension Notification Feature adds to the insights Apple Watch offers and\nspecifically promotes awareness of chronic high blood pressure.\nHypertension Notifications — available on Apple Watch Series 9 or later and\nApple Watch Ultra 2 or later (excluding Apple Watch SE) — helps users\nrecognize if they are at high risk of hypertension. The feature works passively",
+          "score": 0.7132086,
+          "score_contre": null,
+          "requetes": [
+            "Cost-effectiveness of hypertension screening and healthcare use after wearable notifications"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.7116662,
+          "score_contre": null,
+          "requetes": [
+            "Cost-effectiveness of hypertension screening and healthcare use after wearable notifications"
+          ]
+        },
+        {
+          "chunk_id": "D09-396688b9",
+          "doc_id": "D09",
+          "page": 8,
+          "role": "contexte",
+          "texte": "oximeter component available in every operating room in the\nworld.\nThis widespread use of pulse oximetry represents another\npossible opportunity to employ the ubiquitous pulse oximeter as a\ndevice for estimating BP.\nAlthough the emerging algorithms for BP estimation and health\nmonitoring are increasingly complex, the processing power of\nwearable and mobile technologies, as well as cloud computing\nhave also increased dramatically over the past decade. The ability\nof wearable health devices to monitor BP and cardiovascular\nhealth status is becoming increasingly feasible.\nAt present, a series of health parameters, such as body\ntemperature, heart rate, ECG, and PPG, can be monitored by\ncommercial wearable products. Soon, wearable BP products will\nalso likely be an acceptable form of health monitoring utilized by\nmost people, and their precision, wear, ease of use, and other\ncharacteristics will continue to improve significantly.\nFUTURE DIRECTIONS",
+          "score": 0.67424655,
+          "score_contre": null,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care"
+          ]
+        },
+        {
+          "chunk_id": "D09-eea30d87",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "anticipated that in the near future, accurate, continuous BP measurements may be available from mobile and wearable devices\ngiven their vast potential.\nnpj Digital Medicine (2019) 2:60 ; https://doi.org/10.1038/s41746-019-0136-7\nINTRODUCTION\nWith the advancement of digital sensors, signal processing,\nmachine-learning algorithms, and improved physiologic models,\npulse waveform analysis using photophlethysmography (PPG) for\nthe assessment of blood pressure (BP) has become more\nfeasible. \nPPG signal measurements is not without its challenges;\nit requires noise elimination, \nmulti-site measurement \n, multi-photodectors development, \nevent detection, \nevent visualiza-tion,\ndifferent models,\nand a thorough global health frame-work. \nSeveral disadvantages are associated with this method,\nincluding the need to conduct an individual calibration for each\nperson, based on skin color and clinical factors, and the drift in\ncalibration over short-time intervals. \nPHOTOPLETHYSMOGRAPHY",
+          "score": 0.66586673,
+          "score_contre": null,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reglementaire",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 4,
+        "candidats": 46,
+        "retenus": 7,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D07": 2,
+          "D06": 1,
+          "D09": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "Sur le plan réglementaire américain, la fonctionnalité de notification d'hypertension (HTNF) d'Apple a obtenu une autorisation 510(k) de la FDA sous le code produit QXO et la dénomination 21 CFR 870.2380 relative aux logiciels de notification cardiovasculaire basés sur l'apprentissage automatique. Ce logiciel est autorisé en vente libre (OTC) et a démontré son équivalence substantielle avec le prédicat Viz HCM. Son indication d'utilisation approuvée précise qu'il s'agit d'un logiciel employant des techniques d'apprentissage automatique pour identifier une possible hypertension en vue d'un suivi diagnostique ultérieur. L'autorisation positionne ainsi formellement l'outil dans un rôle d'alerte et de sensibilisation pour orienter le patient vers un diagnostic médical, plutôt qu'en tant qu'instrument de mesure tensionnelle autonome.",
+          "citations": [
+            "D07-bccd84c8"
+          ],
+          "alertes": [
+            "G4 : nombre(s) absent(s) des chunks cités (510, 21, 870.2380)",
+            "G5 : formulation absolue (« demontre »)"
+          ]
+        },
+        {
+          "texte": "Des réserves ont été soulevées quant au fait que l'usage d'appareils sans brassard pour guider un traitement pourrait induire des soins inappropriés et présenter des risques de sécurité pour les patients, tout en réclamant davantage de transparence algorithmique, d'encadrement des données et de clarté dans les indications. Toutefois, le cadre validé par la FDA répond directement à ces préoccupations : l'indication restreint rigoureusement la finalité à l'identification d'une éventuelle hypertension pour un suivi diagnostique, sans permettre de guider directement une décision thérapeutique. De plus, conformément à la section 3308 du FDORA de 2022, un plan de contrôle prédéterminé des modifications (PCCP) a été autorisé. Il exclut les algorithmes adaptatifs apprenant en continu sur le terrain, impose le verrouillage préalable de toute modification algorithmique et définit les procédures de validation pour préserver l'efficacité et la sécurité.",
+          "citations": [
+            "D07-885a1648",
+            "D07-bccd84c8",
+            "D12-1bc128f5",
+            "D12-e54005ae"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« rigoureusement »)"
+          ]
+        },
+        {
+          "texte": "[INFORMATION NON DISPONIBLE DANS LE CORPUS] HIPAA",
+          "citations": [],
+          "alertes": []
+        },
+        {
+          "texte": "[INFORMATION NON DISPONIBLE DANS LE CORPUS] marquage CE / MDR",
+          "citations": [],
+          "alertes": []
+        },
+        {
+          "texte": "[INFORMATION NON DISPONIBLE DANS LE CORPUS] RGPD",
+          "citations": [],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-1bc128f5",
+        "D12-e54005ae"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-e54005ae",
+          "doc_id": "D12",
+          "page": 19,
+          "role": "contre",
+          "texte": "prognostic capability and actionability of data\nCompare output with standard, established measurements for BP monitoring, including ambulatory BP monitoring and standardized office\nBP assessment with validated devices\nData communication and interpretability\nEnsure device output makes it clear to the end user what data are being communicated (eg, absolute BP, change in BP)\nProvide indications for use that are clear to both clinicians and users\nRequire greater transparency from manufacturers on algorithmic inputs and logic to support independent verification and clinical\ninterpretability\nEthical and regulatory oversight\nAddress data ownership, privacy, and patient consent related to continuous personal health data collection\nEnsure secure data storage, appropriate data sharing protocols, and protection against misuse\nPerson- and system-level considerations\nAddress acceptability and feasibility of use in different patient populations\nDetermine cost-effectiveness",
+          "score": 0.6851301,
+          "score_contre": 0.6851301,
+          "requetes": [
+            "Privacy and protection of consumer health data: HIPAA and GDPR",
+            "Regulatory gaps and privacy risks of continuous personal health data collection"
+          ]
+        },
+        {
+          "chunk_id": "D12-1bc128f5",
+          "doc_id": "D12",
+          "page": 13,
+          "role": "contre",
+          "texte": "contexts of use, and populations. Technical barriers to obtaining reliable BP estimation must\nbe resolved to ensure results are actionable. The extensive volume of data these devices\ngenerate, especially in settings not traditionally used for BP monitoring, must be linked to\nmeaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be\naddressed (Table 2). Until these issues are resolved, using these devices to guide treatment\ncould lead to inappropriate care and may pose safety risks to patients.",
+          "score": 0.6713449,
+          "score_contre": 0.6713449,
+          "requetes": [
+            "Privacy and protection of consumer health data: HIPAA and GDPR",
+            "Regulatory gaps and privacy risks of continuous personal health data collection"
+          ]
+        },
+        {
+          "chunk_id": "D07-885a1648",
+          "doc_id": "D07",
+          "page": 15,
+          "role": "contexte",
+          "texte": "with Section 3308 of the Food and Drug Omnibus Reform Act (FDORA) of 2022, enacted on\nDecember 29, 2022. The PCCP does not include provisions for implementation of adaptive\nalgorithms that will continuously learn in the field. All algorithm modifications will be trained,\ntuned, and locked prior to release of the software to the field. A procedure has also been\nestablished for updating the Instructions for Use in order to inform users about the changes\nimplemented under this FDA-authorized PCCP, including a summary of the changes, a\ncharacterization of algorithm performance, and the availability and compatibility of the feature.\nThe PCCP specifies possible modifications to HTNF, as well as verification and validation\nactivities in place to implement the changes in a controlled manner such that the modified\ndevice remains as safe and effective as the predicate device. The PCCP includes a list of\nfeature changes defining the specific regions of potential modifications (see Table 3). The",
+          "score": 0.73955274,
+          "score_contre": null,
+          "requetes": [
+            "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan",
+            "European Medical Device Regulation (MDR) and CE marking of software as a medical device"
+          ]
+        },
+        {
+          "chunk_id": "D07-bccd84c8",
+          "doc_id": "D07",
+          "page": 8,
+          "role": "contexte",
+          "texte": "device is substantially equivalent to the predicate. A complete comparison of the subject and\npredicate device can be found in Table 1 below.\nTable 1. Subject Device and Predicate Device Comparison Table\nItem\nSubject Device Predicate Device\nHTNF Viz HCM\nDevice Name \nHypertension Notification Feature Viz HCM\nManufacturer \nApple Inc. Viz.ai, Inc.\nProduct Code \nQXO\nRegulation Name \nCardiovascular Machine Learning-\nBased Notification Software\nCardiovascular Machine Learning-\nBased Notification Software\nOTC/Prescription \nOTC Prescription\nIntended Use\nThe Hypertension Notification\nFeature (HTNF) is a machine-learning-based notification\nsoftware that employs machine\nlearning techniques to identify\npossible hypertension for further\ndiagnostic follow-up. The\nViz HCM is a cardiovascular\nmachine-learning-based notification\nsoftware employs machine learning\ntechniques to detecting signs\nassociated with hypertrophic\ncardiomyopathy (HCM).Viz HCM\nSFR",
+          "score": 0.72844636,
+          "score_contre": null,
+          "requetes": [
+            "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan",
+            "European Medical Device Regulation (MDR) and CE marking of software as a medical device"
+          ]
+        },
+        {
+          "chunk_id": "D06-cfc328cd",
+          "doc_id": "D06",
+          "page": 4,
+          "role": "pour",
+          "texte": "score hypertension risk for each PPG segment. The dataset used to develop\nthese models included PPG data and reference data collected from at-home\nblood pressure cuffs.\nStep 3: In Notification Assessment, an algorithm determines whether a\nnotification should be surfaced. First, hypertension risk scores are filtered to\nexclude samples collected during sleep, as the model was trained on PPG data\nfrom waking hours to reach the most users. Remaining scores are aggregated\nand averaged over each 30-day evaluation period, then compared against a\nthreshold to decide if a notification should be sent.\nMachine Learning–\nBased PPG Analysis\nFigure 1: HTNF Algorithm\nFlow Diagram\nSignal\nPreprocessing\nDL Feature\nExtractor\nLinear\nProjection\nBlood\nPressure\nModel\nHypertension\nModel\nSleep\nFilter\nAverage\n30 Days\nThreshold\nComparison\nNotification\nDecision\nStep 3:\nNotification\nAssessment\nHTNF\nPPG Input\nRaw\nAccel\nRaw\nPPG\nPlatform\nSignal\nFiltering\nStep 1:\nPPG Feature\nExtractor\nStep 2:\nHypertension\nRisk Scoring",
+          "score": 0.6695889,
+          "score_contre": null,
+          "requetes": [
+            "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan"
+          ]
+        },
+        {
+          "chunk_id": "D09-ce8f4c9a",
+          "doc_id": "D09",
+          "page": 5,
+          "role": "contexte",
+          "texte": "sensor as well as two PPG sensors. By holding the phone with\nboth hands, the mobile app was able to capture two measurements of PAT and use that to estimate BP. Up to our knowledge,\nthere is no clinical study validates the use of this product.\nMore recently, Wang et al. \ndemonstrated a similar mobile app\nwhich uses the PTT measurement derived from the seismic\nwaveform of the user’s heart as measured by the phone’s internal\naccelerometer. Blood pressure estimates were computed using\nthe familiar Moens–Kortweg simplification using PTT, as described\nin Eq. (1). Wang et al. reported good agreement between the\nmeasured BP value and the diastolic BP value measured by an\nexternal commercial BP cuff device, with an error range of\n±6.7 mmHg.\nIn 2017, Holz et al.\ndemonstrated that the design of eyeglass\nframes with embedded PPG sensors is suitable for BP measurement. This prototype device, Glabella (Microsoft Research, USA),\nmakes use of three miniature PPG sensors that sample the pulse",
+          "score": 0.5645716,
+          "score_contre": null,
+          "requetes": [
+            "Privacy and protection of consumer health data: HIPAA and GDPR"
+          ]
+        },
+        {
+          "chunk_id": "D09-20320f78",
+          "doc_id": "D09",
+          "page": 6,
+          "role": "contexte",
+          "texte": "studies, which does not indicate reliable findings and robust\nanalysis. To increase reliability and validity for this line of research,\nsome recommendations will be discussed later in the Future\nDirections section.\nDATABASES AVAILABILITY\nTo the best of our knowledge, there are two main publicly\navailable databases. The first database, called PPG-BP Database,\nwas recently published \nand it contains PPG signals collected\nalong with BP readings from patients admitted to the Guilin\nPeople’s Hospital in Guilin, China. It includes data collected from\n219 subjects, aged 21–86 years, with a median age of 58 years,\ncovering several diseases including hypertension, diabetes,\ncerebral infarction, and insufficient brain blood supply. The\nsecond database is the Multiparameter Intelligent Monitoring in\nIntensive Care (MIMIC) Database, \nwhich contains thousands of\nrecordings of multiple physiologic signals such as arterial blood\npressure (ABP), PPG signals, and respiration, with additional",
+          "score": 0.5627214,
+          "score_contre": null,
+          "requetes": [
+            "Privacy and protection of consumer health data: HIPAA and GDPR"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parcours_soins",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 3,
+        "candidats": 32,
+        "retenus": 6,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D06": 2,
+          "D07": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L'intégration de la fonctionnalité de notification d'hypertension dans le parcours de soins repose sur une approche de surveillance passive au poignet. En s'appuyant sur des données recueillies de façon opportuniste après seulement 30 jours de port de la montre, cette application logicielle alerte les utilisateurs sur des signes potentiels d'hypertension qui risqueraient autrement de ne pas être détectés pendant plusieurs années. Ce repérage précoce vise à encourager une démarche diagnostique, susceptible d'améliorer la prise en charge médicale, la qualité de vie et la longévité des personnes concernées. Pour autant, il est clairement établi que l'absence de notification ne signifie aucunement une absence d'hypertension, encadrant ainsi le rôle du dispositif comme une aide à la détection sans se substituer à une évaluation clinique.",
+          "citations": [
+            "D06-a3309247",
+            "D07-f33f49f6"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves significatives sont formulées quant à l'introduction des dispositifs sans brassard dans la routine médicale. L'afflux massif de mesures cardiovasculaires réalisées hors cabinet risque de confronter les cliniciens à d'importantes difficultés d'interprétation. De surcroît, les volumes considérables de données générés dans des contextes non traditionnels doivent encore être reliés à des critères d'évaluation cliniques concrets. Tant que ces obstacles techniques et les questions de confidentialité des données ne sont pas surmontés, l'utilisation de tels appareils pour orienter directement une prise en charge thérapeutique pourrait entraîner des soins inappropriés et présenter des risques pour la sécurité des patients.",
+          "citations": [
+            "D12-21570bef",
+            "D12-1bc128f5"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Néanmoins, la fonction ne prétend pas guider directement les ajustements thérapeutiques, mais sert de point d'entrée vers une prise en charge médicale standardisée. Dans son étude de validation clinique menée auprès de 2 229 sujets selon les recommandations de 2017 de l'American Heart Association, 1 863 participants ont fourni au moins 15 jours de données exploitables. Tous les critères principaux prédéfinis ont été atteints, affichant une spécificité globale de 92,3 % (IC à 95 % [90,6, 93,7]) et de 95,3 % (IC à 95 % [93,7, 96,5]) chez les normotendus, pour une sensibilité de 41,2 % (IC à 95 % [37,2, 45,3]) globalement et de 53,7 % (IC à 95 % [47,7, 59,7]) au stade 2. Cette haute spécificité permet de limiter les fausses alertes, favorisant une orientation pertinente des patients vers leur médecin.",
+          "citations": [
+            "D06-18bfea17",
+            "D07-c40316f9",
+            "D12-1bc128f5"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-21570bef",
+        "D12-1bc128f5"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-21570bef",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "(ie, at rest), device position tests (ie, in at least 1 other position), treatment tests (ie, 1–4\nweeks after initiating a new antihypertensive therapy), awake/asleep tests (eg, using ABPM\nfor overnight BP measurement), exercise tests, and recalibration tests (ie, right before the\ndevice is recommended to undergo recalibration).\nThe complexity of these protocols may\nhinder their practicality in assessing device accuracy, and the need for separate protocols\nfor children and pregnant women adds to their limitations. The absence of environmental\nstandards (eg, ambient temperature) also poses challenges in evaluating device performance.\nCRUCIAL GAPS IN INTERPRETING DEVICE OUTPUTS FROM CUFFLESS\nBP DEVICES\nGiven the exponential growth of consumer wearable devices, clinicians will likely be\npresented with large amounts of out-of-office cardiovascular measurement data. Studies\nof cuffless BP devices have demonstrated poor performance (eg, accuracy not significantly",
+          "score": 0.7442919,
+          "score_contre": 0.6282769,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up",
+            "Clinical workload and low diagnostic yield of evaluations triggered by smartwatch alerts"
+          ]
+        },
+        {
+          "chunk_id": "D12-1bc128f5",
+          "doc_id": "D12",
+          "page": 13,
+          "role": "contre",
+          "texte": "contexts of use, and populations. Technical barriers to obtaining reliable BP estimation must\nbe resolved to ensure results are actionable. The extensive volume of data these devices\ngenerate, especially in settings not traditionally used for BP monitoring, must be linked to\nmeaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be\naddressed (Table 2). Until these issues are resolved, using these devices to guide treatment\ncould lead to inappropriate care and may pose safety risks to patients.",
+          "score": 0.7448218,
+          "score_contre": 0.62240773,
+          "requetes": [
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up",
+            "Clinical workload and low diagnostic yield of evaluations triggered by smartwatch alerts"
+          ]
+        },
+        {
+          "chunk_id": "D06-18bfea17",
+          "doc_id": "D06",
+          "page": 7,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 7\nSubjects took blood pressure measurements following AHA guidelines. The\n30-day averages were categorized based on the 2017 American College of\nCardiology (ACC)/AHA Blood Pressure Guidelines for home blood pressure\nreadings.\nThe validation study assessed the following coprimary safety and effectiveness\nendpoints:\n• Notification sensitivity for participants with a Stage 1 or Stage 2 reference\nhypertension (HTN) category\n• Notification specificity for participants with a Normal or Elevated reference\nHTN category\nStudy Results\nThe study enrolled 2229 subjects across all major blood pressure ranges and\nhypertension categories (Normal, Elevated Blood Pressure, Stage 1 HTN, and\nStage 2 HTN). Participants represented a broad range of demographic factors\nincluding age, sex, BMI, and race and ethnicity subgroups, reflecting the\nintended user population. The Full Analysis Set included all enrolled participants,",
+          "score": 0.7289,
+          "score_contre": null,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up"
+          ]
+        },
+        {
+          "chunk_id": "D07-c40316f9",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "clinical study. The subjects were enrolled from diverse demographic groups and representative\nof the intended use population with a range of blood pressures categorized as non-hypertensive (normal or elevated) or hypertensive (stage 1 and stage 2) in accordance with\ndefinitions published in the 2017 American Heart Association Guidelines. All subjects were\nasked to wear an Apple Watch for 30 days and measured blood pressure using an FDA-cleared home blood pressure monitor as reference. Of the 2,229 enrolled subjects, 1,863\nprovided at least 15 days of usable data for the primary endpoint analysis.\nThe clinical study results demonstrated that:\n• \nThe feature met all pre-determined primary endpoints. The overall sensitivity and\nspecificity were 41.2% (95% CI [37.2, 45.3]) and 92.3% (95% CI [90.6, 93.7]),\nrespectively.\n• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n•",
+          "score": 0.7287555,
+          "score_contre": null,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.72746766,
+          "score_contre": null,
+          "requetes": [
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up"
+          ]
+        },
+        {
+          "chunk_id": "D07-f33f49f6",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "pressure surveillance. It is not intended for use during pregnancy. The absence of a notification\ndoes not indicate the absence of hypertension.\n5. Comparison with the Predicate Device\nHTNF and the predicate device (Viz HCM, DEN230003) have the same intended use,\ntechnological characteristics, and principles of operation, and the difference in indications\ndoes not represent a new intended use. Both the subject and predicate devices are software-only mobile medical applications intended to identify a single condition based on non-invasive",
+          "score": 0.68167984,
+          "score_contre": null,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "autres",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 3,
+        "candidats": 34,
+        "retenus": 8,
+        "garantis_contre": 2,
+        "par_document": {
+          "D12": 2,
+          "D09": 2,
+          "D06": 2,
+          "D07": 2
+        }
+      },
+      "paragraphes": [
+        {
+          "texte": "L’hypertension artérielle constitue un enjeu sanitaire mondial majeur qui concerne plus de 1,3 milliard d’adultes. Lorsqu’elle n’est pas traitée, elle peut entraîner des complications graves telles que l’infarctus du myocarde, l’accident vasculaire cérébral, l’insuffisance rénale et la perte de la vue. Or, environ la moitié des adultes atteints ignorent leur état, car les symptômes sont rares et les mesures ponctuelles en consultation échouent fréquemment à identifier l’anomalie. L’intégration d’un suivi passif au poignet via l’Apple Watch permet de combler cette lacune de dépistage en détectant des signes d’hypertension chronique chez des utilisateurs qui ne mesurent pas activement leur pression artérielle et ne consultent pas de médecin.",
+          "citations": [
+            "D06-75f56bef",
+            "D06-a3309247"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves ont toutefois été formulées à l’égard des dispositifs sans brassard. Les recommandations 2025 de l’American Heart Association et de l’American College of Cardiology déconseillent ainsi leur emploi pour le diagnostic ou la prise en charge de l’hypertension tant qu’une plus grande précision n’est pas démontrée. Il a également été souligné que le volume important de mesures obtenues pose question quant à son lien avec des critères cliniques et des interventions concrètes, d'autant que les appareils sur le marché n'ont pas encore été évalués de manière adéquate pour leur efficacité et leur précision. Néanmoins, la fonctionnalité autorisée par la FDA ne remplace pas le diagnostic clinique ; elle s’appuie sur des scores de risque issus du signal photopléthysmographique et fournit des ressources éducatives incitant l'utilisateur alerté après trente jours de port à consulter un professionnel de santé.",
+          "citations": [
+            "D12-557c6126",
+            "D12-4794f2ff",
+            "D07-f709ac64",
+            "D06-a3309247"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Les performances de la fonctionnalité ont été validées dans une étude clinique ayant inclus 2 229 sujets, parmi lesquels 1 863 ont fourni au moins 15 jours de données exploitables face à un tensiomètre de référence approuvé par la FDA. Tous les critères principaux prédéterminés ont été atteints. L’étude a démontré une spécificité globale de 92,3 % (IC à 95 % [90,6, 93,7]) et de 95,3 % (IC à 95 % [93,7, 96,5]) chez les personnes normotendues, ce qui restreint le risque de fausses alertes. La sensibilité globale s’élève à 41,2 % (IC à 95 % [37,2, 45,3]) et atteint 53,7 % (IC à 95 % [47,7, 59,7]) chez les patients présentant une hypertension de stade 2.",
+          "citations": [
+            "D07-c40316f9"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« demontre »)"
+          ]
+        },
+        {
+          "texte": "Sur le plan technologique, le recours aux signaux de photopléthysmographie pour évaluer la pression artérielle offre des perspectives prometteuses pour une surveillance quasi continue. Même si les facteurs individuels affectant les estimations posent des défis méthodologiques, la tendance vers les technologies portables est manifeste et leur adoption croissante est appelée à jouer un rôle essentiel dans les soins. En combinant un modèle d’apprentissage automatique sur la montre et une analyse algorithmique sur iPhone ou iPad, la détection opportuniste au poignet permet d'identifier des signes qui pourraient être manqués pendant des années, améliorant potentiellement le taux de diagnostic et la longévité des personnes hypertendues.",
+          "citations": [
+            "D09-3104b1e4",
+            "D09-9f5b7b12",
+            "D07-f709ac64",
+            "D06-a3309247"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-557c6126",
+        "D12-4794f2ff"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D12-4794f2ff",
+          "doc_id": "D12",
+          "page": 4,
+          "role": "contre",
+          "texte": "potential to remove barriers to BP measurement in both research and clinical care. However,\nthere are unanswered questions on whether, how, and in what settings these devices may be\nappropriate for use. Gaps include the need to understand whether the somewhat distinctive and\noften enormous volume of readings obtained by these devices have meaningful relationships\nwith clinical outcomes and are appropriate for determining actionable interventions. Furthermore,\ninternational standards for determining the accuracy of some, but not yet all, of these devices only\nrecently became available and do not provide a full assessment of the typical use of the devices.\nThus, the devices on the market have not yet been adequately vetted for accuracy and efficacy.\nSeveral of these devices, however, have been cleared by the US Food and Drug Administration\nand are being used clinically. Moreover, many patients use cuffless devices for BP self-monitoring,",
+          "score": 0.8346373,
+          "score_contre": 0.81292135,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring",
+            "Unresolved questions before cuffless devices can be used clinically"
+          ]
+        },
+        {
+          "chunk_id": "D12-557c6126",
+          "doc_id": "D12",
+          "page": 5,
+          "role": "contre",
+          "texte": "(eg, cuffed) devices.\nAccordingly, the 2025 American Heart Association/American College\nof Cardiology Guideline for the Prevention, Detection, Evaluation, and Management of\nHigh Blood Pressure in Adults recommends against the use of cuffless BP devices for the\ndiagnosis or management of hypertension until these devices demonstrate greater precision\nand reliability.\nIn this scientific statement, we provide an overview of cuffless technologies and their\npotential future utility, while highlighting the notable limitations that need to be addressed\nbefore these devices can be considered for clinical decision-making.\nMECHANISMS OF CUFFLESS BP MEASUREMENT\nThe technology, methods, and outputs of cuffless devices for estimating BP noninvasively\nvary substantially.\nThey provide either continuous, beat-to-beat estimations using\nintracardiac cycle data or intermittent BP estimations, spaced >30 seconds apart, using data",
+          "score": 0.80398154,
+          "score_contre": 0.7994056,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring",
+            "Unresolved questions before cuffless devices can be used clinically"
+          ]
+        },
+        {
+          "chunk_id": "D09-9f5b7b12",
+          "doc_id": "D09",
+          "page": 9,
+          "role": "contexte",
+          "texte": "individual factors, which can directly affect the accuracy of BP\nestimations. The existence of such practical problems and the\ndifficulty in overcoming them has made the applications of this\ntheory difficult.\nThe development of noninvasive, cuffless, and continuous BP\nestimation is a promising yet challenging field. That the trend is\ntoward wearable BP technology is evident. In future studies, a\nmore comprehensive understanding of PPG information can\nhopefully enable researchers to solve the abovementioned\nproblems and to successfully develop technologies for BP\nestimation using mobile and wearable devices.\nACKNOWLEDGEMENTS\nMohamed Elgendi is grateful for the support from Mining for Miracles, BC Children’s\nHospital Foundation, and Women’s Health Research Centre of British Columbia,\nVancouver, British Columbia, Canada.\nAUTHOR CONTRIBUTIONS\nM.E. designed the review, screened titles and abstracts. M.E., R.F. and Y.L. screened all",
+          "score": 0.82152456,
+          "score_contre": null,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring"
+          ]
+        },
+        {
+          "chunk_id": "D09-3104b1e4",
+          "doc_id": "D09",
+          "page": 8,
+          "role": "contexte",
+          "texte": "most people, and their precision, wear, ease of use, and other\ncharacteristics will continue to improve significantly.\nFUTURE DIRECTIONS\nThe use of PPG signals as a replacement for cuff-based or invasive\nBP measurement is relatively new, and most PPG analysis methods\nare still relatively simple. A variety of estimation methods continue\nto be explored, including those that utilize PPG signals exclusively,\nand those which combine PPG with other physiological signals. As\ncan be seen from the tables, the estimation of BP from PTT\ncontinues to be perhaps the most common approach, but\ngenerally only with very small sample sizes. With the advent of\nwearable devices, the real-time analysis of PPG waveforms also\nenables the possibility to monitor BP on a nearly continuous\nbasis. \nIn the future, the increasing adoption of wearable PPG\ndevices will also likely play an essential role in patient care.\nOur recommendations, based on a review of BP estimation\nusing PPG signals, are as follows:",
+          "score": 0.8085952,
+          "score_contre": null,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.711538,
+          "score_contre": null,
+          "requetes": [
+            "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+          ]
+        },
+        {
+          "chunk_id": "D06-75f56bef",
+          "doc_id": "D06",
+          "page": 3,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 3\nIntroduction\nHypertension — or high blood pressure — is a critical risk factor for long-term\nhealth outcomes,\naffecting more than 1.3 billion adults worldwide.\nOver time,\nuntreated hypertension can lead to heart attack, stroke, kidney failure, and vision\nloss. It often goes undiagnosed for years because those affected rarely have\nsymptoms, and single in-office blood pressure measurements can frequently\nmiss detecting hypertension. Despite guidelines recommending routine\nhypertension screening, about half of adults around the globe who have\nhypertension remain unaware of it.\nApple Watch helps address this diagnosis gap by passively monitoring for\nsigns of chronic high blood pressure and alerting users who show patterns of\nhypertension — even when they are not actively checking their blood pressure\nor seeing a doctor. All they need to do is onboard the feature and wear their\nApple Watch.",
+          "score": 0.7024653,
+          "score_contre": null,
+          "requetes": [
+            "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+          ]
+        },
+        {
+          "chunk_id": "D07-c40316f9",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "clinical study. The subjects were enrolled from diverse demographic groups and representative\nof the intended use population with a range of blood pressures categorized as non-hypertensive (normal or elevated) or hypertensive (stage 1 and stage 2) in accordance with\ndefinitions published in the 2017 American Heart Association Guidelines. All subjects were\nasked to wear an Apple Watch for 30 days and measured blood pressure using an FDA-cleared home blood pressure monitor as reference. Of the 2,229 enrolled subjects, 1,863\nprovided at least 15 days of usable data for the primary endpoint analysis.\nThe clinical study results demonstrated that:\n• \nThe feature met all pre-determined primary endpoints. The overall sensitivity and\nspecificity were 41.2% (95% CI [37.2, 45.3]) and 92.3% (95% CI [90.6, 93.7]),\nrespectively.\n• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n•",
+          "score": 0.680924,
+          "score_contre": null,
+          "requetes": [
+            "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+          ]
+        },
+        {
+          "chunk_id": "D07-f709ac64",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "data is collected.\nHTNF comprises the following features:\n• \nA software feature on the Apple Watch (“Software Feature on Watch”), and\n• \nA pair of software features on the iOS device (“Software Feature on iPhone” and\n“Software Feature on iPad”)\nOn the Apple Watch, HTNF uses PPG data and qualification information from the watch\nplatform. The Software Feature on watch incorporates a machine-learning model that gives\neach qualified PPG signal a score associated with risk of hypertension.\nOn the iPhone, HTNF incorporates an algorithm that aggregates qualified hypertension risk\nscores and identifies patterns suggestive of hypertension. If hypertension patterns are\nidentified, the feature surfaces a notification to users that they may have hypertension. The\nfeature includes a user interface (UI) framework to enable user on-boarding and display\neducational materials and hypertension notification history in the Hypertension Notification\nroom in the Health app.",
+          "score": 0.6722182,
+          "score_contre": null,
+          "requetes": [
+            "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "tentatives": 1,
+      "relance_refusee_budget": false,
+      "reparations_encodage": 0,
+      "g1": [],
+      "alertes_section": [],
+      "selection": {
+        "requetes": 0,
+        "candidats": 37,
+        "retenus": 37
+      },
+      "paragraphes": [
+        {
+          "texte": "L'hypertension artérielle représente un défi sanitaire majeur affectant plus de 1,3 milliard d'adultes à l'échelle mondiale, parmi lesquels environ la moitié ignorent leur état en raison du caractère silencieux de la pathologie et des limites des mesures ponctuelles au cabinet médical. Dans ce contexte, l'autorisation délivrée par la FDA pour la fonctionnalité logicielle de notification d'hypertension de l'Apple Watch constitue une avancée pragmatique pour combler cette lacune diagnostique persistante. En exploitant passivement des données photopléthysmographiques recueillies au poignet après au moins 30 jours de port, cet outil en vente libre destiné aux adultes de 22 ans et plus sans diagnostic préalable permet de signaler des profils évocateurs d'élévation chronique de la pression artérielle, favorisant une démarche précoce qui peut améliorer la prise en charge clinique et le pronostic des patients.",
+          "citations": [
+            "D06-75f56bef",
+            "D06-a3309247",
+            "D07-b23884cb",
+            "D07-e5fd860e"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "Des réserves substantielles sont légitimement soulevées au sein de la communauté cardiologique, les recommandations 2025 de l'American Heart Association et de l'American College of Cardiology déconseillant l'emploi des dispositifs sans brassard pour le diagnostic ou la prise en charge de l'hypertension en raison d'un manque de validation sur les critères cliniques et du danger de soins inappropriés si ces outils servaient à ajuster un traitement. Toutefois, le cadre rigoureux de l'autorisation de la FDA dissipe ces craintes : l'indication exclut formellement le remplacement du diagnostic standardisé, le guidage thérapeutique ou la surveillance tensionnelle continue. Le dispositif se positionne strictement comme un système de sensibilisation opportuniste orientant vers une consultation médicale, étant expressément rappelé aux usagers que l'absence de notification n'exclut aucunement une hypertension.",
+          "citations": [
+            "D12-557c6126",
+            "D12-1bc128f5",
+            "D12-4794f2ff",
+            "D07-b23884cb",
+            "D07-e5fd860e"
+          ],
+          "alertes": []
+        },
+        {
+          "texte": "La pertinence de cette autorisation repose sur des données cliniques solides issues d'un essai pivot mené auprès de 2 229 participants, dont 1 863 ont fourni des données exploitables face à un tensiomètre de référence validé par la FDA. Le logiciel a satisfait à tous ses critères d'évaluation principaux, affichant une spécificité globale de 92,3 % et de 95,3 % chez les personnes normotendues, assurant une valeur prédictive positive de 70,9 % pour une prévalence de 31,4 % et limitant ainsi le fardeau des fausses alertes. Sa sensibilité globale de 41,2 % atteint 53,7 % dans l'hypertension de stade 2, tandis que les analyses en sous-groupes ne montrent aucune différence cliniquement significative selon l'âge, le sexe, la race ou le phototype cutané après ajustement des covariables. De surcroît, le plan de contrôle prédéterminé des modifications (PCCP) homologué par la FDA garantit un verrouillage strict de tout algorithme avant diffusion, écartant les dérives d'un apprentissage adaptatif non contrôlé.",
+          "citations": [
+            "D06-8dcda495",
+            "D07-c40316f9",
+            "D07-e875cd40",
+            "D06-fd4b1853",
+            "D07-885a1648"
+          ],
+          "alertes": [
+            "G5 : formulation absolue (« solides », « garantit »)"
+          ]
+        },
+        {
+          "texte": "En conclusion, l'autorisation de la FDA apparaît pleinement fondée et bénéfique pour la pratique médicale. Loin de prétendre supplanter les méthodes conventionnelles ou de surcharger les consultations par des données non calibrées, ce dispositif tire parti de la large diffusion d'un objet connecté du quotidien pour créer une passerelle efficace vers le parcours de soins. En assurant un dépistage passif doté d'une haute spécificité, la montre connectée offre aux cliniciens une opportunité précieuse d'identifier des patients asymptomatiques qui auraient autrement échappé au diagnostic pendant des années, contribuant ainsi à réduire les complications cardiovasculaires majeures.",
+          "citations": [
+            "D06-75f56bef",
+            "D06-a3309247",
+            "D06-8dcda495",
+            "D09-3104b1e4",
+            "D12-5aedfb38"
+          ],
+          "alertes": []
+        }
+      ],
+      "contre_arguments_traites": [
+        "D12-557c6126",
+        "D12-1bc128f5",
+        "D12-4794f2ff"
+      ],
+      "chunks_recuperes": [
+        {
+          "chunk_id": "D06-75f56bef",
+          "doc_id": "D06",
+          "page": 3,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 3\nIntroduction\nHypertension — or high blood pressure — is a critical risk factor for long-term\nhealth outcomes,\naffecting more than 1.3 billion adults worldwide.\nOver time,\nuntreated hypertension can lead to heart attack, stroke, kidney failure, and vision\nloss. It often goes undiagnosed for years because those affected rarely have\nsymptoms, and single in-office blood pressure measurements can frequently\nmiss detecting hypertension. Despite guidelines recommending routine\nhypertension screening, about half of adults around the globe who have\nhypertension remain unaware of it.\nApple Watch helps address this diagnosis gap by passively monitoring for\nsigns of chronic high blood pressure and alerting users who show patterns of\nhypertension — even when they are not actively checking their blood pressure\nor seeing a doctor. All they need to do is onboard the feature and wear their\nApple Watch.",
+          "score": 0.75929797,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D09-3411d37f",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "REVIEW ARTICLE \nOPEN\nThe use of photoplethysmography for assessing hypertension\nMohamed Elgendi \n, Richard Fletcher\n, Yongbo Liang \n, Newton Howard\n, Nigel H. Lovell \n, Derek Abbott \n,\nKenneth Lim \nand Rabab Ward \nThe measurement of blood pressure (BP) is critical to the treatment and management of many medical conditions. High blood\npressure is associated with many chronic disease conditions, and is a major source of mortality and morbidity around the world. For\noutpatient care as well as general health monitoring, there is great interest in being able to accurately and frequently measure BP\noutside of a clinical setting, using mobile or wearable devices. One possible solution is photoplethysmography (PPG), which is most\ncommonly used in pulse oximetry in clinical settings for measuring oxygen saturation. PPG technology is becoming more readily\navailable, inexpensive, convenient, and easily integrated into portable devices. Recent advances include the development of",
+          "score": 0.7693236,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D09-eea30d87",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "anticipated that in the near future, accurate, continuous BP measurements may be available from mobile and wearable devices\ngiven their vast potential.\nnpj Digital Medicine (2019) 2:60 ; https://doi.org/10.1038/s41746-019-0136-7\nINTRODUCTION\nWith the advancement of digital sensors, signal processing,\nmachine-learning algorithms, and improved physiologic models,\npulse waveform analysis using photophlethysmography (PPG) for\nthe assessment of blood pressure (BP) has become more\nfeasible. \nPPG signal measurements is not without its challenges;\nit requires noise elimination, \nmulti-site measurement \n, multi-photodectors development, \nevent detection, \nevent visualiza-tion,\ndifferent models,\nand a thorough global health frame-work. \nSeveral disadvantages are associated with this method,\nincluding the need to conduct an individual calibration for each\nperson, based on skin color and clinical factors, and the drift in\ncalibration over short-time intervals. \nPHOTOPLETHYSMOGRAPHY",
+          "score": 0.76026434,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D12-813ed773",
+          "doc_id": "D12",
+          "page": 5,
+          "role": "contre",
+          "texte": "of these devices are designed to address the limitations of conventional arm cuff–based\nBP measurement by increasing comfort, allowing for continuous passive monitoring or\nspot manual checking, facilitating electronic storage of data, and increasing accessibility.\nWith these rapid technologic advances, industry, consumers, and clinicians have struggled\nto keep up with methods of testing device accuracy, understanding the nuances of how\ndifferent devices operate and what they are designed to estimate (BP or change in BP),\nand interpreting the massive influx of BP data, none of which has been correlated with\nclinical outcomes. Many devices that have received Food and Drug Administration (FDA)\n510(k) clearance are being used in clinical and home settings despite inappropriate testing\nwith traditional cuff-based protocols and questionable claims of equivalence to existing\n(eg, cuffed) devices.\nAccordingly, the 2025 American Heart Association/American College",
+          "score": 0.78476024,
+          "score_contre": 0.78476024,
+          "requetes": [
+            "Blood pressure measurement methods (office, home and ambulatory monitoring) and their limitations",
+            "Limitations and risks of screening for hypertension with consumer devices"
+          ]
+        },
+        {
+          "chunk_id": "D12-1bc128f5",
+          "doc_id": "D12",
+          "page": 13,
+          "role": "contre",
+          "texte": "contexts of use, and populations. Technical barriers to obtaining reliable BP estimation must\nbe resolved to ensure results are actionable. The extensive volume of data these devices\ngenerate, especially in settings not traditionally used for BP monitoring, must be linked to\nmeaningful clinical outcomes. Furthermore, data privacy, ownership, and consent must be\naddressed (Table 2). Until these issues are resolved, using these devices to guide treatment\ncould lead to inappropriate care and may pose safety risks to patients.",
+          "score": 0.7979283,
+          "score_contre": 0.7979283,
+          "requetes": [
+            "Limitations and risks of screening for hypertension with consumer devices"
+          ]
+        },
+        {
+          "chunk_id": "D06-a3309247",
+          "doc_id": "D06",
+          "page": 11,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 11\nApple Watch offers many features focused on health and wellbeing. The\nFDA-cleared Hypertension Notification Feature — an important addition to\nthe intelligent guardian features of Apple Watch — can alert users to possible\nhypertension after wearing their watch for just 30 days. It uses passive,\nopportunistically captured data right from users’ wrists to detect signs of\nhypertension, which may otherwise be missed for years. With so many\npeople already using Apple Watch for fitness, connectivity, safety, and\nother health applications, this feature could improve diagnosis rates, health\nmanagement, quality of life, and longevity for those with hypertension.\nConclusion",
+          "score": 0.7712599,
+          "score_contre": null,
+          "requetes": [
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D07-c40316f9",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "clinical study. The subjects were enrolled from diverse demographic groups and representative\nof the intended use population with a range of blood pressures categorized as non-hypertensive (normal or elevated) or hypertensive (stage 1 and stage 2) in accordance with\ndefinitions published in the 2017 American Heart Association Guidelines. All subjects were\nasked to wear an Apple Watch for 30 days and measured blood pressure using an FDA-cleared home blood pressure monitor as reference. Of the 2,229 enrolled subjects, 1,863\nprovided at least 15 days of usable data for the primary endpoint analysis.\nThe clinical study results demonstrated that:\n• \nThe feature met all pre-determined primary endpoints. The overall sensitivity and\nspecificity were 41.2% (95% CI [37.2, 45.3]) and 92.3% (95% CI [90.6, 93.7]),\nrespectively.\n• \nThe sensitivity for stage 2 hypertension was 53.7% (95% CI [47.7, 59.7]) and the\nspecificity for normotensive was 95.3% (95% CI [93.7, 96.5]).\n•",
+          "score": 0.75569874,
+          "score_contre": null,
+          "requetes": [
+            "Global prevalence of hypertension, undiagnosed hypertension and low awareness as a public health problem",
+            "Screening for hypertension with consumer wearable devices such as smartwatches"
+          ]
+        },
+        {
+          "chunk_id": "D06-a7001751",
+          "doc_id": "D06",
+          "page": 2,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 2\nOverview\nApple Watch is a popular wearable device with many features designed to\nempower users to understand and improve their health. Since the launch\nof Apple Watch, heart health has been a foundational part of the watch and\nHealth app experience, which includes heart rate measurements, high and low\nheart rate notifications, irregular rhythm notifications, the ECG app, AFib History,\nand cardio fitness tracking. Each of these features provides powerful insights,\nincluding notifications of abnormalities that may warrant medical attention. The\nHypertension Notification Feature adds to the insights Apple Watch offers and\nspecifically promotes awareness of chronic high blood pressure.\nHypertension Notifications — available on Apple Watch Series 9 or later and\nApple Watch Ultra 2 or later (excluding Apple Watch SE) — helps users\nrecognize if they are at high risk of hypertension. The feature works passively",
+          "score": 0.8600508,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)",
+            "Rationale for passive hypertension notifications to detect undiagnosed hypertension in daily life"
+          ]
+        },
+        {
+          "chunk_id": "D07-b23884cb",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 2 of 12\n3. Device Description\nThe Hypertension Notification Feature (HTNF) is an over-the-counter mobile medical\napplication that is intended to analyze data collected from the PPG sensor of the Apple Watch\n(a general purpose computing platform), over multiple days to surface a notification to users\nwho may have hypertension. The feature is intended for adults who have not been previously\ndiagnosed with hypertension. The feature is not intended for use during pregnancy. The feature\nis not intended to replace traditional methods of diagnosis, to monitor hypertension treatment\neffect, or to be used as a method of blood pressure surveillance.\nAbsence of a notification does not indicate the absence of hypertension. HTNF cannot identify\nevery instance of hypertension. In addition, HTNF will not surface a notification if insufficient\ndata is collected.\nHTNF comprises the following features:\n•",
+          "score": 0.84541947,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)"
+          ]
+        },
+        {
+          "chunk_id": "D07-e5fd860e",
+          "doc_id": "D07",
+          "page": 9,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 4 of 12\nItem\nSubject Device Predicate Device\nHTNF Viz HCM\nsoftware identifies patterns that\nare suggestive of hypertension\nbased on photoplethysmography\n(PPG) data opportunistically\ncollected by Apple Watch. It is\nintended as the basis for further\nevaluation and is not intended to\nprovide a diagnosis of\nhypertension.\nanalyzes recordings of 12-lead ECG\nand identifies patients for further\nHCM follow-up and does not\nreplace the current standard of care\nmethods for diagnosis of HCM.\nIndications for\nUse\nThe Hypertension Notification\nFeature (HTNF) is a software-only\nmobile medical application that\nanalyzes photoplethysmography\n(PPG) data opportunistically\ncollected by Apple Watch to\nidentify patterns that are\nsuggestive of hypertension and\nprovides a notification to the user.\nThe feature is intended for over-the-counter (OTC) use by adults\nage 22 and over who have not\nbeen previously diagnosed with",
+          "score": 0.8309787,
+          "score_contre": null,
+          "requetes": [
+            "FDA 510(k) clearance and indications for use of the Apple Watch hypertension notification feature",
+            "Intended population and use restrictions of the hypertension notification feature (age, pregnancy, prior diagnosis)"
+          ]
+        },
+        {
+          "chunk_id": "D12-4794f2ff",
+          "doc_id": "D12",
+          "page": 4,
+          "role": "contre",
+          "texte": "potential to remove barriers to BP measurement in both research and clinical care. However,\nthere are unanswered questions on whether, how, and in what settings these devices may be\nappropriate for use. Gaps include the need to understand whether the somewhat distinctive and\noften enormous volume of readings obtained by these devices have meaningful relationships\nwith clinical outcomes and are appropriate for determining actionable interventions. Furthermore,\ninternational standards for determining the accuracy of some, but not yet all, of these devices only\nrecently became available and do not provide a full assessment of the typical use of the devices.\nThus, the devices on the market have not yet been adequately vetted for accuracy and efficacy.\nSeveral of these devices, however, have been cleared by the US Food and Drug Administration\nand are being used clinically. Moreover, many patients use cuffless devices for BP self-monitoring,",
+          "score": 0.8294674,
+          "score_contre": 0.8294674,
+          "requetes": [
+            "Concerns about FDA clearance of cuffless blood pressure devices"
+          ]
+        },
+        {
+          "chunk_id": "D12-1e0588da",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "of cuffless BP devices have demonstrated poor performance (eg, accuracy not significantly\nbetter than that of a baseline model, which estimates BP using only cuff BP for calibration\nor demographic and anthropometric inputs) in tracking exercise-induced BP changes, sleep-time BP changes, antihypertensive treatment–induced BP changes, BP changes associated\nwith activities of daily living, and during 24-hour continuous BP monitoring.\nDespite\nFDA clearance or possibly passing future ISO validation protocols, clinical performance\nmust be considered before these devices can be accepted for clinical decision-making (Table\n2).\nComprehensive protocols to test for accuracy across an array of devices intended for use\nacross a range of conditions and people are lacking. These concerns may not be addressed\nby ISO and IEEE validation procedures alone. Future protocols need to allow manufacturers\nto reliably ensure that devices perform as expected across skin tone, age, activity level, and",
+          "score": 0.8315873,
+          "score_contre": 0.8315873,
+          "requetes": [
+            "Concerns about FDA clearance of cuffless blood pressure devices"
+          ]
+        },
+        {
+          "chunk_id": "D09-393736c2",
+          "doc_id": "D09",
+          "page": 6,
+          "role": "contexte",
+          "texte": "continuous BP estimation. In the body of literature related to\npulse morphology and pulse wave analysis, there is increasing\ninterest in using the PPG waveform to understand the formation\nof blood pressure. It is generally accepted that the physiological\nstatus of peripheral blood vessels, such as aging, stiffness, and\ncompliance, can be partially expressed in terms of peripheral\nsignal waveforms. \nAs demonstrated by recent research, analysis\nof the PPG waveform can assist in understanding the underlying\nstatus of peripheral blood vessels under the influence of blood\npropulsion and the blood recycling process. For this reason, many\nparameters extracted directly from waveforms can be used to\naccurately evaluate vascular status. The parameters mentioned\noften in the literature include pulse width, augmentation index,\nlarge artery stiffness index, crest time, etc. As described previously,\nthe waveform’s shape is influenced by the blood circulatory",
+          "score": 0.8076469,
+          "score_contre": null,
+          "requetes": [
+            "Photoplethysmography (PPG) signal and estimation of blood pressure from pulse waveform features and machine learning"
+          ]
+        },
+        {
+          "chunk_id": "D09-6db02069",
+          "doc_id": "D09",
+          "page": 6,
+          "role": "contexte",
+          "texte": "machine-learning and linear regression. \nBy including PPG\nfeatures (not explicitly stated the features used), they were able\nto predict BP with an error less than 8 mmHg. We note that the\npublished study was conducted with only three subjects, and\nlarger published studies are not readily available.\nFollowing a similar approach, in 2018, Radha et al. demonstrated the use of machine-learning neural nets to estimate BP\nusing a variety of PPG signal features, including time-domain,\nfrequency-domain, and entropy-based features. \nThis neural net\napproach was able to achieve an error of ±9.82 mmHg and\n±3.88 mmHg for SBP and DBP, respectively, with Pearson\ncorrelation coefficients of 0.68 and 0.74, respectively.\nA recent PPG-based machine-learning study,\nwhich used the\nGoogLeNet pretrained convolutional neural network, provided\nsimilar or slightly better accuracy for hypertension stratification,\ncompared with the traditional feature extraction approach over",
+          "score": 0.80775636,
+          "score_contre": null,
+          "requetes": [
+            "Photoplethysmography (PPG) signal and estimation of blood pressure from pulse waveform features and machine learning"
+          ]
+        },
+        {
+          "chunk_id": "D12-d46aea5b",
+          "doc_id": "D12",
+          "page": 6,
+          "role": "contre",
+          "texte": "as absolute BP in millimeters of mercury but is instead only able to communicate BP\nchanges. The “cuff-calibrated” devices may come with an automatic cuff device or may\nrequire the user to purchase a separate cuff device for this purpose (which may or\nmay not include education on measurement technique and adequate validation). Other\ndevices use demographic inputs, such as age, sex, body mass index, and race, which are\nknown to correlate with BP, for calibration. Some cuff-calibrated devices may also use\ndemographic and anthropometric inputs to compute BP. Cuff-calibrated devices estimate BP\nin millimeters of mercury on the basis of the intraindividual BP changes detected relative\nto the cuff BP level at calibration, whereas demographic-calibrated devices measure inter-and intraindividual BP changes relative to the average BP level of individuals from the same\ndemographic population. Therefore, whereas cuffless devices may display a reading that",
+          "score": 0.8099284,
+          "score_contre": 0.8099284,
+          "requetes": [
+            "Accuracy limitations of cuffless blood pressure estimation and calibration problems"
+          ]
+        },
+        {
+          "chunk_id": "D12-cbb338ee",
+          "doc_id": "D12",
+          "page": 11,
+          "role": "contre",
+          "texte": "a formidable limitation for clinicians hoping to replace conventional BP measurement\napproaches with these devices.\nThe heterogeneity of cuffless BP measurement devices necessitates tailored validation\nprotocols according to their function and calibration.\nFor example, the IEEE standard\nis intended to test the accuracy of both continuous and intermittent cuffless BP devices using\nmanual auscultation as a reference.\nGiven the variability of BP in each cardiac cycle, using\nan auscultatory reference for continuous measurements could lead to incorrect conclusions\nregarding a device’s accuracy. The BP comparisons for these, often ambulatory, devices are\nmade in static conditions immediately after cuff calibration, which does not reflect typical\nuse conditions (eg, during activity; hours, days, or weeks after initial calibration). Induction\nof BP changes ±30 mm Hg is recommended and performed before cuff recalibration;",
+          "score": 0.82324755,
+          "score_contre": 0.8180747,
+          "requetes": [
+            "Validation standards and scientific society statements on cuffless blood pressure devices (ISO 81060, IEEE 1708)",
+            "Accuracy limitations of cuffless blood pressure estimation and calibration problems"
+          ]
+        },
+        {
+          "chunk_id": "D06-172c7316",
+          "doc_id": "D06",
+          "page": 6,
+          "role": "pour",
+          "texte": "diagnosis and can also reassure users who receive a notification but do not\nhave hypertension.\nClinical Validation\nStudy Design\nTo demonstrate the safety and effectiveness of the Hypertension Notification\nFeature, Apple conducted a pivotal, decentralized clinical study including more\nthan 2000 participants. This study was separate from and incremental to the\nvalidation steps outlined in the “Preclinical Design and Algorithm Testing” section.\nThe validation study recruited adult participants who did not have a preexisting\ndiagnosis of hypertension. Participants were enrolled in two cohorts: all-comers\nwithout known hypertension risk factors and those at risk of hypertension based\non historical blood pressure values and other risk factors.\nThe study’s primary goal was to evaluate the algorithm’s performance in\nidentifying users with hypertension. Performance was determined based\non average blood pressure readings taken twice daily at home over 30 days",
+          "score": 0.79050463,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D06-8dcda495",
+          "doc_id": "D06",
+          "page": 8,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 8\nOf the 2229 participants, 1863 met usable data requirements and contributed\nto the primary endpoint analyses. Those not included in the performance\nevaluation lacked sufficient Apple Watch or reference data or had major\nprotocol violations. In the Notification Analysis set, 585 participants exhibited\nhypertension, while 1278 did not.\nThe overall sensitivity of the feature was 41.2% (95% CI [37.2%, 45.3%]), and\nthe overall specificity was 92.3% (95% CI [90.6%, 93.7%]). Importantly, the\nspecificity among those with normal blood pressure was 95.3% (95% CI [93.7%,\n96.5%]). The sensitivity for Stage 2 hypertension, which is more severe and\nrequires more aggressive management, was 53.7% (95% CI [47.7%, 59.7%]).\nSubgroup Results\nDemographic subgroup analyses were conducted using unadjusted and\ncovariate-adjusted point estimates, along with confidence intervals for sensitivity",
+          "score": 0.7932594,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D07-8c402bbb",
+          "doc_id": "D07",
+          "page": 12,
+          "role": "contexte",
+          "texte": "the Irregular Rhythm Notification Feature (K231173), the Atrial Fibrillation History Feature\n(K213971), and Sleep Apnea Notification Feature (K240929).\n8. Summary of Clinical Performance\nClinical Validation\nA pivotal clinical validation study was conducted to demonstrate the clinical benefits measured\nby subject level sensitivity and specificity in identifying hypertension status in the intended\npopulation and intended use environment.\nThe primary objective of the clinical validation was to examine the performance of HTNF in\ndetecting possible hypertension over a 30-day period. Hypertension is established as average\nsystolic blood pressure ≥ 130 mmHg or diastolic blood pressure ≥ 80 mmHg by America Heart\nAssociation.\nA total of 2,229 subjects without a previous diagnosis of hypertension were enrolled in the\nclinical study. The subjects were enrolled from diverse demographic groups and representative",
+          "score": 0.77102906,
+          "score_contre": null,
+          "requetes": [
+            "Clinical validation of the hypertension notification feature: sensitivity, specificity and study population"
+          ]
+        },
+        {
+          "chunk_id": "D06-224b2b98",
+          "doc_id": "D06",
+          "page": 2,
+          "role": "pour",
+          "texte": "(PPG), which measures blood volume changes through the skin and supports a\nwide range of Apple Watch features. The algorithm was developed using a large\ndataset from a diverse group of adults who participated in studies conducted or\nsponsored by Apple. The feature was then validated in a pivotal study to support\nregulatory submissions around the world.",
+          "score": 0.7323046,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D07-e875cd40",
+          "doc_id": "D07",
+          "page": 10,
+          "role": "contexte",
+          "texte": "machine learning-based algorithm to\nanalyze input signals from a ECG\ndevice and provide an assessment\nfor the presence of HCM.\nAssessments are conducted on\ndemand in clinic or hospital setting,\nsuch that the findings can be\nprovided to health care\nprofessionals for further analysis.\nUse Environment \nAt home use In clinic or hospital use\nDevice\nComponents \nSoftware only Software only\nDevice Input \nPPG data from compatible Apple\nWatch platforms\n12-Lead ECG from compatibles\nECG devices\nDevice Output \nA notification that the user may\nhave hypertension\nIdentified signs associated with\nHCM and ECG analysis results\nClinical\nPerformance \nThe performance was\ndemonstrated to be acceptable\nfor identifying potential\nhypertension within the intended\npopulation.\nSensitivity: 41.2% (95% CI [37.2,\n45.3])\nSpecificity: 92.3% (95% CI [90.6,\n93.7])\nPPV (prevalence of 31.4%):\n70.9% (95% CI [65.7, 75.7])\nSensitivity: 68.4% (95% CI [62.8,\n73.5])\nSpecificity: 99.1% (95% CI [98.7,\n99.4])",
+          "score": 0.6469872,
+          "score_contre": null,
+          "requetes": [
+            "False positive and false negative notifications, anxiety and overdiagnosis from wearable screening"
+          ]
+        },
+        {
+          "chunk_id": "D06-fd4b1853",
+          "doc_id": "D06",
+          "page": 9,
+          "role": "pour",
+          "texte": "tone suggested no clinically meaningful difference after covariate adjustment.\nFor example, the Asian subgroup was younger (mean age 43.0 vs. 50.9) and\nhad lower BMI (mean BMI 27.7 vs. 30.9) compared with non-Asian participants.\nAfter covariate adjustment, Asian performance characteristics were on par with\nnon-Asian participants.\nMachine Learning–Based\nPPG Analysis\nSex\n(Female)\n0.5\n1.5\n1.0\nUnadjusted\nCovariate adjusted\nRace\n(White)\nRace\n(Black)\nRace\n(Asian)\nFitzpatrick\n(5/6)\nAge\n(<60)\nBMI\n(<30)\nEthnicity\n(Hisp)\nSensitivity Ratio\nSex\n(Female)\n0.8\nUnadjusted\nCovariate adjusted\nRace\n(White)\nRace\n(Black)\nRace\n(Asian)\nFitzpatrick\n(5/6)\nAge\n(<60)\nBMI\n(<30)\nEthnicity\n(Hisp)\n0.9\n1.0\n1.1\n1.2\nSpecificity Ratio\nFigure 2. Demographic Subgroup Analyses of Sensitivity \nFigure 3. Demographic Subgroup Analyses of Specificity",
+          "score": 0.7465973,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D07-46a0bba2",
+          "doc_id": "D07",
+          "page": 13,
+          "role": "contexte",
+          "texte": "Apple Inc. HTNF 510(k) Submission\n510(k) Summary K250507 Page 8 of 12\nsensitivity risk ratio of less than 1.0 in the younger age group (<60 years) means this\ngroup has a lower covariate-adjusted sensitivity than the older group (≥60) years. A\nspecificity risk ratio of greater than 1.0 in the younger age group means this group has a\nhigher covariate-adjusted specificity than the older group. Because a risk ratio of 1.0\nindicates equal performance between subcategories, differences were considered\nnonsignificant if the 95% confidence interval included 1.0.\nTable 2. Subgroup Performance - HTNF Clinical Study\nSubgroup \nSensitivity Risk Ratio\n[95% CI]\nSpecificity Risk Ratio\n[95% CI]\nAge (<60 vs. ≥ 60 years) \n0.69\n[0.55, 0.85]\n1.09\n[1.04, 1.15]\nSex (Female vs. Male) \n0.93\n[0.77, 1.12]\n0.97\n[0.93, 1.03]\nRace\nNot White vs. White\n0.87\n[0.69, 1.10]\n1.04\n[1.01, 1.07]\nNot Black vs. Black \n1.20\n[0.93, 1.54]\n0.97\n[0.93, 1.00]\nNot Asian vs. Asian \n1.42\n[0.86, 2.35]\n1.00\n[0.97, 1.04]",
+          "score": 0.66247153,
+          "score_contre": null,
+          "requetes": [
+            "False positive and false negative notifications, anxiety and overdiagnosis from wearable screening"
+          ]
+        },
+        {
+          "chunk_id": "D09-61b72d6b",
+          "doc_id": "D09",
+          "page": 1,
+          "role": "contexte",
+          "texte": "person, based on skin color and clinical factors, and the drift in\ncalibration over short-time intervals. \nPHOTOPLETHYSMOGRAPHY\nFirst explored in the 1930’s, PPG is a method for measuring the\namount of light that is absorbed or reflected by blood vessels in\nliving tissue. Since the amount of optical absorption or reflection\ndepends on the amount of blood that is present in the optical\npath, the PPG signal is responsive to changes in the volume of the\nblood, rather than the pressure of the blood vessels. In other\nwords, PPG detects the change of blood volume by the\nphotoelectric technique, whether transmissive or reflective, to\nrecord the volume of blood in the sensor coverage area to form a\nPPG signal. Indeed, the sensor coverage area includes both veins\nand arteries, and numerous capillaries. Thus, the PPG signal is a\ncomplex mixture of the blood flow in veins and arteries of the\ncardiovascular circulatory system. A raw PPG signal generally",
+          "score": 0.78743964,
+          "score_contre": null,
+          "requetes": [
+            "Performance of photoplethysmography across skin tone, age, sex and other subgroups"
+          ]
+        },
+        {
+          "chunk_id": "D12-e54005ae",
+          "doc_id": "D12",
+          "page": 19,
+          "role": "contre",
+          "texte": "prognostic capability and actionability of data\nCompare output with standard, established measurements for BP monitoring, including ambulatory BP monitoring and standardized office\nBP assessment with validated devices\nData communication and interpretability\nEnsure device output makes it clear to the end user what data are being communicated (eg, absolute BP, change in BP)\nProvide indications for use that are clear to both clinicians and users\nRequire greater transparency from manufacturers on algorithmic inputs and logic to support independent verification and clinical\ninterpretability\nEthical and regulatory oversight\nAddress data ownership, privacy, and patient consent related to continuous personal health data collection\nEnsure secure data storage, appropriate data sharing protocols, and protection against misuse\nPerson- and system-level considerations\nAddress acceptability and feasibility of use in different patient populations\nDetermine cost-effectiveness",
+          "score": 0.64113736,
+          "score_contre": 0.64113736,
+          "requetes": [
+            "Ethical concerns of consumer health notifications: bias, false reassurance and inappropriate care"
+          ]
+        },
+        {
+          "chunk_id": "D12-62520587",
+          "doc_id": "D12",
+          "page": 9,
+          "role": "contre",
+          "texte": "travel long distances to receive basic health screenings, making it easier for residents of rural\nareas, or areas with shortages of health care professionals, to monitor their out-of-office BP\nregularly.\nCost is a major barrier hindering access to health care and traditional BP monitoring\nmethods for individuals from underresourced populations, many of whom may be uninsured\nor underinsured. Cuffless BP devices could theoretically reduce costs, particularly when\nintegrated into wearable or mobile devices that consumers purchase for multiple uses.\nHowever, because of the limitations of cuffless devices, including the need for calibration\nwith additional purchased devices and insufficient accuracy, cost-effectiveness remains\nspeculative.\nCuffless BP devices offer promise for expanding BP measurement in underresourced\ncommunities, but they rely heavily on technology, including sensors, algorithms, and data",
+          "score": 0.7094262,
+          "score_contre": 0.6750106,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care",
+            "Cost-effectiveness of hypertension screening and healthcare use after wearable notifications",
+            "Wearable devices widening health inequities and increasing unnecessary healthcare use"
+          ]
+        },
+        {
+          "chunk_id": "D12-5aedfb38",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "varied settings, over day(s) to weeks, in products that are affordable and accessible to most\nindividuals, we are entering a new era of health care. Being able to measure BP continuously\nand passively with wearable devices and obtain intermittent BPs throughout the day with\ndevices embedded in everyday items (eg, smartphones, watches) will allow large numbers\nof people to self-monitor their BP, overcoming contemporary barriers to cardiovascular\nhealth promotion, such as lack of access to health care. However, major limitations must be\naddressed before individuals can fully benefit from these new technologies. There is a need\nfor standardized validation protocols that evaluate accuracy across diverse technologies,\nCohen et al. \nPage 12\nHypertension. Author manuscript; available in PMC 2026 July 06.\nAuthor Manuscript\n \nAuthor Manuscript\n \nAuthor Manuscript\n \nAuthor Manuscript",
+          "score": 0.68922126,
+          "score_contre": 0.6729212,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care",
+            "Wearable devices widening health inequities and increasing unnecessary healthcare use"
+          ]
+        },
+        {
+          "chunk_id": "D09-396688b9",
+          "doc_id": "D09",
+          "page": 8,
+          "role": "contexte",
+          "texte": "oximeter component available in every operating room in the\nworld.\nThis widespread use of pulse oximetry represents another\npossible opportunity to employ the ubiquitous pulse oximeter as a\ndevice for estimating BP.\nAlthough the emerging algorithms for BP estimation and health\nmonitoring are increasingly complex, the processing power of\nwearable and mobile technologies, as well as cloud computing\nhave also increased dramatically over the past decade. The ability\nof wearable health devices to monitor BP and cardiovascular\nhealth status is becoming increasingly feasible.\nAt present, a series of health parameters, such as body\ntemperature, heart rate, ECG, and PPG, can be monitored by\ncommercial wearable products. Soon, wearable BP products will\nalso likely be an acceptable form of health monitoring utilized by\nmost people, and their precision, wear, ease of use, and other\ncharacteristics will continue to improve significantly.\nFUTURE DIRECTIONS",
+          "score": 0.67424655,
+          "score_contre": null,
+          "requetes": [
+            "Access to wearable devices, digital divide and socioeconomic disparities in cardiovascular care"
+          ]
+        },
+        {
+          "chunk_id": "D07-bccd84c8",
+          "doc_id": "D07",
+          "page": 8,
+          "role": "contexte",
+          "texte": "device is substantially equivalent to the predicate. A complete comparison of the subject and\npredicate device can be found in Table 1 below.\nTable 1. Subject Device and Predicate Device Comparison Table\nItem\nSubject Device Predicate Device\nHTNF Viz HCM\nDevice Name \nHypertension Notification Feature Viz HCM\nManufacturer \nApple Inc. Viz.ai, Inc.\nProduct Code \nQXO\nRegulation Name \nCardiovascular Machine Learning-\nBased Notification Software\nCardiovascular Machine Learning-\nBased Notification Software\nOTC/Prescription \nOTC Prescription\nIntended Use\nThe Hypertension Notification\nFeature (HTNF) is a machine-learning-based notification\nsoftware that employs machine\nlearning techniques to identify\npossible hypertension for further\ndiagnostic follow-up. The\nViz HCM is a cardiovascular\nmachine-learning-based notification\nsoftware employs machine learning\ntechniques to detecting signs\nassociated with hypertrophic\ncardiomyopathy (HCM).Viz HCM\nSFR",
+          "score": 0.72844636,
+          "score_contre": null,
+          "requetes": [
+            "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan",
+            "European Medical Device Regulation (MDR) and CE marking of software as a medical device"
+          ]
+        },
+        {
+          "chunk_id": "D07-885a1648",
+          "doc_id": "D07",
+          "page": 15,
+          "role": "contexte",
+          "texte": "with Section 3308 of the Food and Drug Omnibus Reform Act (FDORA) of 2022, enacted on\nDecember 29, 2022. The PCCP does not include provisions for implementation of adaptive\nalgorithms that will continuously learn in the field. All algorithm modifications will be trained,\ntuned, and locked prior to release of the software to the field. A procedure has also been\nestablished for updating the Instructions for Use in order to inform users about the changes\nimplemented under this FDA-authorized PCCP, including a summary of the changes, a\ncharacterization of algorithm performance, and the availability and compatibility of the feature.\nThe PCCP specifies possible modifications to HTNF, as well as verification and validation\nactivities in place to implement the changes in a controlled manner such that the modified\ndevice remains as safe and effective as the predicate device. The PCCP includes a list of\nfeature changes defining the specific regions of potential modifications (see Table 3). The",
+          "score": 0.73955274,
+          "score_contre": null,
+          "requetes": [
+            "FDA regulation of machine learning-based notification software, predicate device and predetermined change control plan",
+            "European Medical Device Regulation (MDR) and CE marking of software as a medical device"
+          ]
+        },
+        {
+          "chunk_id": "D07-f33f49f6",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "pressure surveillance. It is not intended for use during pregnancy. The absence of a notification\ndoes not indicate the absence of hypertension.\n5. Comparison with the Predicate Device\nHTNF and the predicate device (Viz HCM, DEN230003) have the same intended use,\ntechnological characteristics, and principles of operation, and the difference in indications\ndoes not represent a new intended use. Both the subject and predicate devices are software-only mobile medical applications intended to identify a single condition based on non-invasive",
+          "score": 0.68167984,
+          "score_contre": null,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring"
+          ]
+        },
+        {
+          "chunk_id": "D12-21570bef",
+          "doc_id": "D12",
+          "page": 12,
+          "role": "contre",
+          "texte": "(ie, at rest), device position tests (ie, in at least 1 other position), treatment tests (ie, 1–4\nweeks after initiating a new antihypertensive therapy), awake/asleep tests (eg, using ABPM\nfor overnight BP measurement), exercise tests, and recalibration tests (ie, right before the\ndevice is recommended to undergo recalibration).\nThe complexity of these protocols may\nhinder their practicality in assessing device accuracy, and the need for separate protocols\nfor children and pregnant women adds to their limitations. The absence of environmental\nstandards (eg, ambient temperature) also poses challenges in evaluating device performance.\nCRUCIAL GAPS IN INTERPRETING DEVICE OUTPUTS FROM CUFFLESS\nBP DEVICES\nGiven the exponential growth of consumer wearable devices, clinicians will likely be\npresented with large amounts of out-of-office cardiovascular measurement data. Studies\nof cuffless BP devices have demonstrated poor performance (eg, accuracy not significantly",
+          "score": 0.7442919,
+          "score_contre": 0.6282769,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up",
+            "Clinical workload and low diagnostic yield of evaluations triggered by smartwatch alerts"
+          ]
+        },
+        {
+          "chunk_id": "D06-18bfea17",
+          "doc_id": "D06",
+          "page": 7,
+          "role": "pour",
+          "texte": "Hypertension Notification Feature on Apple Watch | September 2025 7\nSubjects took blood pressure measurements following AHA guidelines. The\n30-day averages were categorized based on the 2017 American College of\nCardiology (ACC)/AHA Blood Pressure Guidelines for home blood pressure\nreadings.\nThe validation study assessed the following coprimary safety and effectiveness\nendpoints:\n• Notification sensitivity for participants with a Stage 1 or Stage 2 reference\nhypertension (HTN) category\n• Notification specificity for participants with a Normal or Elevated reference\nHTN category\nStudy Results\nThe study enrolled 2229 subjects across all major blood pressure ranges and\nhypertension categories (Normal, Elevated Blood Pressure, Stage 1 HTN, and\nStage 2 HTN). Participants represented a broad range of demographic factors\nincluding age, sex, BMI, and race and ethnicity subgroups, reflecting the\nintended user population. The Full Analysis Set included all enrolled participants,",
+          "score": 0.7289,
+          "score_contre": null,
+          "requetes": [
+            "Confirmation of hypertension after a notification with home or ambulatory blood pressure monitoring",
+            "Integration of wearable blood pressure data into clinical care and clinician follow-up"
+          ]
+        },
+        {
+          "chunk_id": "D12-557c6126",
+          "doc_id": "D12",
+          "page": 5,
+          "role": "contre",
+          "texte": "(eg, cuffed) devices.\nAccordingly, the 2025 American Heart Association/American College\nof Cardiology Guideline for the Prevention, Detection, Evaluation, and Management of\nHigh Blood Pressure in Adults recommends against the use of cuffless BP devices for the\ndiagnosis or management of hypertension until these devices demonstrate greater precision\nand reliability.\nIn this scientific statement, we provide an overview of cuffless technologies and their\npotential future utility, while highlighting the notable limitations that need to be addressed\nbefore these devices can be considered for clinical decision-making.\nMECHANISMS OF CUFFLESS BP MEASUREMENT\nThe technology, methods, and outputs of cuffless devices for estimating BP noninvasively\nvary substantially.\nThey provide either continuous, beat-to-beat estimations using\nintracardiac cycle data or intermittent BP estimations, spaced >30 seconds apart, using data",
+          "score": 0.80398154,
+          "score_contre": 0.7994056,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring",
+            "Unresolved questions before cuffless devices can be used clinically"
+          ]
+        },
+        {
+          "chunk_id": "D07-f709ac64",
+          "doc_id": "D07",
+          "page": 7,
+          "role": "contexte",
+          "texte": "data is collected.\nHTNF comprises the following features:\n• \nA software feature on the Apple Watch (“Software Feature on Watch”), and\n• \nA pair of software features on the iOS device (“Software Feature on iPhone” and\n“Software Feature on iPad”)\nOn the Apple Watch, HTNF uses PPG data and qualification information from the watch\nplatform. The Software Feature on watch incorporates a machine-learning model that gives\neach qualified PPG signal a score associated with risk of hypertension.\nOn the iPhone, HTNF incorporates an algorithm that aggregates qualified hypertension risk\nscores and identifies patterns suggestive of hypertension. If hypertension patterns are\nidentified, the feature surfaces a notification to users that they may have hypertension. The\nfeature includes a user interface (UI) framework to enable user on-boarding and display\neducational materials and hypertension notification history in the Hypertension Notification\nroom in the Health app.",
+          "score": 0.6722182,
+          "score_contre": null,
+          "requetes": [
+            "Large-scale smartwatch screening precedents such as atrial fibrillation detection"
+          ]
+        },
+        {
+          "chunk_id": "D09-3104b1e4",
+          "doc_id": "D09",
+          "page": 8,
+          "role": "contexte",
+          "texte": "most people, and their precision, wear, ease of use, and other\ncharacteristics will continue to improve significantly.\nFUTURE DIRECTIONS\nThe use of PPG signals as a replacement for cuff-based or invasive\nBP measurement is relatively new, and most PPG analysis methods\nare still relatively simple. A variety of estimation methods continue\nto be explored, including those that utilize PPG signals exclusively,\nand those which combine PPG with other physiological signals. As\ncan be seen from the tables, the estimation of BP from PTT\ncontinues to be perhaps the most common approach, but\ngenerally only with very small sample sizes. With the advent of\nwearable devices, the real-time analysis of PPG waveforms also\nenables the possibility to monitor BP on a nearly continuous\nbasis. \nIn the future, the increasing adoption of wearable PPG\ndevices will also likely play an essential role in patient care.\nOur recommendations, based on a review of BP estimation\nusing PPG signals, are as follows:",
+          "score": 0.8085952,
+          "score_contre": null,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring"
+          ]
+        },
+        {
+          "chunk_id": "D09-9f5b7b12",
+          "doc_id": "D09",
+          "page": 9,
+          "role": "contexte",
+          "texte": "individual factors, which can directly affect the accuracy of BP\nestimations. The existence of such practical problems and the\ndifficulty in overcoming them has made the applications of this\ntheory difficult.\nThe development of noninvasive, cuffless, and continuous BP\nestimation is a promising yet challenging field. That the trend is\ntoward wearable BP technology is evident. In future studies, a\nmore comprehensive understanding of PPG information can\nhopefully enable researchers to solve the abovementioned\nproblems and to successfully develop technologies for BP\nestimation using mobile and wearable devices.\nACKNOWLEDGEMENTS\nMohamed Elgendi is grateful for the support from Mining for Miracles, BC Children’s\nHospital Foundation, and Women’s Health Research Centre of British Columbia,\nVancouver, British Columbia, Canada.\nAUTHOR CONTRIBUTIONS\nM.E. designed the review, screened titles and abstracts. M.E., R.F. and Y.L. screened all",
+          "score": 0.82152456,
+          "score_contre": null,
+          "requetes": [
+            "Future directions and research gaps for cuffless blood pressure monitoring"
+          ]
+        }
+      ]
+    }
+  ]
+}
