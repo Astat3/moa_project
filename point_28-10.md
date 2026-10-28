@@ -42,11 +42,10 @@ Corpus de 4 documents ; pas de juge de fidélité ; relecteur de la même famill
 ---
 
 ## 2. Ce qui n'est pas encore fait
-- Évaluation humaine de 15 affirmations par 2 juges (kappa).
+- Évaluation humaine de 15 affirmations par **un seul juge** (pas de kappa : décision du 28/10, notée en limite).
 - Vérification des 22 références de la baseline.
 - Jugement des 8 alertes G5 (justes ou fausses alertes).
 - Vérification du code produit QXO / SFR (PDF D07, p. 8) et de l'alerte G4 (« 510 », « 21 », « 870.2380 »).
-- Position finale sur A9 (deux classements différents donnés : à justifier).
 - Captures d'écran des workflows.
 - Rapport écrit et support de l'oral.
 
@@ -54,11 +53,10 @@ Corpus de 4 documents ; pas de juge de fidélité ; relecteur de la même famill
 
 ## 3. Travail restant, en temps de travail
 
-### A. Fin de l'évaluation (≈ 3 h de travail, ≈ 1 h 30 si on se répartit)
+### A. Fin de l'évaluation (≈ 2 h 30 de travail, ≈ 1 h 15 si on se répartit)
 | Tâche | Qui | Temps |
 |---|---|---|
-| Évaluation humaine : 15 affirmations, chacun son fichier, sans se consulter | 2 membres en parallèle | 45 min chacun |
-| Calcul du kappa (`eval/evaluer.py kappa`) | Claude Code | 5 min |
+| Évaluation humaine : 15 affirmations (`eval_humaine_juge1.csv`), sans ouvrir la relecture | 1 membre | 45 min |
 | Vérification des 22 références de la baseline (existe ? auteurs, année, revue, DOI ?) | 1 à 2 membres | 1 h à 1 h 30 (à 2 : 45 min) |
 | Jugement des 8 alertes G5 | 1 membre | 15 min |
 | QXO / SFR dans le PDF D07 p. 8 ; alerte G4 | 1 membre / Claude Code | 15 min |
@@ -90,7 +88,7 @@ Structure imposée par la consigne :
 - Un seul envoi par groupe, à rosy.tsopra@aphp.fr et benjamin.pariente@aphp.fr.
 
 ### Total
-**≈ 17 à 21 h de travail**, soit environ **5 à 7 h par personne à trois**. Claude peut rédiger un premier jet des parties 2, 3 et 4 du rapport à partir des fichiers existants, ce qui réduit le temps de rédaction d'environ moitié. La vérification des références de la littérature et les jugements humains restent au groupe.
+**≈ 16 à 20 h de travail**, soit environ **5 à 7 h par personne à trois**. Claude peut rédiger un premier jet des parties 2, 3 et 4 du rapport à partir des fichiers existants, ce qui réduit le temps de rédaction d'environ moitié. La vérification des références de la littérature et les jugements humains restent au groupe.
 
 ### Ordre conseillé
 1. **Aujourd'hui** : point d'étape ; lancer l'évaluation humaine et la vérification des références de la baseline (elles conditionnent la critique).

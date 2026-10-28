@@ -24,7 +24,7 @@ Version du 28/10/2026, après l'exécution finale. ⏳ = en attente du groupe.
 - Deuxièmement : "tout est vert" ne veut pas dire "tout est juste". Nos garde-fous contrôlent la forme. Sur une exécution précédente, une relecture validée par un membre du groupe a confirmé quinze défauts de fond qu'aucun garde-fou ne voyait : des sur-affirmations, des affirmations non soutenues par l'extrait cité, et des liens inventés entre sources.
 - Troisièmement : l'IA qui relit l'IA ne voit presque rien. Notre relecteur, du même modèle que le rédacteur, n'a repéré qu'un défaut sur dix-neuf, et aucun des quinze défauts de fond, alors qu'il avait les sources sous les yeux. »
 
-**Un exemple.** « Le cas le plus parlant : le rédacteur écrit que l'étude d'Apple a été conçue "pour répondre aux exigences méthodologiques de l'AHA". Or la déclaration de l'AHA a été publiée en décembre 2025, après l'autorisation de la FDA en septembre 2025. Ce lien chronologiquement impossible revient d'une exécution à l'autre, et aucun garde-fou automatique ne le détecte. »
+**Un exemple.** « Le cas le plus parlant : dans sa conclusion, le rédacteur affirme que les critiques de l'AHA sur les tensiomètres sans brassard "ne s'appliquent pas" aux données d'Apple. Aucun extrait ne dit cela : c'est un lien inventé entre deux sources. Ce type de lien entre l'AHA et Apple ou la FDA revient d'une exécution à l'autre, et aucun garde-fou automatique ne le détecte. »
 
 **Les difficultés.** « Nous avons dû changer de fournisseur en cours de route : l'offre gratuite de Mistral ne donnait pas de clé API, donc nous sommes passés à Gemini. L'offre gratuite de Gemini limite à vingt appels par jour, avec une API très lente, jusqu'à près de dix minutes par appel, et des erreurs de saturation. Nous avons donc ajouté des relances explicites, un budget d'appels, une règle d'arrêt, et planifié les exécutions. »
 
@@ -77,7 +77,7 @@ Corpus : 4 PDF + corpus/meta.json (référence, rôle pour/contre/contexte, vers
   │
 50-baseline : un seul appel, même modèle, mêmes règles (dont « n'invente aucune référence »), sans corpus
   │
-eval/evaluer.py : métriques (metriques.csv), 15 affirmations tirées au hasard pour 2 juges, kappa de Cohen
+eval/evaluer.py : métriques (metriques.csv), 15 affirmations tirées au hasard, jugées par 1 juge (pas de kappa, décision du 28/10)
 ```
 
 **Le corpus**
@@ -126,10 +126,10 @@ eval/evaluer.py : métriques (metriques.csv), 15 affirmations tirées au hasard 
 | **G1 Structure** | JSON valide, sections présentes, caractères corrompus, texte sans accents, échecs d'appel | Le fond |
 | **G2 Citations** | Chaque extrait cité fait bien partie des extraits récupérés | Si l'extrait soutient vraiment la phrase |
 | **G4 Chiffres** | Chaque nombre du paragraphe figure dans un extrait cité | Un chiffre juste mais mal interprété |
-| **G5 Formulations absolues** | Une liste de mots (« prouve », « garanti », « robuste », « solide »…), hors formes niées, sans tenir compte des accents | Le contexte (faux positifs : « a démontré une sensibilité de 41,2 % ») ; les sur-affirmations sans mot de la liste |
+| **G5 Formulations absolues** | Une liste de mots (« prouve », « garanti », « robuste », « solide »…), hors formes niées, sans tenir compte des accents | Le contexte (faux positifs possibles) ; les sur-affirmations sans mot de la liste |
 | **Relecteur** (Gemini) | Structure, contre-arguments non traités, sur-affirmations, équilibre, conclusion, affirmations non soutenues, liens et chronologie entre sources | En pratique, presque rien (1 sur 19) |
 | **Baseline** | Ce que fait le LLM seul | — |
-| **Évaluation humaine** | 15 affirmations tirées au hasard, jugées SOUTENU / PARTIEL / NON_SOUTENU par 2 juges, kappa | ⏳ |
+| **Évaluation humaine** | 15 affirmations tirées au hasard, jugées SOUTENU / PARTIEL / NON_SOUTENU par **un seul juge** | Fiabilité du jugement non mesurée (pas de second juge, donc pas de kappa) ; ⏳ résultats |
 | **Liste de défauts de référence** | Écrite par Claude, validée à l'aveugle par un membre du groupe, puis comparée au relecteur | Validation indulgente, un seul validateur |
 
 Méthodes de la littérature à citer dans le rapport (**références à vérifier une par une**) : RAGAS (Es et al., 2023), FActScore (Min et al., 2023), LLM-as-a-judge et ses biais (Zheng et al., 2023), Chain-of-Verification (Dhuliawala et al., 2023), SelfCheckGPT (Manakul et al., 2023), cadre QUEST d'évaluation humaine en santé (Tam et al., 2024).
@@ -155,14 +155,14 @@ Méthodes de la littérature à citer dans le rapport (**références à vérifi
 **Exécution 1 `20261027-093507` (27/10, non officielle)**
 - 47 min, 14 appels (4 relances) ; 2 sections vides (503), 91 caractères corrompus, conclusion sans accents.
 - **Défauts de référence** : 30 de fond proposés, **15 confirmés** (A1, A3, A6, A10, A11, A14, A15, A16, A20, A22, A23, A24, A25, A29, A30), 4 de forme sur 4, 2 cas « invisibles depuis les extraits » rejetés.
-- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19** (les sections vides), **0 sur 15 défauts de fond**. Son seul problème de fond porte sur A9 (lien AHA → Apple), rejeté à l'aveugle, puis reclassé ⏳ (position finale à confirmer, avec sa justification).
+- **Relecteur** : 3 problèmes signalés → **1 défaut confirmé repéré sur 19** (les sections vides), **0 sur 15 défauts de fond**. Son seul problème de fond porte sur A9 (lien AHA → Apple), rejeté à l'aveugle ; trié après la sortie du relecteur : fausse alerte (position finale).
 
 ---
 
 ## 8. Les exemples à montrer
 1. **Sans corpus, le LLM n'avoue jamais qu'il ne sait pas** : 3 « information non disponible » pour le pipeline, 0 pour la baseline.
 2. **« Tout est vert ≠ tout est juste »** (21/10) : 0 alerte, mais une étude unique présentée comme générale, une réserve (« only three subjects ») omise, 30 jours devenus un « suivi sur le long terme ». *Relecture de Claude, non validée par le groupe.*
-3. **Le lien inventé entre sources** : « Pour répondre à ces exigences méthodologiques [de l'AHA], l'étude d'Apple s'est déroulée… », alors que l'AHA (déc. 2025) est postérieure à l'autorisation (sept. 2025). Observé par Claude dans toutes les sorties, y compris l'exécution finale (« répond directement à ces préoccupations », « dissipe ces craintes ») ; validation humaine : A3 et A25 confirmés, A9 et A18 rejetés à l'aveugle.
+3. **Le lien inventé entre sources** (A25, confirmé à l'aveugle) : « les critiques pointant les limites de performance […] ne s'appliquent pas aux donnees probantes fournies pour cette notification » (conclusion de l'exécution 1, écrite sans accents par le modèle) : aucun extrait ne l'établit. Observé par Claude dans toutes les sorties, y compris l'exécution finale (« répond directement à ces préoccupations », « dissipe ces craintes ») ; validation humaine : A3 et A25 confirmés, A9 et A18 rejetés à l'aveugle.
 4. **La sur-affirmation** : « could improve » (Apple) → « démontre son potentiel » ; « partially expressed » → « permet de capter » ; une sensibilité de 41 % → « garantit un ciblage pertinent ».
 5. **L'IA qui relit l'IA** : 1 défaut sur 19, alors que le relecteur a les sources.
 6. **Un problème d'infrastructure** : Gemini renvoie « \u0000e9 » au lieu de « é ». G4 l'a repéré (il y voyait des nombres), puis un décodage a été ajouté avant les garde-fous.
@@ -191,7 +191,7 @@ Méthodes de la littérature à citer dans le rapport (**références à vérifi
 
 **Contrôle qualité** : pas de juge de fidélité (retiré faute de temps) ; relecteur de la même famille de modèle que le rédacteur, en échec sur l'exécution finale ; G5 = une liste de mots (contexte ignoré, faux positifs) ; les défauts sont signalés, pas corrigés.
 
-**Évaluation** : une seule exécution officielle (variabilité non mesurée) ; évaluation humaine sur 15 affirmations ; une phrase est jugée par rapport aux extraits de son paragraphe (surestime la fidélité) ; liste de défauts écrite par une IA puis **validée par un seul membre, de façon volontairement indulgente** (borne basse des défauts réels).
+**Évaluation** : une seule exécution officielle (variabilité non mesurée) ; évaluation humaine sur 15 affirmations **par un seul juge, donc sans kappa** (fiabilité du jugement non mesurée) ; une phrase est jugée par rapport aux extraits de son paragraphe (surestime la fidélité) ; liste de défauts écrite par une IA puis **validée par un seul membre, de façon volontairement indulgente** (borne basse des défauts réels).
 
 **Modèle et infrastructure** : offre gratuite (20 appels par jour, latence très variable, erreurs 503) ; modèle Flash seulement ; API américaine (le texte du corpus, des publications sans aucune donnée patient, part chez Google ; pour les utilisateurs de l'EEE, les conditions de l'offre payante s'appliquent au quota gratuit : pas d'entraînement sur les requêtes).
 
@@ -213,6 +213,7 @@ Méthodes de la littérature à citer dans le rapport (**références à vérifi
 | 510(k), De Novo, marquage CE ? | 510(k) : équivalence substantielle à un prédicat (ici Viz HCM). De Novo : nouvelle classification pour un dispositif sans prédicat. En Europe : marquage CE selon le règlement (UE) 2017/745 (MDR) ; absent de notre corpus. |
 | Pourquoi le sans-brassard reste-t-il débattu ? | Selon l'AHA : calibration, mesure de variations plutôt que de valeurs absolues, protocoles de validation inadaptés, performances médiocres en conditions dynamiques. La fonction d'Apple ne mesure pas une pression : elle classe un risque sur 30 jours. |
 | Que pensez-vous de la conclusion de l'IA ? | ⏳ À préparer en groupe. |
+| Pourquoi pas de kappa ? | Faute de temps, un seul juge : l'accord entre évaluateurs n'est pas mesuré. C'est noté en limite ; le script de calcul du kappa est prêt pour une v2. |
 | Reproductibilité ? | Versions figées, prompts versionnés, workflows exportés dans git, `runs.jsonl` (modèle, prompts, appels, durées) ; mais un LLM n'est pas déterministe, et une seule exécution officielle. |
 
 ---
@@ -227,10 +228,10 @@ Méthodes de la littérature à citer dans le rapport (**références à vérifi
 ---
 
 ## 13. Ce qui reste à faire
-- ⏳ Évaluation humaine : 2 juges, 15 affirmations, puis kappa (≈ 45 min chacun).
+**L'implémentation est arrêtée** (28/10, pipeline gelé) : ce qui n'a pas été réalisé est listé dans les limites (`pipeline.md` § 5). Il ne reste que des tâches d'évaluation courtes, le rapport et l'oral.
+- ⏳ Évaluation humaine : 1 juge, 15 affirmations (≈ 45 min). Pas de kappa (décision du 28/10, notée en limite).
 - ⏳ Vérification des 22 références de la baseline (≈ 1 h à 1 h 30).
 - ⏳ Jugement des 8 alertes G5 (≈ 15 min) ; vérification de l'alerte G4 et du cas QXO / SFR (≈ 15 min).
-- ⏳ Position finale sur A9, avec la raison du changement de classement.
 - ⏳ Captures des workflows (≈ 15 min).
 - ⏳ Rapport écrit (≈ 9 à 11 h) et oral (≈ 5 à 7 h) : détail dans `point_28-10.md`.
 - ⏳ Confirmer la date limite (02/11 ?) et les noms des membres.
